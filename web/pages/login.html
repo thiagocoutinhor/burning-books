@@ -1,0 +1,36 @@
+<html>
+
+<head>
+    <title>Burning Book - Spark Notebook</title>
+
+    <script src="/script/io.js"></script>
+    <script src="/script/jquery.js"></script>
+    <script src="/script/bootstrap.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/login.css"/>
+</head>
+
+<body>
+    <form action="/login" method="POST">
+        <div class="card mx-auto mt-5" style="width: 500px">
+            <div class="card-body">
+                <h3 class="card-title">Login</h3>
+
+                <div>
+                    <label>Login:</label>
+                    <input class="form-control" type="text" name="login"/>
+                    <br/>
+                    <label>Senha:</label>
+                    <input class="form-control" type="password" name="senha"/>
+                </div>
+
+                <div class="text-right mt-2">
+                    <input type="submit" class="btn btn-primary" value="Entrar"/>
+                </div>
+            </div>
+        </div>
+    </form>
+</body>
+
+</html>
