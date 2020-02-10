@@ -2,6 +2,35 @@ body {
     background-color: darkslategray
 }
 
+.titulo {
+    background-color: rgb(88, 131, 131);
+    font-weight: bold;
+    color: white;
+}
+
+div.connection-status {
+    border: 1px solid white;
+    width: 15px;
+    height: 15px;
+    border-radius: 5px;
+}
+
+div.connection-status.connecting {
+    background-color: yellow;
+    animation: connecting 2s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes connecting {
+    0% { background-color: yellow }
+    50% { background-color: yellowgreen }
+    100% { background-color: yellow }
+}
+
+div.connection-status.connecting {
+    background-color: green;
+}
+
 .card {
     box-shadow: 1px 1px 6px black;
 }
@@ -21,4 +50,15 @@ body {
     border-top: 0px;
     background-color: antiquewhite;
     padding: 10px;
+}
+
+button.new-command {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.13);
+    border: 0px;
+    color: white;
+}
+
+button.new-command:hover {
+    background-color: rgba(0, 0, 0, 0.25)
 }

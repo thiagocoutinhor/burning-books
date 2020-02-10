@@ -6,6 +6,7 @@
     <script src="/script/io.js"></script>
     <script src="/script/jquery.js"></script>
     <script src="/script/bootstrap.js"></script>
+    <script src="/script/d3.js"></script>
     <script src="/script/book.js"></script>
 
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
@@ -20,40 +21,35 @@
 </head>
 
 <body>
+    <div class="navbar titulo">
+        Título
+        <div class="connection-status connecting"></div>
+    </div>
 
-    <div class="m-3">
-        <div class="card">
-            <div class="card-body">
-                <div class="card-title">[Bloco 1]</div>
+    <div class="commands">
+        <div class="m-3 command">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">[Bloco 1]</div>
 
-                <div class="card-text">
-                    Código aqui...
-                </div>
+                    <div class="card-text" contenteditable="true">
+                        Código aqui...
+                    </div>
 
-                <div class="buttons text-right">
-                    <button class="btn btn-primary run-button" disabled>Run!</button>
+                    <div class="buttons text-right">
+                        <button class="btn btn-primary run-button" disabled>Run!</button>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="mr-4 ml-4 recibo">
-            Teste
+            <div class="mr-4 ml-4 recibo">
+                Retorno aqui!
+            </div>
         </div>
     </div>
 
-    <div class="card m-3">
-        <div class="card-body">
-            <div class="card-title">[Bloco 2]</div>
-
-            <div class="card-text">
-                Código aqui...
-            </div>
-
-            <div class="buttons text-right">
-                <button class="btn btn-primary" disabled>Run!</button>
-            </div>
-        </div>
-    </div>
+    <button class="new-command run-button" onclick="newCommand()" disabled>
+        +
+    </button>
 
 </body>
 
