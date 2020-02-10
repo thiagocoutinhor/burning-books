@@ -16,6 +16,7 @@ function init() {
     })
 
     montaCards()
+    running(false)
     // io.emit('spark.connect')
 }
 

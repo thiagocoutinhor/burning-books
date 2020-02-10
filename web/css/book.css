@@ -59,6 +59,12 @@ button.new-command {
     color: white;
 }
 
-button.new-command:hover {
-    background-color: rgba(0, 0, 0, 0.25)
+button.new-command:disabled {
+    background-color: rgba(50, 50, 50, 0.25);
+    color: rgba(255, 255, 255, 0.712);
+}
+
+button.new-command:hover:enabled {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: white;
 }
