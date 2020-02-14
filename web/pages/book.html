@@ -30,13 +30,16 @@
         <div class="m-3 command">
             <div class="card">
                 <div class="card-body">
-                    <div class="card-title">[Bloco 1]</div>
-
-                    <div class="card-text" contenteditable="true">
-                        Código aqui...
+                    <div class="card-title d-flex justify-content-between">
+                        <span class="bloco">[Bloco 0]</span>
+                        <button onclick="removeCommand(0)" class="btn btn-danger button-remove">x</button>
                     </div>
 
-                    <div class="buttons text-right">
+                    <div class="card-text">
+                        <div class="command-text command-0" contenteditable="true" onkeyup="editCommand(0)">Código aqui</div>
+                    </div>
+
+                    <div class="buttons text-right mt-2">
                         <button class="btn btn-primary run-button" disabled>Run!</button>
                     </div>
                 </div>
@@ -47,9 +50,11 @@
         </div>
     </div>
 
-    <button class="new-command run-button" onclick="newCommand()" disabled>
-        +
-    </button>
+    <div class="m-3">
+        <button class="new-command run-button" onclick="newCommand()" disabled>
+            +
+        </button>
+    </div>
 
 </body>
 

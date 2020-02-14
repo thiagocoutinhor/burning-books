@@ -40,6 +40,13 @@ div.connection-status.connecting {
     font-family: Arial, Helvetica, sans-serif
 }
 
+button.button-remove {
+    width: 20px;
+    height: 20px;
+    padding: 0px;
+    font-size: 80%;
+}
+
 .card-text {
     font-family: 'Courier New', Courier, monospace
 }
@@ -61,7 +68,7 @@ button.new-command {
 
 button.new-command:disabled {
     background-color: rgba(50, 50, 50, 0.25);
-    color: rgba(255, 255, 255, 0.712);
+    color: rgba(255, 255, 255, 0.445);
 }
 
 button.new-command:hover:enabled {
