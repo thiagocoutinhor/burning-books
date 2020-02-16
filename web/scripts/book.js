@@ -3,7 +3,7 @@ const book = {
     commands: [
         { command: 'Teste 1' },
         { command: 'Teste 2' },
-        { command: 'Teste 3\nxxx\n\n42' }
+        { command: 'Teste 3a\nxxx\n\n42' }
     ]
 }
 
@@ -110,7 +110,15 @@ function editCommand(index) {
     console.log(book.commands[index].command)
 }
 
+// TODO Usar o lexer
 function commandToHtml(command) {
+    const lexer = moo.compile(grammarScala)
+
+    lexer.reset(command)
+    while (token = lexer.next()) {
+        console.log(token)
+    }
+
     return command
         .replace('\n\n', '\n<br>\n')
         .split('\n')
