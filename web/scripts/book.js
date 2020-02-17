@@ -2,30 +2,36 @@ var book = null
 
 function init() {
     // Carrega o book atual
-    book = localStorage.getItem('current-book')
-    if (!book) {
-        book = { commands: [] }
-        localStorage.setItem('current-book', book)
-    }
-
-    // Monta processo de salvamento automático do book
-    setInterval(() => {
-        localStorage.setItem('current-book', book)
-    }, 1000)
+    preparabook()
 
     // Prepara para receber as mensagens do servidor
-    io.on('reload', function () {
-        console.debug('Recarregando a pedido da api')
-        location.reload()
-    })
+    // io.on('reload', function () {
+    //     console.debug('Recarregando a pedido da api')
+    //     location.reload()
+    // })
 
-    io.on('spark.ready', function () {
-        console.debug('Console pronto para comandos')
-    })
+    // io.on('spark.ready', function () {
+    //     console.debug('Console pronto para comandos')
+    // })
 
     montaCards()
     running(false)
     // io.emit('spark.connect')
+}
+
+function preparabook() {
+    const bookString = localStorage.getItem('current-book')
+    if (!bookString) {
+        book = { commands: [] }
+        localStorage.setItem('current-book', JSON.stringify(book))
+    } else {
+        book = JSON.parse(bookString)
+    }
+
+    // Monta processo de salvamento automático do book
+    setInterval(() => {
+        localStorage.setItem('current-book', JSON.stringify(book))
+    }, 1000)
 }
 
 function montaCards() {
@@ -76,7 +82,7 @@ function montaCards() {
     comandos.append('div')
         .attr('contenteditable', true)
         .attr('class', (d, i) => `command-text command-${i}`)
-        .attr('onkeyup', (d, i) => `editCommand(${i})`)
+        .attr('onkeyup', (d, i) => `editCommand(${i}, this)`)
         .html(d => commandToHtml(d.command))
 
     newCard.append('div')
@@ -108,31 +114,38 @@ function removeCommand(index) {
     montaCards()
 }
 
-function editCommand(index) {
-    console.log($(`.command-${index}`).html())
+function editCommand(index, div) {
     book.commands[index].command = htmlToCommand($(`.command-${index}`).html())
-    console.log(book.commands[index].command)
+
+    // TODO fazer algo aqui para editar o html sem perder a posição do caret
+    // const focusNode = document.getSelection().focusNode
+    // document.getSelection().focusNode
 }
 
 // TODO Usar o lexer para melhorar a visualização do códigos
 function commandToHtml(command) {
-    // const lexer = moo.compile(grammarScala)
+    const lexer = moo.compile(grammarScala)
+    var retorno  = '<div>'
 
-    // lexer.reset(command)
-    // while (token = lexer.next()) {
-    //     console.log(token)
-    // }
+    lexer.reset(command)
+    while (token = lexer.next()) {
+        if (token.type === 'linha') {
+            retorno += '</div><div>'
+        } else if (token.type === 'teste') {
+            retorno += `<b><u>${token.value}</u></b>`
+        } else {
+            retorno += token.value
+        }
+    }
+    retorno += '</div>'
 
-    return command
-        .replace('\n\n', '\n<br>\n')
-        .split('\n')
-        .map(linha => `<div>${linha}</div>`)
-        .join('')
-        .replace(/<div><\/div>/g, '')
+    return retorno.replace(/<div><\/div>/g, '<div><br></div>')
 }
 
 function htmlToCommand(html) {
     return html.replace(/<div[\/]?>/g, '\n')
         .replace(/<[\/]?.*?>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
         .trim()
 }

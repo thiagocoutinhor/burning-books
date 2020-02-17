@@ -8,14 +8,14 @@
     <script src="/script/bootstrap.js"></script>
     <script src="/script/d3.js"></script>
     <script src="/script/lexer.js"></script>
-    <script src="/script/grammarScala.js"></script>
+    <script src="/script/grammar-scala.js"></script>
     <script src="/script/book.js"></script>
 
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="/css/book.css"/>
 
     <script>
-        var io = io();
+        // var io = io();
         $(document).ready(function() {
             init();
         })
@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="card-text">
-                        <div class="command-text command-0" contenteditable="true" onkeyup="editCommand(0)">Código aqui</div>
+                        <div class="command-text command-0" contenteditable="true" onkeyup="editCommand(0, this)">Código aqui</div>
                     </div>
 
                     <div class="buttons text-right mt-2">

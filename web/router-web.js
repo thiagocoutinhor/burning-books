@@ -40,11 +40,11 @@ router.post('/login', (req, res) => {
 })
 
 router.get('/', (req, res) => {
-    if (req.session.usuario) {
+    // if (req.session.usuario) {
         res.sendFile(join(__dirname, '/pages/book.html'))
-    } else {
-        res.sendFile(join(__dirname, '/pages/login.html'))
-    }
+    // } else {
+    //     res.sendFile(join(__dirname, '/pages/login.html'))
+    // }
 })
 
 module.exports = router;
