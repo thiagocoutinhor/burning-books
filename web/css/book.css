@@ -27,7 +27,7 @@ div.connection-status.connecting {
     100% { background-color: yellow }
 }
 
-div.connection-status.connecting {
+div.connection-status.connected {
     background-color: green;
 }
 

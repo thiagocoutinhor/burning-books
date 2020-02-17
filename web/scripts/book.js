@@ -5,18 +5,23 @@ function init() {
     preparabook()
 
     // Prepara para receber as mensagens do servidor
-    // io.on('reload', function () {
-    //     console.debug('Recarregando a pedido da api')
-    //     location.reload()
-    // })
+    io.on('reload', function () {
+        console.debug('Recarregando a pedido da api')
+        location.reload()
+    })
 
-    // io.on('spark.ready', function () {
-    //     console.debug('Console pronto para comandos')
-    // })
+    io.on('spark.ready', function () {
+        console.debug('Console pronto para comandos')
+        $('div.connection-status')
+            .removeClass('connecting')
+            .addClass('connected')
+        running(false)
+    })
+
+    running(true)
+    io.emit('spark.connect')
 
     montaCards()
-    running(false)
-    // io.emit('spark.connect')
 }
 
 function preparabook() {

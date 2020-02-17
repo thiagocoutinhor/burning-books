@@ -12,7 +12,7 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "web/*"
+      "web/scripts/*"
     ]
   },
   "keywords": [

@@ -20,16 +20,15 @@ router.use('/css', cssRouter)
 
 router.post('/login', (req, res) => {
     const usuario = {
-        login: req.body.login,
-        senha: req.body.senha
+        login: req.body.login.trim(),
+        senha: req.body.senha.trim()
     }
 
     // Testa a conexão antes de seguir adiante
-    const sparkShell = new SparkSession(usuario.login.trim(), usuario.senha.trim())
-    sparkShell.ssh.connect()
+    const sparkShell = new SparkSession(usuario.login, usuario.senha)
+    sparkShell.connect()
         .then(() => {
             console.debug(`[LOGIN - ${usuario.login}] Login bem sucedido`)
-            // sparkShell.ssh.close()
             req.session.usuario = usuario
             res.redirect('/')
         })
@@ -40,11 +39,11 @@ router.post('/login', (req, res) => {
 })
 
 router.get('/', (req, res) => {
-    // if (req.session.usuario) {
+    if (req.session.usuario) {
         res.sendFile(join(__dirname, '/pages/book.html'))
-    // } else {
-    //     res.sendFile(join(__dirname, '/pages/login.html'))
-    // }
+    } else {
+        res.sendFile(join(__dirname, '/pages/login.html'))
+    }
 })
 
 module.exports = router;
