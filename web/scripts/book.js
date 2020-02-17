@@ -1,13 +1,19 @@
-const book = {
-    name: 'Book',
-    commands: [
-        { command: 'Teste 1' },
-        { command: 'Teste 2' },
-        { command: 'Teste 3a\nxxx\n\n42' }
-    ]
-}
+var book = null
 
 function init() {
+    // Carrega o book atual
+    book = localStorage.getItem('current-book')
+    if (!book) {
+        book = { commands: [] }
+        localStorage.setItem('current-book', book)
+    }
+
+    // Monta processo de salvamento automático do book
+    setInterval(() => {
+        localStorage.setItem('current-book', book)
+    }, 1000)
+
+    // Prepara para receber as mensagens do servidor
     io.on('reload', function () {
         console.debug('Recarregando a pedido da api')
         location.reload()
@@ -23,8 +29,6 @@ function init() {
 }
 
 function montaCards() {
-    console.log(book)
-
     const commandCards = d3.select('div.commands').selectAll('div.command')
         .data(book.commands)
 
@@ -110,14 +114,14 @@ function editCommand(index) {
     console.log(book.commands[index].command)
 }
 
-// TODO Usar o lexer
+// TODO Usar o lexer para melhorar a visualização do códigos
 function commandToHtml(command) {
-    const lexer = moo.compile(grammarScala)
+    // const lexer = moo.compile(grammarScala)
 
-    lexer.reset(command)
-    while (token = lexer.next()) {
-        console.log(token)
-    }
+    // lexer.reset(command)
+    // while (token = lexer.next()) {
+    //     console.log(token)
+    // }
 
     return command
         .replace('\n\n', '\n<br>\n')
