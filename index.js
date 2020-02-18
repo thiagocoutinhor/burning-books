@@ -5,7 +5,7 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
-const sockets = require('./web/spark-socket')
+const sockets = require('./api/web/spark-socket')
 const expressSession = require('express-session')
 const ioSession = require('express-socket.io-session')
 
@@ -30,7 +30,7 @@ app.use((req, res, next) => {
     next()
 })
 
-app.use('/', require('./web/router-web'))
+app.use('/', require('./api/web/router-web'))
 
 io.use(ioSession(session))
 io.on('connect', socket => {

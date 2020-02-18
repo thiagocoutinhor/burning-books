@@ -2,8 +2,7 @@ const express = require('express')
 const router = express.Router()
 const scriptRouter = express.Router()
 const cssRouter = express.Router()
-const join = require('path').join
-const SparkSession = require('../api/spark-shell/spark-shell').SparkSession
+const SparkSession = require('../spark-shell/spark-shell').SparkSession
 
 scriptRouter.use('/', express.static('./web/scripts'))
 scriptRouter.use('/io.js', express.static('./node_modules/socket.io-client/dist/socket.io.slim.js'))
@@ -40,9 +39,9 @@ router.post('/login', (req, res) => {
 
 router.get('/', (req, res) => {
     if (req.session.usuario) {
-        res.sendFile(join(__dirname, '/pages/book.html'))
+        res.sendFile('book.html', { root: 'web/pages/' })
     } else {
-        res.sendFile(join(__dirname, '/pages/login.html'))
+        res.sendFile('login.html', { root: 'web/pages/' })
     }
 })
 

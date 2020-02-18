@@ -1,4 +1,4 @@
-const SparkShell = require('../api/spark-shell/spark-shell').SparkSession
+const SparkShell = require('../spark-shell/spark-shell').SparkSession
 
 module.exports = socket => {
     const usuario = socket.handshake.session.usuario
