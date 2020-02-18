@@ -9,6 +9,7 @@
     <script src="/script/d3.js"></script>
     <script src="/script/lexer.js"></script>
     <script src="/script/grammar-scala.js"></script>
+    <script src="/script/grammar-retorno.js"></script>
     <script src="/script/book.js"></script>
 
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
@@ -38,11 +39,11 @@
                     </div>
 
                     <div class="card-text">
-                        <div class="command-text command-0" contenteditable="true" onkeyup="editCommand(0, this)">Código aqui</div>
+                        <div class="command-text command-0" contenteditable="true" onkeydown="characterControl(event)" oninput="editCommand(0, this)">Código aqui</div>
                     </div>
 
                     <div class="buttons text-right mt-2">
-                        <button class="btn btn-primary run-button" disabled>Run!</button>
+                        <button class="btn btn-primary run-button" disabled onclick="runCommand(0)">Run!</button>
                     </div>
                 </div>
             </div>
@@ -53,7 +54,7 @@
     </div>
 
     <div class="m-3">
-        <button class="new-command" onclick="newCommand()" disabled>
+        <button class="new-command" onclick="newCommand()">
             +
         </button>
     </div>

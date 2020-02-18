@@ -1,0 +1,4 @@
+const grammarRetorno = {
+    header: /\+[-+]+\+/,
+    texto: /.+/
+}

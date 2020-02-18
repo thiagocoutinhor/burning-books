@@ -48,7 +48,11 @@ button.button-remove {
 }
 
 .card-text {
-    font-family: 'Courier New', Courier, monospace
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.card-text .command-text {
+    white-space: pre;
 }
 
 .recibo {

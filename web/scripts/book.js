@@ -1,21 +1,31 @@
 var book = null
+var executing = null
+var isRunning = true
 
 function init() {
     // Carrega o book atual
     preparabook()
 
     // Prepara para receber as mensagens do servidor
-    io.on('reload', function () {
+    io.on('reload', () => {
         console.debug('Recarregando a pedido da api')
         location.reload()
     })
 
-    io.on('spark.ready', function () {
+    io.on('spark.ready', () => {
         console.debug('Console pronto para comandos')
         $('div.connection-status')
             .removeClass('connecting')
             .addClass('connected')
         running(false)
+    })
+
+    io.on('spark.return', (retorno) => {
+        returnCommand(retorno)
+    })
+
+    io.on('spark.error', (erro) => {
+        returnCommand(erro, true)
     })
 
     running(true)
@@ -32,6 +42,8 @@ function preparabook() {
     } else {
         book = JSON.parse(bookString)
     }
+
+    book.commands.forEach(command => command.return = undefined)
 
     // Monta processo de salvamento automático do book
     setInterval(() => {
@@ -55,7 +67,7 @@ function montaCards() {
     commandCards
         .select('div.recibo')
         .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
-        .text(d => d.return)
+        .html(d => returnToHtml(d.return))
 
     // Remoção dos cards
     commandCards.exit().remove()
@@ -87,22 +99,25 @@ function montaCards() {
     comandos.append('div')
         .attr('contenteditable', true)
         .attr('class', (d, i) => `command-text command-${i}`)
-        .attr('onkeyup', (d, i) => `editCommand(${i}, this)`)
+        .attr('onkeyup', (d, i) => `editCommand(${i}, this, event)`)
         .html(d => commandToHtml(d.command))
 
     newCard.append('div')
         .attr('class', 'buttons text-right mt-2')
         .append('button')
         .attr('class', 'btn btn-primary run-button')
+        .attr('onclick', (d, i) => `runCommand(${i})`)
+        .attr('disabled', isRunning)
         .text('Run!')
 
     newCommand.append('div')
         .attr('class', 'mr-4 ml-4 recibo')
         .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
-        .text(d => d.return)
+        .html(d => returnToHtml(d.return))
 }
 
 function running(running) {
+    isRunning = running
     $('.run-button').attr('disabled', running)
 }
 
@@ -127,7 +142,19 @@ function editCommand(index, div) {
     // document.getSelection().focusNode
 }
 
-// TODO Usar o lexer para melhorar a visualização do códigos
+function characterControl(event) {
+    if (event.keyCode === 9) {
+        event.preventDefault()
+        var range = window.getSelection().getRangeAt(0);
+
+        var tabNode = document.createTextNode("\u00a0\u00a0\u00a0\u00a0")
+        range.insertNode(tabNode)
+
+        range.setStartAfter(tabNode)
+        range.setEndAfter(tabNode)
+    }
+}
+
 function commandToHtml(command) {
     const lexer = moo.compile(grammarScala)
     var retorno  = '<div>'
@@ -136,8 +163,6 @@ function commandToHtml(command) {
     while (token = lexer.next()) {
         if (token.type === 'linha') {
             retorno += '</div><div>'
-        } else if (token.type === 'teste') {
-            retorno += `<b><u>${token.value}</u></b>`
         } else {
             retorno += token.value
         }
@@ -147,10 +172,36 @@ function commandToHtml(command) {
     return retorno.replace(/<div><\/div>/g, '<div><br></div>')
 }
 
+function returnToHtml(retorno) {
+    if (retorno) {
+        return retorno
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br/>')
+    }
+    return null
+}
+
 function htmlToCommand(html) {
     return html.replace(/<div[\/]?>/g, '\n')
         .replace(/<[\/]?.*?>/g, '')
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&')
         .trim()
+}
+
+function runCommand(index) {
+    running(true)
+    executing = index
+    io.emit('spark.run', book.commands[index].command)
+}
+
+function returnCommand(retorno, erro) {
+    if (erro) {
+        console.error(retorno)
+    }
+    book.commands[executing].return = retorno
+    executing = null
+    running(false)
+    montaCards()
 }
