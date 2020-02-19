@@ -1,6 +1,8 @@
 const SparkShell = require('../spark-shell/spark-shell').SparkSession
 const Stream = require('stream').PassThrough
 
+const graveyard = {}
+
 module.exports = socket => {
     const usuario = socket.handshake.session.usuario
 
@@ -12,10 +14,18 @@ module.exports = socket => {
 
     console.debug(`[IO - ${usuario.login}] Conectou`)
     socket.on('spark.connect', () => {
-        socket.shell = new SparkShell(usuario.login, usuario.password)
-        socket.shell.openShell().then(() => {
+        if (graveyard[usuario.login]) {
+            console.debug(`[IO - ${usuario.login}] Recuperando a sessão do cemitério`)
+            clearTimeout(graveyard[usuario.login].timer)
+            socket.shell = graveyard[usuario.login].shell
             socket.emit('spark.ready')
-        })
+        } else {
+            console.debug(`[IO - ${usuario.login}] Criando uma nova sessão`)
+            socket.shell = new SparkShell(usuario.login, usuario.password)
+            socket.shell.openShell().then(() => {
+                socket.emit('spark.ready')
+            })
+        }
     })
 
     socket.on('spark.run', command => {
@@ -37,7 +47,16 @@ module.exports = socket => {
 
     socket.on('disconnect', () => {
         if (socket.shell) {
-            socket.shell.closeShell()
+            console.debug(`[IO - ${usuario.login}] Guardando a sessão no cemitério`)
+            const shell = socket.shell
+            graveyard[usuario.login] = {
+                shell: shell,
+                timer: setTimeout(() => {
+                    shell.closeShell()
+                    graveyard[usuario.login] = undefined
+                    console.debug(`[IO - ${usuario.login}] Sessão expurgada do cemitério`)
+                }, 120 * 1000)
+            }
             socket.shell = undefined
         }
         console.debug(`[IO - ${usuario.login}] Desconectou`)
