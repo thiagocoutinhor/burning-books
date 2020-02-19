@@ -10,6 +10,7 @@ class SparkSession {
             username: user.toLowerCase(),
             password: password
         })
+        this.startCommand = `spark-shell ${process.env.SPARK_QUEUE ? '--queue ' + process.env.SPARK_QUEUE : ''}`
     }
 
     connect() {
@@ -34,7 +35,7 @@ class SparkSession {
                                 resolve(stream)
                             }
                         }
-                        stream.write('spark-shell --queue root.digital.users\n')
+                        stream.write(`${this.startCommand}\n`)
                         stream.on('data', watcher)
                     })
                 })
