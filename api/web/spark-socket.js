@@ -37,7 +37,7 @@ module.exports = socket => {
 
     socket.on('disconnect', () => {
         if (socket.shell) {
-            socket.shell.disconect()
+            socket.shell.closeShell()
             socket.shell = undefined
         }
         console.debug(`[IO - ${usuario.login}] Desconectou`)

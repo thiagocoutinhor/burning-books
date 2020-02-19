@@ -23,20 +23,22 @@ class SparkSession {
     openShell() {
         console.debug(`[SPARK - ${this.user}] Abrindo o shell spark`)
 
-        this.shell = this.ssh.shell()
-            .then(stream => {
-                return new Promise((resolve, reject) => {
-                    const watcher = data => {
-                        if (data.includes("scala>")) {
-                            console.debug(`[SPARK - ${this.user}] Shell rodando`)
-                            stream.off('data', watcher)
-                            resolve(stream)
+        if (!this.shell) {
+            this.shell = this.ssh.shell()
+                .then(stream => {
+                    return new Promise((resolve, reject) => {
+                        const watcher = data => {
+                            if (data.includes("scala>")) {
+                                console.debug(`[SPARK - ${this.user}] Shell rodando`)
+                                stream.off('data', watcher)
+                                resolve(stream)
+                            }
                         }
-                    }
-                    stream.write('spark-shell --queue root.digital.users\n')
-                    stream.on('data', watcher)
+                        stream.write('spark-shell --queue root.digital.users\n')
+                        stream.on('data', watcher)
+                    })
                 })
-            })
+        }
 
         return this.shell
     }
@@ -83,7 +85,7 @@ class SparkSession {
         })
     }
 
-    disconect() {
+    closeShell() {
         console.debug(`[SPARK - ${this.user}] Fechando a conexão`)
         if (this.shell) {
             this.shell.then(stream => {
