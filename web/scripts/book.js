@@ -170,6 +170,10 @@ function commandToHtml(command) {
         } else {
             retorno += token.value
         }
+
+        if (token.type === 'error') {
+            console.error(`Erro de parseamento: ${token.value}`)
+        }
     }
     retorno += '</div>'
 
