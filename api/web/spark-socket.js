@@ -1,4 +1,5 @@
 const SparkShell = require('../spark-shell/spark-shell').SparkSession
+const Stream = require('stream').PassThrough
 
 module.exports = socket => {
     const usuario = socket.handshake.session.usuario
@@ -19,7 +20,13 @@ module.exports = socket => {
 
     socket.on('spark.run', command => {
         if (socket.shell) {
-            socket.shell.command(command).then(retorno => {
+            const stream = new Stream()
+
+            stream.on('data', data => {
+                socket.emit('spark.return.stream', data)
+            })
+
+            socket.shell.command(command, stream).then(retorno => {
                 socket.emit('spark.return', retorno)
             })
             .catch(erro => {

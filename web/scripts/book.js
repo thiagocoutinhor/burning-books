@@ -20,6 +20,10 @@ function init() {
         running(false)
     })
 
+    io.on('spark.return.stream', retorno => {
+        console.log(retorno)
+    })
+
     io.on('spark.return', (retorno) => {
         returnCommand(retorno)
     })
