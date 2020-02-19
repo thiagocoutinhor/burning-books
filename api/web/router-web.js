@@ -23,6 +23,12 @@ router.post('/login', (req, res) => {
         senha: req.body.senha.trim()
     }
 
+    if (process.env.USER_BLACKLIST.toLowerCase().split(',').includes(usuario.login.toLowerCase())) {
+        console.warn(`Usuário restrito tentou acessar o sistema: ${usuario.login}`)
+        res.redirect('/')
+        return
+    }
+
     // Testa a conexão antes de seguir adiante
     const sparkShell = new SparkSession(usuario.login, usuario.senha)
     sparkShell.connect()
