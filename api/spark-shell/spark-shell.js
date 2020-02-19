@@ -41,7 +41,7 @@ class SparkSession {
         return this.shell
     }
 
-    command(command, stream) {
+    command(command, outputStream) {
         if (!this.shell) {
             this.openShell()
         }
@@ -51,14 +51,13 @@ class SparkSession {
                 let output = '';
 
                 const watcher = data => {
-                    const tratado = data.replace(':paste', '')
-                        .replace('// Entering paste mode (ctrl-D to finish)', '')
+                    const tratado = data.toString().replace(':paste', '')
                         .replace('// Exiting paste mode, now interpreting.', '')
-                        .replace(command, '')
                         .replace('scala>', '')
+                        .trim()
 
-                    if (stream) {
-                        stream.emit('data', tratado)
+                    if (outputStream && tratado != '') {
+                        outputStream.emit('data', tratado)
                     }
 
                     if (output.length <= 1000000) {
@@ -74,9 +73,12 @@ class SparkSession {
                     }
                 }
 
+                // Garantia de n]ao receber o comando inicial de volta
                 stream.write(`:paste\n${command}\n`)
-                stream.on('data', watcher)
-                stream.write('\x04')
+                setTimeout(() => {
+                    stream.on('data', watcher)
+                    stream.write('\x04')
+                }, 100);
             })
         })
     }
