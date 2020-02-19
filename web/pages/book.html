@@ -30,7 +30,7 @@
     </div>
 
     <div class="commands">
-        <div class="m-3 command">
+        <div class="m-3 command-block block-0">
             <div class="card">
                 <div class="card-body">
                     <div class="card-title d-flex justify-content-between">
@@ -43,7 +43,10 @@
                     </div>
 
                     <div class="buttons text-right mt-2">
-                        <button class="btn btn-primary run-button" disabled onclick="runCommand(0)">Run!</button>
+                        <button class="btn btn-primary run-button" disabled onclick="runCommand(0)">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Run!
+                        </button>
                     </div>
                 </div>
             </div>

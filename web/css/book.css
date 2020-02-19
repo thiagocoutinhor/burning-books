@@ -55,6 +55,23 @@ button.button-remove {
     white-space: pre;
 }
 
+.command-block .run-button .spinner-border {
+    display: none;
+}
+
+.command-block.running .card {
+    border: 1px solid gray;
+    background-color: silver;
+}
+
+.command-block.running .button-remove {
+    display: none;
+}
+
+.command-block.running .run-button .spinner-border {
+    display: inherit;
+}
+
 .recibo {
     font-family: 'Courier New', Courier, monospace;
     border: 1px solid gray;

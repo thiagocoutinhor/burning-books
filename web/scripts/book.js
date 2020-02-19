@@ -20,9 +20,17 @@ function init() {
         running(false)
     })
 
+    /////////////////////////////////////////////////
+    // TODO terminar o teste
     io.on('spark.return.stream', retorno => {
-        console.log(retorno)
+        const lexer = moo.compile(grammarRetorno)
+
+        lexer.reset(retorno)
+        while (token = lexer.next()) {
+            console.log(token)
+        }
     })
+    /////////////////////////////////////////////////
 
     io.on('spark.return', (retorno) => {
         returnCommand(retorno)
@@ -56,7 +64,7 @@ function preparabook() {
 }
 
 function montaCards() {
-    const commandCards = d3.select('div.commands').selectAll('div.command')
+    const commandCards = d3.select('div.commands').selectAll('div.command-block')
         .data(book.commands)
 
     // Manutentção de cards já existentes
@@ -79,7 +87,7 @@ function montaCards() {
     // Criação de novos cards
     const newCommand = commandCards.enter()
         .append('div')
-        .attr('class', 'm-3 command')
+        .attr('class', (d, i) => `m-3 command-block block-${i}`)
 
     const newCard = newCommand.append('div')
         .attr('class', 'card')
@@ -106,13 +114,18 @@ function montaCards() {
         .attr('onkeyup', (d, i) => `editCommand(${i}, this, event)`)
         .html(d => commandToHtml(d.command))
 
-    newCard.append('div')
+    const button = newCard.append('div')
         .attr('class', 'buttons text-right mt-2')
         .append('button')
         .attr('class', 'btn btn-primary run-button')
         .attr('onclick', (d, i) => `runCommand(${i})`)
         .attr('disabled', isRunning)
-        .text('Run!')
+
+    button.append('span')
+        .attr('class', 'spinner-border spinner-border-sm')
+        .attr('role', 'status')
+
+    button.append('span').text(' Run!')
 
     newCommand.append('div')
         .attr('class', 'mr-4 ml-4 recibo')
@@ -201,7 +214,10 @@ function htmlToCommand(html) {
 function runCommand(index) {
     running(true)
     executing = index
+    book.commands[index].return = undefined
+    $(`.block-${index}`).addClass('running')
     io.emit('spark.run', book.commands[index].command)
+    montaCards()
 }
 
 function returnCommand(retorno, erro) {
@@ -209,6 +225,7 @@ function returnCommand(retorno, erro) {
         console.error(retorno)
     }
     book.commands[executing].return = retorno
+    $(`.block-${executing}`).removeClass('running')
     executing = null
     running(false)
     montaCards()

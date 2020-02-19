@@ -1,4 +1,5 @@
 const grammarRetorno = {
     header: /\+[-+]+\+/,
-    texto: /.+/
+    texto: /.+$/,
+    error: moo.error
 }
