@@ -18,14 +18,17 @@ module.exports = socket => {
             console.debug(`[IO - ${usuario.login}] Recuperando a sessão do cemitério`)
             clearTimeout(graveyard[usuario.login].timer)
             socket.shell = graveyard[usuario.login].shell
-            socket.emit('spark.ready')
         } else {
             console.debug(`[IO - ${usuario.login}] Criando uma nova sessão`)
-            socket.shell = new SparkShell(usuario.login, usuario.password)
-            socket.shell.openShell().then(() => {
-                socket.emit('spark.ready')
-            })
+            if (!usuario.local) {
+                socket.shell = new SparkShell(usuario.login, usuario.password)
+            } else {
+                socket.shell = new SparkShell()
+            }
         }
+        socket.shell.openShell().then(() => {
+            socket.emit('spark.ready')
+        })
     })
 
     socket.on('spark.run', command => {

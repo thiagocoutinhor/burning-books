@@ -1,44 +1,58 @@
 const Ssh = require('ssh2-promise')
+const local = require('child_process').spawn
+
+const startCommand = `spark-shell ${process.env.SPARK_QUEUE ? '--queue ' + process.env.SPARK_QUEUE : ''}`
 
 // Classe responsável pela conexão e criação de uma nova sessão do spark
 class SparkSession {
 
     constructor(user, password) {
-        this.user = user
-        this.ssh = new Ssh({
-            host: process.env.HOST,
-            username: user.toLowerCase(),
-            password: password
-        })
-        this.startCommand = `spark-shell ${process.env.SPARK_QUEUE ? '--queue ' + process.env.SPARK_QUEUE : ''}`
+        if (user) {
+            this.__user = user
+            this.ssh = new Ssh({
+                host: process.env.HOST,
+                username: user.toLowerCase(),
+                password: password
+            })
+        } else {
+            this.local = true
+        }
     }
 
     connect() {
-        console.debug(`[SPARK - ${this.user}] Iniciando a conexão`)
-        this.ssh.on('close', () => console.debug(`[SPARK - ${this.user}] Desconectado`))
-        return this.ssh.connect().then(() => {
-            console.debug(`[SPARK - ${this.user}] Conectado`)
-        })
+        console.debug(`[SPARK - ${this.__user}] Iniciando a conexão`)
+        if (!this.local) {
+            this.ssh.on('close', () => console.debug(`[SPARK - ${this.__user}] Desconectado`))
+            return this.ssh.connect().then(() => {
+                console.debug(`[SPARK - ${this.__user}] Conectado`)
+            })
+        } else {
+            return Promise.resolve()
+        }
     }
 
     openShell() {
-        console.debug(`[SPARK - ${this.user}] Abrindo o shell spark`)
+        console.debug(`[SPARK - ${this.__user}] Abrindo o shell spark`)
 
         if (!this.shell) {
-            this.shell = this.ssh.shell()
-                .then(stream => {
-                    return new Promise((resolve, reject) => {
-                        const watcher = data => {
-                            if (data.includes("scala>")) {
-                                console.debug(`[SPARK - ${this.user}] Shell rodando`)
-                                stream.off('data', watcher)
-                                resolve(stream)
+            if (!local) {
+                this.shell = this.ssh.shell()
+                    .then(stream => {
+                        return new Promise((resolve, reject) => {
+                            const watcher = data => {
+                                if (data.includes("scala>")) {
+                                    console.debug(`[SPARK - ${this.__user}] Shell rodando`)
+                                    stream.off('data', watcher)
+                                    resolve(stream)
+                                }
                             }
-                        }
-                        stream.write(`${this.startCommand}\n`)
-                        stream.on('data', watcher)
+                            stream.write(`${this.startCommand}\n`)
+                            stream.on('data', watcher)
+                        })
                     })
-                })
+            } else {
+                // TODO fazer aqui
+            }
         }
 
         return this.shell
@@ -49,7 +63,7 @@ class SparkSession {
             this.openShell()
         }
         return this.shell.then(stream => {
-            console.debug(`[SPARK - ${this.user}] command> ${command}`)
+            console.debug(`[SPARK - ${this.__user}] command> ${command}`)
             return new Promise((resolve, reject) => {
                 let output = '';
 
@@ -71,7 +85,7 @@ class SparkSession {
 
                     if (data.includes("scala>")) {
                         stream.off('data', watcher)
-                        console.debug(`[SPARK - ${this.user}] return> ${output.trim()}`)
+                        console.debug(`[SPARK - ${this.__user}] return> ${output.trim()}`)
                         resolve(output.trim())
                     }
                 }
@@ -87,19 +101,26 @@ class SparkSession {
     }
 
     closeShell() {
-        console.debug(`[SPARK - ${this.user}] Fechando a conexão`)
+        console.debug(`[SPARK - ${this.__user}] Fechando a conexão`)
         if (this.shell) {
             this.shell.then(stream => {
-                console.debug(`[SPARK - ${this.user}] Shell fechado`)
+                console.debug(`[SPARK - ${this.__user}] Shell fechado`)
                 stream.end('exit\n')
                 stream.close()
             })
             this.shell = undefined
         }
-        this.ssh.close().then(() => console.debug(`[SPARK - ${this.user}] Conexão fechada`))
+        this.ssh.close().then(() => console.debug(`[SPARK - ${this.__user}] Conexão fechada`))
     }
 }
 
 module.exports = {
     SparkSession
 }
+
+const shell = local('spark-shell', {
+    shell: true
+})
+
+shell.stdout.on('data', data => console.log(data.toString()))
+shell.stderr.on('data', data => console.error(data.toString()))

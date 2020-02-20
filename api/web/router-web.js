@@ -17,6 +17,17 @@ cssRouter.use('/bootstrap.css', express.static('./node_modules/bootstrap/dist/cs
 router.use('/script', scriptRouter)
 router.use('/css', cssRouter)
 
+router.post('/login/local', (req, res) => {
+    const local = ['localhost', '::1', '127.0.0.1']
+    if (local.includes(req.ip)) {
+        console.debug(`[LOGIN - local] Entrando em modo local`)
+        req.session.usuario = { local: true, login: 'local' }
+    } else {
+        console.debug(`[LOGIN - local] Login em modo local rejeitado ${req.ip}`)
+    }
+    res.redirect('/')
+})
+
 router.post('/login', (req, res) => {
     const usuario = {
         login: req.body.login.trim(),
