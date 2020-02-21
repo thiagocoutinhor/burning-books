@@ -1,6 +1,10 @@
 require('dotenv').config() // Carrega as configurações de ambiente
 require('./log') // Substitui as funções base de console por outras mais robustas
 
+process.on('unhandledRejection', error => {
+    console.error(error);
+})
+
 const express = require('express')
 const app = express()
 const http = require('http').Server(app)
