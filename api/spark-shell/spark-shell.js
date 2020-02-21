@@ -1,7 +1,7 @@
 const Ssh = require('ssh2-promise')
-const spawn = require('node-pty').spawn
+const spawn = require('child_process').spawn
 const os = require('os')
-const Duplex = require('stream').PassThrough
+const Duplex = require('stream').Duplex
 
 // Classe responsável pela conexão e criação de uma nova sessão do spark
 class SparkSession {
@@ -17,7 +17,22 @@ class SparkSession {
             })
         } else {
             this.__user = 'local'
-            this.local = true
+            this.ssh = {
+                shell: () => {
+                    const shell = spawn(os.platform() === 'win32' ? 'cmd' : 'bash')
+                    const retorno = new Duplex({
+                        write: data => {
+                            shell.stdin.write(data)
+                        },
+                        read: () => {}
+                    })
+                    shell.stdout.on('data', data => retorno.emit('data', data))
+                    shell.stderr.on('data', data => retorno.emit('data', data))
+                    shell.stdout.on('data', data => console.log(data.toString()))
+                    return Promise.resolve(retorno)
+                },
+                close: () => Promise.resolve()
+            }
         }
     }
 
@@ -36,49 +51,21 @@ class SparkSession {
     openShell() {
         if (!this.shell) {
             console.debug(`[SPARK - ${this.__user}] Abrindo o shell spark`)
-            if (!this.local) {
-                // Shell usando SSH
-                this.shell = this.ssh.shell()
-                    .then(stream => {
-                        return new Promise((resolve, reject) => {
-                            const watcher = data => {
-                                if (data.includes('scala>')) {
-                                    console.debug(`[SPARK - ${this.__user}] Shell rodando`)
-                                    stream.off('data', watcher)
-                                    resolve(stream)
-                                }
+            // Shell usando SSH
+            this.shell = this.ssh.shell()
+                .then(stream => {
+                    return new Promise((resolve, reject) => {
+                        const watcher = data => {
+                            if (data.includes('scala>')) {
+                                console.debug(`[SPARK - ${this.__user}] Shell rodando`)
+                                stream.off('data', watcher)
+                                resolve(stream)
                             }
-                            stream.write(`${this.__startCommand}\n`)
-                            stream.on('data', watcher)
-                        })
+                        }
+                        stream.write(`${this.__startCommand}\n`)
+                        stream.on('data', watcher)
                     })
-            } else {
-                // Shell usando o prompt de comandos local
-                this.shell = new Promise((resolve, reject) => {
-                    const localShell = spawn(os.platform() === 'win32' ? 'powershell.exe' : 'bash')
-                    const stream = new Duplex()
-                    localShell.on('data', data => stream.emit('data', data))
-
-                    const shellRun = data => {
-                        if (data.includes('>')) {
-                            console.debug(`[SPARK - ${this.__user}] Console rodando`)
-                            stream.off('data', shellRun)
-                            localShell.write('spark-shell\r\n')
-                            stream.on('data', scalaRun)
-                        }
-                    }
-
-                    const scalaRun = data => {
-                        if (data.includes('scala>')) {
-                            console.debug(`[SPARK - ${this.__user}] Shell rodando`)
-                            stream.off('data', scalaRun)
-                            resolve(localShell)
-                        }
-                    }
-
-                    stream.on('data', shellRun)
                 })
-            }
         }
 
         return this.shell
@@ -89,18 +76,9 @@ class SparkSession {
             this.openShell()
         }
 
-        return this.shell.then(shell => {
+        return this.shell.then(stream => {
             console.debug(`[SPARK - ${this.__user}] command> ${command}`)
             return new Promise((resolve, reject) => {
-                let output = '';
-                var stream = shell
-
-                // Tratamento para o shell local
-                if (this.local) {
-                    stream = new Duplex()
-                    shell.on('data', data => stream.emit('data', data))
-                }
-
                 // Verifica se o comando rodou
                 const watcher = data => {
                     const tratado = data.toString().replace(':paste', '')
@@ -138,27 +116,24 @@ class SparkSession {
     closeShell() {
         console.debug(`[SPARK - ${this.__user}] Fechando a conexão`)
         if (this.shell) {
-            if (!this.local) {
-                this.shell.then(stream => {
-                    console.debug(`[SPARK - ${this.__user}] Shell fechado`)
-                    stream.end('exit\n')
-                    stream.close()
-                })
-            } else {
-                this.shell.then(shell => {
-                    shell.write('exit')
-                    shell.kill()
-                    console.debug(`[SPARK - ${this.__user}] Shell fechado`)
-                })
-            }
+            this.shell.then(stream => {
+                console.debug(`[SPARK - ${this.__user}] Shell fechado`)
+                stream.end('exit\n')
+                stream.close()
+            })
             this.shell = undefined
         }
-        if (!this.local) {
-            this.ssh.close().then(() => console.debug(`[SPARK - ${this.__user}] Conexão fechada`))
-        }
+
+        this.ssh.close().then(() => console.debug(`[SPARK - ${this.__user}] Conexão fechada`))
     }
 }
 
 module.exports = {
     SparkSession
 }
+
+const session = new SparkSession()
+
+session.command('val teste = "banana"').then(retorno => {
+    console.log(retorno)
+})
