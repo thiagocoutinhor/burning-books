@@ -1,5 +1,5 @@
 const Ssh = require('ssh2-promise')
-const os = require('os')
+
 // Classe responsável pela conexão e criação de uma nova sessão do spark
 class SparkSession {
 
@@ -50,7 +50,8 @@ class SparkSession {
                 var output = '';
                 // Verifica se o comando rodou
                 const watcher = data => {
-                    const tratado = data.toString().replace(':paste', '')
+                    const tratado = data.toString()
+                        .replace(':paste', '')
                         .replace('// Exiting paste mode, now interpreting.', '')
                         .replace('scala>', '')
                         .trim()
@@ -73,11 +74,11 @@ class SparkSession {
                 }
 
                 // Garantia de nao receber o comando inicial de volta
-                stream.write(`:paste\n${command}\n`)
+                stream.write(`:paste\r\n${command}\r\n`)
                 setTimeout(() => {
                     stream.on('data', watcher)
                     stream.write('\x04')
-                }, 100);
+                }, 300);
             })
         })
     }
