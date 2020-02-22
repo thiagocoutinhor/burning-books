@@ -9,31 +9,6 @@
 
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="/css/login.css"/>
-
-    <style>
-        .ou {
-            text-align: center;
-            color: gray;
-            margin-top: -1.9em;
-        }
-
-        .ou span {
-            background-color: white;
-            padding: 0 5px 0 5px;
-        }
-
-        .local {
-            display: none;
-        }
-    </style>
-
-    <script>
-        $(document).ready(() => {
-            if (location.hostname === 'localhost') {
-                $('.local').show()
-            }
-        })
-    </script>
 </head>
 
 <body>
@@ -52,11 +27,6 @@
 
                 <div>
                     <input type="submit" class="btn btn-primary w-100 mt-3" value="Entrar"/>
-                    <hr class="local"/>
-                    <div class="ou local">
-                        <span>ou</span>
-                    </div>
-                    <input type="submit" class="btn btn-success w-100 mt-2 local" value="Local" formaction="/login/local"/>
                 </div>
             </div>
         </div>
