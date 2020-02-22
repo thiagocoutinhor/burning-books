@@ -1,5 +1,5 @@
 const moment = require('moment')
-const colors = require('colors/safe')
+const colors = require('chalk')
 
 console.old = {
     debug: console.debug,
