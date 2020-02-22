@@ -1,11 +1,13 @@
 const moment = require('moment')
 const colors = require('colors/safe')
 
-const oldDebug = console.debug
-const oldInfo = console.info
-const oldWarn = console.warn
-const oldError = console.error
-const oldLog = console.log
+console.old = {
+    debug: console.debug,
+    info: console.info,
+    warn: console.warn,
+    error: console.error,
+    log: console.log
+}
 
 const levels = ['DEBUG', 'INFO', 'WARN', 'ERROR']
 const logLevel = levels.indexOf(process.env.LOG_LEVEL)
@@ -19,7 +21,7 @@ function debug(mensagem) {
         if (typeof mensagem === "object") {
             mensagem = JSON.stringify(mensagem)
         }
-        oldDebug(colors.gray(`[${getTime()} DEBUG] ${mensagem}`))
+        console.old.debug(colors.gray(`[${getTime()} DEBUG] ${mensagem}`))
     }
 }
 
@@ -28,7 +30,7 @@ function info(mensagem) {
         if (typeof mensagem === "object") {
             mensagem = JSON.stringify(mensagem)
         }
-        oldInfo(colors.blue(`[${getTime()} INFO] ${mensagem}`))
+        console.old.info(colors.blue(`[${getTime()} INFO] ${mensagem}`))
     }
 }
 
@@ -37,16 +39,18 @@ function warn(mensagem) {
         if (typeof mensagem === "object") {
             mensagem = JSON.stringify(mensagem)
         }
-        oldWarn(colors.yellow(`[${getTime()} WARN] ${mensagem}`))
+        console.old.warn(colors.yellow(`[${getTime()} WARN] ${mensagem}`))
     }
 }
 
 function error(mensagem) {
     if (logLevel <= 3) {
         if (typeof mensagem === "object") {
-            mensagem = JSON.stringify(mensagem)
+            console.old.error(colors.red(`[${getTime()} ERROR] ${mensagem}`))
+            console.old.error(colors.red(mensagem))
+        } else {
+            console.old.error(colors.red(`[${getTime()} ERROR] ${mensagem}`))
         }
-        oldError(colors.red(`[${getTime()} ERROR] ${mensagem}`))
     }
 }
 
@@ -54,13 +58,12 @@ function log(mensagem) {
     if (typeof mensagem === "object") {
         mensagem = JSON.stringify(mensagem)
     }
-    oldLog(`[${getTime()}] ${mensagem}`)
+    console.old.log(`[${getTime()}] ${mensagem}`)
 }
 
 console.info = info
 console.error = error
 console.log = log
-console.oldLog = oldLog
 console.debug = debug
 console.warn = warn
 
