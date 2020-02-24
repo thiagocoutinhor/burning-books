@@ -52,7 +52,7 @@ button.button-remove {
 }
 
 .card-text .command-text {
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 .command-block .run-button .spinner-border {
