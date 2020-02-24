@@ -6,25 +6,26 @@ const config = {
     shellOpenTime: 1 * 1000,
     mockRunCommand: (user, comando, stream) => {
         console.log(`[SPARK MOCK - ${user}] Recieved\n${comando}`)
-        
+
+        // Monta o contador de progresso
         const progress = porcentagem => {
             const maxCaracters = 14
             const caracteres = maxCaracters * porcentagem / 100
-            return `[${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}()]`
-            
+            const valores = `${2000 * porcentagem / 100 } / 2000`
+            return `[${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}(${valores})]`
+
         }
 
+        // Envia o contador de progresso a cada segundo
         var progresso = 0
         const timer = setInterval(() => {
-            console.log('teste')
             progresso += 10
+            stream.emit('data', progress(progresso))
             if (progresso >= 100) {
                 clearInterval(timer)
                 stream.emit('data', 'scala>')
-            } else {
-                stream.emit('data', progress(progresso))
             }
-        }, 1000);        
+        }, 1000);
     }
 }
 
@@ -52,10 +53,10 @@ SparkSession.prototype.openShell = function() {
                         .replace('\x04', '')
                     if (data.toString() === '\x04') {
                         config.mockRunCommand(this.__user, comando.trim(), retorno)
-                        comando = ''    
+                        comando = ''
                     }
                 })
-                
+
                 // Retorna o stream
                 resolve(retorno)
             }, config.shellOpenTime) // Abre o shell após cinco segundos
