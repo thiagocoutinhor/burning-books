@@ -1,6 +1,11 @@
 require('dotenv').config() // Carrega as configurações de ambiente
 require('./log') // Substitui as funções base de console por outras mais robustas
 
+// Caso seja um ambiente de teste, moca a conexão com o servidor
+if (process.env.MODE === 'TEST') {
+    require('./api/spark-shell/spark-shell-stub')
+}
+
 process.on('unhandledRejection', error => {
     console.error(error);
 })
