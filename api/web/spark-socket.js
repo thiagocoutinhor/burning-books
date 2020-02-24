@@ -20,11 +20,7 @@ module.exports = socket => {
             socket.shell = graveyard[usuario.login].shell
         } else {
             console.debug(`[IO - ${usuario.login}] Criando uma nova sessão`)
-            if (!usuario.local) {
-                socket.shell = new SparkShell(usuario.login, usuario.password)
-            } else {
-                socket.shell = new SparkShell()
-            }
+            socket.shell = new SparkShell(usuario.login, usuario.password)
         }
         socket.shell.openShell().then(() => {
             socket.emit('spark.ready')
