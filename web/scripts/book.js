@@ -23,12 +23,7 @@ function init() {
     /////////////////////////////////////////////////
     // TODO terminar o teste
     io.on('spark.return.stream', retorno => {
-        const lexer = moo.compile(grammarRetorno)
-
-        lexer.reset(retorno)
-        while (token = lexer.next()) {
-            console.log(token)
-        }
+        returnToHtml(retorno)
     })
     /////////////////////////////////////////////////
 
@@ -79,6 +74,9 @@ function montaCards() {
     commandCards
         .select('div.recibo')
         .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
+
+    commandCards
+        .select('div.recibo div.recibo-texto')
         .html(d => returnToHtml(d.return))
 
     // Remoção dos cards
@@ -110,7 +108,7 @@ function montaCards() {
 
     comandos.append('div')
         .attr('contenteditable', true)
-        .attr('class', (d, i) => `command-text command-${i}`)
+        .attr('class', (d, i) => `command-text`)
         .attr('onkeyup', (d, i) => `editCommand(${i}, this, event)`)
         .html(d => commandToHtml(d.command))
 
@@ -119,7 +117,10 @@ function montaCards() {
         .append('button')
         .attr('class', 'btn btn-primary run-button')
         .attr('onclick', (d, i) => `runCommand(${i})`)
-        .attr('disabled', isRunning)
+
+    if (isRunning) {
+        button.attr('disabled', isRunning)
+    }
 
     button.append('span')
         .attr('class', 'spinner-border spinner-border-sm')
@@ -127,9 +128,15 @@ function montaCards() {
 
     button.append('span').text(' Run!')
 
-    newCommand.append('div')
+    const recibo = newCommand.append('div')
         .attr('class', 'mr-4 ml-4 recibo')
         .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
+
+    recibo.append('div')
+        .attr('class', 'recibo-progresso')
+
+    recibo.append('div')
+        .attr('class', 'recibo-texto')
         .html(d => returnToHtml(d.return))
 }
 
@@ -152,7 +159,7 @@ function removeCommand(index) {
 }
 
 function editCommand(index, div) {
-    book.commands[index].command = htmlToCommand($(`.command-${index}`).html())
+    book.commands[index].command = htmlToCommand($(`.block-${index} .command-text`).html())
 
     // TODO fazer algo aqui para editar o html sem perder a posição do caret
     // const focusNode = document.getSelection().focusNode
@@ -174,31 +181,41 @@ function characterControl(event) {
 
 function commandToHtml(command) {
     const lexer = moo.compile(grammarScala)
-    var retorno  = '<div>'
+    var html  = '<div>'
 
     lexer.reset(command)
     while (token = lexer.next()) {
         if (token.type === 'linha') {
-            retorno += '</div><div>'
+            html += '</div><div>'
         } else {
-            retorno += token.value
+            html += token.value
         }
 
         if (token.type === 'error') {
             console.error(`Erro de parseamento: ${token.value}`)
         }
     }
-    retorno += '</div>'
+    html += '</div>'
 
-    return retorno.replace(/<div><\/div>/g, '<div><br></div>')
+    return html.replace(/<div><\/div>/g, '<div><br></div>')
 }
 
 function returnToHtml(retorno) {
     if (retorno) {
-        return retorno
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\n/g, '<br/>')
+        const lexer = moo.compile(grammarRetorno)
+        var html = ''
+
+        lexer.reset(retorno)
+        while (token = lexer.next()) {
+            if (token.type == 'linha') {
+                html += '<br/>'
+            } else {
+                html += token.value
+            }
+            console.log(token)
+        }
+
+        return html
     }
     return null
 }
