@@ -13,7 +13,6 @@ const config = {
             const caracteres = maxCaracters * porcentagem / 100
             const valores = `${2000 * porcentagem / 100 } / 2000`
             return `[${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}(${valores})]`
-
         }
 
         // Envia o contador de progresso a cada segundo
@@ -23,6 +22,7 @@ const config = {
             stream.emit('data', progress(progresso))
             if (progresso >= 100) {
                 clearInterval(timer)
+                stream.emit('data', comando)
                 stream.emit('data', 'scala>')
             }
         }, 1000);
