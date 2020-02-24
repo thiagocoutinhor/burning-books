@@ -5,7 +5,7 @@ const { PassThrough } = require('stream')
 const config = {
     shellOpenTime: 1 * 1000,
     mockRunCommand: (user, comando, stream) => {
-        console.log(`[SPARK MOCK - ${user}] Recieved\n${comando}`)
+        console.log(`[SPARK MOCK - ${user}] Run recieved\n${comando}`)
 
         // Monta o contador de progresso
         const progress = porcentagem => {
@@ -24,6 +24,7 @@ const config = {
                 clearInterval(timer)
                 stream.emit('data', comando)
                 stream.emit('data', 'scala>')
+                stream.executando = false
             }
         }, 1000);
     }
@@ -42,23 +43,28 @@ SparkSession.prototype.openShell = function() {
         this.shell = new Promise((resolve, reject) => {
             setTimeout(() => {
                 console.log(`[SPARK MOCK - ${this.__user}] Shell rodando`)
-                const retorno = new PassThrough()
-                retorno.close = () => {}
+                const stream = new PassThrough()
+                stream.close = () => {}
 
                 // Monta a chamada para cada usuario
                 var comando = ''
-                retorno.on('data', data => {
-                    comando += data.toString()
-                        .replace(':paste', '')
-                        .replace('\x04', '')
-                    if (data.toString() === '\x04') {
-                        config.mockRunCommand(this.__user, comando.trim(), retorno)
-                        comando = ''
+                stream.on('data', data => {
+                    if (!stream.executando) {
+                        comando += data.toString()
+                            .replace(':paste', '')
+                            .replace('\x04', '')
+
+                        // Control+D marca o envio do comando
+                        if (data.toString() === '\x04') {
+                            stream.executando = true
+                            config.mockRunCommand(this.__user, comando.trim(), stream)
+                            comando = ''
+                        }
                     }
                 })
 
                 // Retorna o stream
-                resolve(retorno)
+                resolve(stream)
             }, config.shellOpenTime) // Abre o shell após cinco segundos
         })
     }
