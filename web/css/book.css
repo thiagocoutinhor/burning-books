@@ -78,6 +78,7 @@ button.button-remove {
     border-top: 0px;
     background-color: antiquewhite;
     padding: 10px;
+    white-space: pre-wrap;
 }
 
 button.new-command {
