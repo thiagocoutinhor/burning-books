@@ -23,7 +23,10 @@ function init() {
     /////////////////////////////////////////////////
     // TODO terminar o teste
     io.on('spark.return.stream', retorno => {
-        returnToHtml(retorno)
+        book.commands[executing].return += retorno
+        const html = returnToHtml(book.commands[executing].return)
+        $(`.block-${executing} .recibo`).html(html)
+        $(`.block-${executing} .recibo`).show()
     })
     /////////////////////////////////////////////////
 
@@ -74,9 +77,6 @@ function montaCards() {
     commandCards
         .select('div.recibo')
         .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
-
-    commandCards
-        .select('div.recibo div.recibo-texto')
         .html(d => returnToHtml(d.return))
 
     // Remoção dos cards
@@ -131,12 +131,6 @@ function montaCards() {
     const recibo = newCommand.append('div')
         .attr('class', 'mr-4 ml-4 recibo')
         .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
-
-    recibo.append('div')
-        .attr('class', 'recibo-progresso')
-
-    recibo.append('div')
-        .attr('class', 'recibo-texto')
         .html(d => returnToHtml(d.return))
 }
 
@@ -179,47 +173,6 @@ function characterControl(event) {
     }
 }
 
-function commandToHtml(command) {
-    const lexer = moo.compile(grammarScala)
-    var html  = '<div>'
-
-    lexer.reset(command)
-    while (token = lexer.next()) {
-        if (token.type === 'linha') {
-            html += '</div><div>'
-        } else {
-            html += token.value
-        }
-
-        if (token.type === 'error') {
-            console.error(`Erro de parseamento: ${token.value}`)
-        }
-    }
-    html += '</div>'
-
-    return html.replace(/<div><\/div>/g, '<div><br></div>')
-}
-
-function returnToHtml(retorno) {
-    if (retorno) {
-        const lexer = moo.compile(grammarRetorno)
-        var html = ''
-
-        lexer.reset(retorno)
-        while (token = lexer.next()) {
-            if (token.type == 'linha') {
-                html += '<br/>'
-            } else {
-                html += token.value
-            }
-            console.log(token)
-        }
-
-        return html
-    }
-    return null
-}
-
 function htmlToCommand(html) {
     return html.replace(/<div[\/]?>/g, '\n')
         .replace(/<[\/]?.*?>/g, '')
@@ -231,7 +184,7 @@ function htmlToCommand(html) {
 function runCommand(index) {
     running(true)
     executing = index
-    book.commands[index].return = undefined
+    book.commands[index].return = ''
     $(`.block-${index}`).addClass('running')
     io.emit('spark.run', book.commands[index].command)
     montaCards()
@@ -241,9 +194,7 @@ function returnCommand(retorno, erro) {
     if (erro) {
         console.error(retorno)
     }
-    book.commands[executing].return = retorno
     $(`.block-${executing}`).removeClass('running')
     executing = null
     running(false)
-    montaCards()
 }

@@ -78,14 +78,11 @@ button.button-remove {
     border-top: 0px;
     background-color: antiquewhite;
     padding: 10px;
+    white-space: pre-wrap;
 }
 
 .recibo .progress {
     background-color: wheat;
-}
-
-.recibo .recibo-texto {
-    white-space: pre-wrap;
 }
 
 button.new-command {
