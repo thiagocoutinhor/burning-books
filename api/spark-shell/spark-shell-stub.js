@@ -16,18 +16,29 @@ const config = {
             return `[${currentStage}:${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}${valores}]`
         }
 
-        // Envia o contador de progresso a cada segundo
-        var progresso = 0
-        const timer = setInterval(() => {
-            progresso += 10
-            stream.emit('data', progress(progresso))
-            if (progresso >= 100) {
-                clearInterval(timer)
-                stream.emit('data', comando)
-                stream.emit('data', 'scala>')
-                stream.executando = false
-            }
-        }, 1000);
+        // Quantos contadores e em que intervalo enviar
+        const stages = [
+            { step: 10, progresso: 0 },
+            { step: 15, progresso: 0 }
+        ]
+
+        // Envia os contadores de progresso a cada segundo
+        var finalizado = 0
+        stages.forEach((stage, index) => {
+            const timer = setInterval(() => {
+                stage.progresso += stage.step
+                stream.emit('data', progress(stage.progresso, index))
+                if (stage.progresso >= 100) {
+                    finalizado++
+                    clearInterval(timer)
+                    if (finalizado == stages.length) {
+                        stream.emit('data', comando)
+                        stream.emit('data', 'scala>')
+                        stream.executando = false
+                    }
+                }
+            }, 1000);
+        })
     }
 }
 
