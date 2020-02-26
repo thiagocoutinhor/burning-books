@@ -1,8 +1,11 @@
 const grammarRetorno = {
+    tabela: /^\+[-+]+\+$/,
+    colunas: /^|.*|$/,
+    progress: /\[Stage \d+:=*>\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
     linha: { match: /\n/, lineBreaks: true },
-    header: /\+[-+]+\+/,
-    progress: /\[=*>\s*\(\d+?\s?\/\s?\d+?\)\]/,
-    texto: /.+$/,
+    espaco: { match: /\s+/, lineBreaks: true },
+    numero: /\d+[^a-zA-Z)]/,
+    palavra: /[a-zA-Z0-9"'!@#$%&*()-_+=[\]{}^~/?:;.,><|\\]+/,
     error: moo.error
 }
 
