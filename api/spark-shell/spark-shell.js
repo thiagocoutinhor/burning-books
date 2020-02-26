@@ -47,13 +47,14 @@ class SparkSession {
         return this.openShell().then(stream => {
             console.debug(`[SPARK - ${this.__user}] command> ${command}`)
             return new Promise((resolve, reject) => {
-                var output = '';
+                var output = ''
                 // Verifica se o comando rodou
                 const watcher = data => {
                     const tratado = data.toString()
                         .replace(':paste', '')
                         .replace('// Exiting paste mode, now interpreting.', '')
                         .replace('scala>', '')
+                        .replace('\x04', '')
                         .trim()
 
                     if (outputStream && tratado != '') {
