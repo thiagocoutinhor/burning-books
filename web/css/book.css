@@ -52,7 +52,8 @@ button.button-remove {
 }
 
 .card-text .command-text {
-    white-space: pre-wrap;
+    white-space: pre;
+    overflow-y: auto;
 }
 
 .command-block .run-button {
@@ -87,7 +88,8 @@ button.button-remove {
     border-top: 0px;
     background-color: antiquewhite;
     padding: 10px;
-    white-space: pre-wrap;
+    white-space: pre;
+    overflow-x: auto;
 }
 
 .recibo .progress {
