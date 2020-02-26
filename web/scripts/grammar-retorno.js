@@ -1,6 +1,6 @@
 const grammarRetorno = {
     tabela: /^\+[-+]+\+$/,
-    colunas: /^|.*|$/,
+    colunas: /^\|.*\|$/,
     progress: /\[Stage \d+:=*>\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
     linha: { match: /\n/, lineBreaks: true },
     espaco: { match: /\s+/, lineBreaks: true },
@@ -15,14 +15,14 @@ function returnToHtml(retorno) {
         var html = ''
 
         lexer.reset(retorno)
-        while (token = lexer.next()) {
+        Array.from(lexer).forEach(token => {
             if (token.type == 'linha') {
                 html += '<br/>'
             } else {
                 html += token.value
             }
             console.log(token)
-        }
+        })
 
         return html
     }
