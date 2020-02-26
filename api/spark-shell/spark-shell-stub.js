@@ -8,11 +8,12 @@ const config = {
         console.log(`[SPARK MOCK - ${user}] Run recieved\n${comando}`)
 
         // Monta o contador de progresso
-        const progress = porcentagem => {
+        const progress = (porcentagem, stage) => {
             const maxCaracters = 14
             const caracteres = maxCaracters * porcentagem / 100
-            const valores = `${2000 * porcentagem / 100 } / 2000`
-            return `[${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}(${valores})]`
+            const valores = `(${2000 * porcentagem / 100 } + 0) / 2000`
+            const currentStage = `Stage ${stage ? stage : '0'}`
+            return `[${currentStage}:${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}${valores}]`
         }
 
         // Envia o contador de progresso a cada segundo
