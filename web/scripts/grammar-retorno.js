@@ -43,7 +43,12 @@ function returnToHtml(retorno) {
                 // Todo o restante vira o texto
                 html += token.text
             }
-            console.log(token)
+
+            // Envia uma mensagem de erro de parsamento nos erros
+            // mesmo os imprimindo na tela
+            if (token.type === 'error') {
+                console.error(`Erro de parseamento: ${token.text}`)
+            }
         })
 
         // Acrescenta as barras de progresso no topo

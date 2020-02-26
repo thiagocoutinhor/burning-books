@@ -28,13 +28,17 @@ function commandToHtml(command) {
     lexer.reset(command)
     Array.from(lexer).forEach(token => {
         if (token.type === 'linha') {
+            // Quebras de linha
             html += '</div><div>'
         } else {
-            html += token.value
+            // Todo o resto tem o texto impresso como é
+            html += token.text
         }
 
+        // Envia uma mensagem de erro de parsamento nos erros
+        // mesmo os imprimindo na tela
         if (token.type === 'error') {
-            console.error(`Erro de parseamento: ${token.value}`)
+            console.error(`Erro de parseamento: ${token.text}`)
         }
     })
     html += '</div>'
