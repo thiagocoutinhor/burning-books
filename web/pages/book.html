@@ -5,11 +5,13 @@
 
     <script src="/script/io.js"></script>
     <script src="/script/jquery.js"></script>
+    <script src="/script/popper.js"></script>
     <script src="/script/bootstrap.js"></script>
     <script src="/script/d3.js"></script>
     <script src="/script/lexer.js"></script>
     <script src="/script/grammar-scala.js"></script>
     <script src="/script/grammar-retorno.js"></script>
+    <script src="/script/font-awesome.js"></script>
     <script src="/script/book.js"></script>
 
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
@@ -35,7 +37,14 @@
                 <div class="card-body">
                     <div class="card-title d-flex justify-content-between">
                         <span class="bloco">[Bloco 0]</span>
-                        <button onclick="removeCommand(0)" class="btn btn-danger button-remove">x</button>
+                        <div class="btn-group dropleft">
+                            <button type="button" class="btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="#" onclick="removeCommand(0)">Remover</a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="card-text">

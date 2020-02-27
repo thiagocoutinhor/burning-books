@@ -22,8 +22,8 @@
   "author": "Thiago Coutinho",
   "license": "ISC",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.12.1",
     "bootstrap": "^4.4.1",
-    "bootstrap-icons": "^1.0.0-alpha2",
     "chalk": "^3.0.0",
     "d3": "^5.15.0",
     "dotenv": "^8.2.0",

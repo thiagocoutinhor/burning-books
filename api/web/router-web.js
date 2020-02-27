@@ -10,6 +10,8 @@ scriptRouter.use('/bootstrap.js', express.static('./node_modules/bootstrap/dist/
 scriptRouter.use('/jquery.js', express.static('./node_modules/jquery/dist/jquery.min.js'))
 scriptRouter.use('/d3.js', express.static('./node_modules/d3/dist/d3.min.js'))
 scriptRouter.use('/lexer.js', express.static('./node_modules/moo/moo.js'))
+scriptRouter.use('/font-awesome.js', express.static('./node_modules/@fortawesome/fontawesome-free/js/all.min.js'))
+scriptRouter.use('/popper.js', express.static('./node_modules/popper.js/dist/umd/popper.min.js'))
 
 cssRouter.use('/', express.static('./web/css'))
 cssRouter.use('/bootstrap.css', express.static('./node_modules/bootstrap/dist/css/bootstrap.min.css'))

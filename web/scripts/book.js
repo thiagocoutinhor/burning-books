@@ -98,10 +98,18 @@ function montaCards() {
     titulo.append('span')
         .text((d, i) => `[Bloco ${i}]`)
 
-    titulo.append('button')
-        .text('x')
-        .attr('onclick', (d, i) => `removeCommand(${i})`)
-        .attr('class', 'btn btn-danger button-remove')
+    titulo.append('div')
+        .attr('class', 'btn-group dropleft')
+        .html((d, i) => `
+            <button type="button" class="btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#" onclick="removeCommand(${i})">Remover</a>
+            </div>
+        `)
+
+
 
     const comandos = newCard.append('div')
         .attr('class', 'card-text')
