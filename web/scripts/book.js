@@ -126,7 +126,9 @@ function montaCards() {
         .attr('class', 'spinner-border spinner-border-sm')
         .attr('role', 'status')
 
-    button.append('span').text(' Run!')
+    button.append('span')
+        .attr('class', 'run-text')
+        .text('Run!')
 
     const recibo = newCommand.append('div')
         .attr('class', 'mr-4 ml-4 recibo')
