@@ -20,15 +20,12 @@ function init() {
         running(false)
     })
 
-    /////////////////////////////////////////////////
-    // TODO terminar o teste
     io.on('spark.return.stream', retorno => {
         book.commands[executing].return += retorno
         const html = returnToHtml(book.commands[executing].return)
         $(`.block-${executing} .recibo`).html(html)
         $(`.block-${executing} .recibo`).show()
     })
-    /////////////////////////////////////////////////
 
     io.on('spark.return', (retorno) => {
         returnCommand(retorno)
@@ -105,7 +102,14 @@ function montaCards() {
                 <i class="fas fa-ellipsis-v"></i>
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#" onclick="removeCommand(${i})">Remover</a>
+                <a class="dropdown-item" href="#" onclick="copyCommand(${i})">
+                    <i class="fa fa-clone"></i>
+                    Copiar
+                </a>
+                <a class="dropdown-item" href="#" onclick="removeCommand(${i})">
+                    <i class="fa fa-trash"></i>
+                    Remover
+                </a>
             </div>
         `)
 
@@ -160,6 +164,16 @@ function newCommand() {
 function removeCommand(index) {
     book.commands.splice(index, 1)
     montaCards()
+}
+
+function copyCommand(index) {
+    const command = `// BLOCK ${index}\n${book.commands[index].command}`.trim()
+    navigator.clipboard.writeText(command)
+}
+
+function copyAllCommands() {
+    const commands = book.commands.map((command, index) => `// BLOCK ${index}\n${book.commands[index].command}`.trim())
+    navigator.clipboard.writeText(commands.join('\n\n'))
 }
 
 function editCommand(index, div) {

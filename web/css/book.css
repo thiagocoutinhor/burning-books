@@ -2,33 +2,37 @@ body {
     background-color: darkslategray
 }
 
-.titulo {
+.navbar {
     background-color: rgb(88, 131, 131);
-    font-weight: bold;
     color: white;
 }
 
-div.connection-status {
-    border: 1px solid white;
-    width: 15px;
-    height: 15px;
-    border-radius: 5px;
+.navbar .titulo {
+    font-weight: bold;
 }
 
-div.connection-status.connecting {
-    background-color: yellow;
+.navbar .nav-button {
+    cursor: pointer;
+}
+
+div.connection-status.connecting .icon {
+    color: yellow;
     animation: connecting 2s;
     animation-iteration-count: infinite;
 }
 
+div.connection-status.connecting::before {
+    content: "Connecting...";
+}
+
 @keyframes connecting {
-    0% { background-color: yellow }
-    50% { background-color: yellowgreen }
-    100% { background-color: yellow }
+    0% { color: yellow }
+    50% { color: chartreuse }
+    100% { color: yellow }
 }
 
 div.connection-status.connected {
-    background-color: green;
+    color: chartreuse;
 }
 
 .command-block .card {
@@ -42,11 +46,12 @@ div.connection-status.connected {
     border-bottom: 1px solid rgb(216, 216, 216);
 }
 
-.command-block button.button-remove {
-    width: 20px;
-    height: 20px;
-    padding: 0px;
-    font-size: 80%;
+.command-block .card-title .dropdown-menu {
+    font-size: 100%;
+}
+
+.command-block .card-title .dropdown-menu svg {
+    margin-right: 5px;
 }
 
 .command-block .card-text {
