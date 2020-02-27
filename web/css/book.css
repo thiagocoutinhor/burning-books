@@ -63,11 +63,6 @@ div.connection-status.connected {
     overflow-y: auto;
 }
 
-.command-block .run-button {
-    width: 58px;
-    height: 38px;
-}
-
 .command-block .run-button .spinner-border {
     display: none;
 }

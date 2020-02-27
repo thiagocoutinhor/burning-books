@@ -140,7 +140,7 @@ function montaCards() {
 
     button.append('span')
         .attr('class', 'run-text')
-        .text('Run!')
+        .html('<i class="fa fa-play">')
 
     const recibo = newCommand.append('div')
         .attr('class', 'mr-4 ml-4 recibo')
