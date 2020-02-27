@@ -31,27 +31,29 @@ div.connection-status.connected {
     background-color: green;
 }
 
-.card {
+.command-block .card {
     box-shadow: 1px 1px 6px black;
 }
 
-.card-title {
+.command-block .card-title {
     font-size: 80%;
-    font-family: Arial, Helvetica, sans-serif
+    font-family: Arial, Helvetica, sans-serif;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgb(216, 216, 216);
 }
 
-button.button-remove {
+.command-block button.button-remove {
     width: 20px;
     height: 20px;
     padding: 0px;
     font-size: 80%;
 }
 
-.card-text {
+.command-block .card-text {
     font-family: 'Courier New', Courier, monospace;
 }
 
-.card-text .command-text {
+.command-block .card-text .command-text {
     white-space: pre;
     overflow-y: auto;
 }
