@@ -6,6 +6,7 @@ if (process.env.MODE === 'TEST') {
     require('./api/spark-shell/spark-shell-stub')
 }
 
+// Trata as promessas não tratadas com um print
 process.on('unhandledRejection', error => {
     console.error(error);
 })
@@ -17,16 +18,35 @@ const io = require('socket.io')(http)
 const sockets = require('./api/web/spark-socket')
 const expressSession = require('express-session')
 const ioSession = require('express-socket.io-session')
+const MongoStore = require('connect-mongo')(expressSession)
+const mongoose = require('mongoose');
 
 const port = process.env.PORT
+
+mongoose.connect(process.env.MONGO, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    dbName: 'sparkbook',
+    auth: {
+        user: process.env.MONGO_USER,
+        password: process.env.MONGO_PASSWORD
+    }
+}).then(() => {
+    console.info('Conectado ao mongo')
+})
 
 const session = expressSession({
     resave: false,
     saveUninitialized: true,
-    secret: 'burning-book',
+    secret: 'sparkbook',
     cookie: {
-        sameSite: true
-    }
+        sameSite: true,
+        maxAge: 30 * 24 * 60 * 60 * 1000 // Trinta dias de conexão
+    },
+    store: new MongoStore({
+        mongooseConnection: mongoose.connection,
+        collection: 'sparkbook-sessions'
+    })
 })
 
 app.use(express.json())
