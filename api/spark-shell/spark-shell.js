@@ -99,8 +99,6 @@ class SparkSession {
             })
             this.shell = undefined
         }
-
-        // this.ssh.close().then(() => console.debug(`[SPARK - ${this.__user}] Conexão fechada`))
     }
 }
 
