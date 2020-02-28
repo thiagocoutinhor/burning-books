@@ -20,7 +20,6 @@
     <script>
         var io = io();
         $(document).ready(function() {
-            $('[data-toggle="tooltip"]').tooltip()
             init();
         })
     </script>
@@ -67,8 +66,8 @@
                     </div>
 
                     <div class="buttons text-right mt-2">
-                        <button class="btn btn-primary run-button" disabled onclick="runCommand(0)">
-                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        <button class="btn btn-primary run-button" disabled onclick="runCommand(0)" data-toggle="tooltip" data-placement="bottom" title="Executar">
+                            <span class="spinner-border spinner-border-sm"></span>
                             <span class="run-text"><i class="fa fa-play"></i>
                             </span>
                         </button>

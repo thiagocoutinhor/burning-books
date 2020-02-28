@@ -21,14 +21,10 @@ div.connection-status.connecting .icon {
     animation-iteration-count: infinite;
 }
 
-div.connection-status.connecting::before {
-    content: "Connecting...";
-}
-
 @keyframes connecting {
-    0% { color: yellow }
+    0% { color: palegoldenrod }
     50% { color: chartreuse }
-    100% { color: yellow }
+    100% { color: palegoldenrod }
 }
 
 div.connection-status.connected {
@@ -44,6 +40,10 @@ div.connection-status.connected {
     font-family: Arial, Helvetica, sans-serif;
     padding-bottom: 5px;
     border-bottom: 1px solid rgb(216, 216, 216);
+}
+
+.command-block.running .card-title {
+    border-bottom: 1px solid rgb(170, 170, 170);
 }
 
 .command-block .card-title .dropdown-menu {

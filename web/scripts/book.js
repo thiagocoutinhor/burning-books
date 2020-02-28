@@ -2,7 +2,14 @@ var book = null
 var executing = null
 var isRunning = true
 
+const defaultTooltipDelay = { show: 600, hide: 0 }
+
 function init() {
+    // Prepara as tooltips
+    $('[data-toggle="tooltip"]').tooltip({
+        delay: defaultTooltipDelay
+    })
+
     // Carrega o book atual
     preparabook()
 
@@ -12,11 +19,17 @@ function init() {
         location.reload()
     })
 
+    var connectionStatus = 'Conectando'
+    $('div.connection-status').tooltip({
+        title: () => connectionStatus,
+        delay: defaultTooltipDelay
+    })
     io.on('spark.ready', () => {
         console.debug('Console pronto para comandos')
         $('div.connection-status')
             .removeClass('connecting')
             .addClass('connected')
+        connectionStatus = 'Conectado'
         running(false)
     })
 
@@ -73,7 +86,7 @@ function montaCards() {
 
     commandCards
         .select('div.recibo')
-        .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
+        .style('display', d => d.return ? 'inherited' : 'none')
         .html(d => returnToHtml(d.return))
 
     // Remoção dos cards
@@ -129,6 +142,13 @@ function montaCards() {
         .append('button')
         .attr('class', 'btn btn-primary run-button')
         .attr('onclick', (d, i) => `runCommand(${i})`)
+        .call(botao => {
+            $(botao.node()).tooltip({
+                delay: defaultTooltipDelay,
+                title: 'Executar',
+                placement: 'bottom'
+            })
+        })
 
     if (isRunning) {
         button.attr('disabled', isRunning)
@@ -142,9 +162,9 @@ function montaCards() {
         .attr('class', 'run-text')
         .html('<i class="fa fa-play">')
 
-    const recibo = newCommand.append('div')
+    newCommand.append('div')
         .attr('class', 'mr-4 ml-4 recibo')
-        .attr('style', d => `display: ${d.return ? 'inherited' : 'none'}`)
+        .style('display', d => d.return ? 'inherited' : 'none')
         .html(d => returnToHtml(d.return))
 }
 
@@ -206,6 +226,7 @@ function htmlToCommand(html) {
 }
 
 function runCommand(index) {
+    $(`.block-${index} .run-button`).tooltip('hide')
     running(true)
     executing = index
     book.commands[index].return = ''
