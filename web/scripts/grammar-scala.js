@@ -1,24 +1,17 @@
 const grammarScala = {
-    comparation: [
-        '==', '>', '<', '<=', '>='
-    ],
-    operation: [
-        '+', '*', '/', '-', '='
-    ],
-    definicaoTipo: ':',
+    operacao: /[!@#$%&*-+=/?:><.]/,
     parenentese: /[()]/,
-    ponto: '.',
-    string: /s?".*?"/,
+    texto: /s?".*?"/,
     linha: { match: /\n/, lineBreaks: true },
     espaco: { match: /\s+/, lineBreaks: true },
     numero: /\d+[^a-zA-Z)]/,
-    palavra: { match: /[a-zA-Z][a-zA-Z0-9_]+/, type: moo.keywords({
-        keyword: [
+    palavra: { match: /[a-zA-Z][a-zA-Z0-9_]*/, type: moo.keywords({
+        protegida: [
             'val', 'var', 'for', 'while', 'if', 'else', 'import', 'new', 'null', 'def'
         ]
     })},
-    commandEnd: /;/,
-    error: moo.error
+    fimComando: /;/,
+    erro: moo.error
 }
 
 function commandToHtml(command) {
@@ -37,7 +30,7 @@ function commandToHtml(command) {
 
         // Envia uma mensagem de erro de parsamento nos erros
         // mesmo os imprimindo na tela
-        if (token.type === 'error') {
+        if (token.type === 'erro') {
             console.error(`Erro de parseamento: ${token.text}`)
         }
     })
