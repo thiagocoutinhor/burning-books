@@ -19,18 +19,26 @@ function init() {
         location.reload()
     })
 
-    var connectionStatus = 'Conectando'
-    $('div.connection-status').tooltip({
-        title: () => connectionStatus,
-        delay: defaultTooltipDelay
-    })
     io.on('spark.ready', () => {
         console.debug('Console pronto para comandos')
-        $('div.connection-status')
+        $('.connection-status')
             .removeClass('connecting')
             .addClass('connected')
-        connectionStatus = 'Conectado'
+
+        book.commands.forEach(retorno => retorno.command = '')
+        montaCards()
+
+        $('.connection-status .connection-icon').attr('data-toggle', 'dropdown')
+        $('.connection-status .connection-icon').dropdown()
+
         running(false)
+    })
+
+    io.on('spark.connect.error', erro => {
+        $('.connection-status')
+            .removeClass('connecting')
+            .addClass('disconnected')
+        console.error(erro)
     })
 
     io.on('spark.return.stream', retorno => {
@@ -40,18 +48,45 @@ function init() {
         $(`.block-${executing} .recibo`).show()
     })
 
+    io.on('spark.return.error', (erro) => {
+        returnCommand(erro, true)
+    })
+
     io.on('spark.return', (retorno) => {
         returnCommand(retorno)
     })
 
-    io.on('spark.error', (erro) => {
-        returnCommand(erro, true)
+    io.on('spark.disconnected', () => {
+        running(true)
+        $('.connection-status')
+            .removeClass('connected')
+            .removeClass('connecting')
+            .addClass('disconnected')
+
+        $('.connection-status .connection-icon').removeAttr('data-toggle')
+        $('.connection-status .connection-icon').dropdown('hide')
+        $('.connection-status .connection-icon').dropdown('dispose')
     })
 
     running(true)
-    io.emit('spark.connect')
-
     montaCards()
+}
+
+function connect() {
+    $('.connection-status')
+        .removeClass('connected')
+        .removeClass('disconnected')
+        .addClass('connecting')
+
+    io.emit('spark.connect', {
+        executors: parseInt($('#executores').val()),
+        cores: parseInt($('#nucleos').val()),
+        memory: parseInt($('#memoria').val())
+    })
+}
+
+function disconnect() {
+    io.emit('spark.disconnect')
 }
 
 function preparabook() {
@@ -111,10 +146,10 @@ function montaCards() {
     titulo.append('div')
         .attr('class', 'btn-group dropleft')
         .html((d, i) => `
-            <button type="button" class="btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button type="button" class="btn" data-toggle="dropdown">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <div class="dropdown-menu">
                 <a class="dropdown-item" href="#" onclick="copyCommand(${i})">
                     <i class="fa fa-clone"></i>
                     Copiar

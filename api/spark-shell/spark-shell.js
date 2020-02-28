@@ -3,8 +3,13 @@ const Ssh = require('ssh2-promise')
 // Classe responsável pela conexão e criação de uma nova sessão do spark
 class SparkSession {
 
-    constructor(user, password) {
-        this.__startCommand = `spark-shell ${process.env.SPARK_QUEUE ? '--queue ' + process.env.SPARK_QUEUE : ''}`
+    constructor(user, password, configuration) {
+        this.__queue = process.env.SPARK_QUEUE ? `--queue ${process.env.SPARK_QUEUE}` : ''
+        this.__executors = configuration && configuration.executors ? `--num-executors ${configuration.executors}` : ''
+        this.__cores = configuration && configuration.cores ? `--executor-cores ${configuration.cores}` : ''
+        this.__memory = configuration && configuration.memory? `--executor-memory ${configuration.memory}G` : ''
+        this.__startCommand = `spark-shell ${this.__queue} ${this.__executors} ${this.__cores} ${this.__memory}`
+        console.debug(this.__startCommand)
         this.__user = user
         this.ssh = new Ssh({
             host: process.env.HOST,
@@ -95,7 +100,7 @@ class SparkSession {
             this.shell = undefined
         }
 
-        this.ssh.close().then(() => console.debug(`[SPARK - ${this.__user}] Conexão fechada`))
+        // this.ssh.close().then(() => console.debug(`[SPARK - ${this.__user}] Conexão fechada`))
     }
 }
 

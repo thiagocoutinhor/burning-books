@@ -15,10 +15,20 @@ body {
     cursor: pointer;
 }
 
-div.connection-status.connecting .icon {
+.navbar .connection-status {
+    background-color: #343a40;
+    padding: 7px;
+    border-radius: 5px;
+}
+
+.navbar .connection-status.connecting .connection-icon {
     color: yellow;
     animation: connecting 2s;
     animation-iteration-count: infinite;
+}
+
+.navbar .connection-status.connecting .connection-icon::after {
+    content: 'Conectando';
 }
 
 @keyframes connecting {
@@ -27,8 +37,34 @@ div.connection-status.connecting .icon {
     100% { color: palegoldenrod }
 }
 
-div.connection-status.connected {
+.navbar .connection-status.connected .connection-icon {
     color: chartreuse;
+}
+
+.navbar .connection-status.connected .connection-icon::after {
+    content: 'Conectado';
+}
+
+.navbar .connection-status.disconnected .connection-icon {
+    color: red;
+}
+
+.navbar .connection-status.disconnected .connection-icon::after {
+    content: 'Disconectado';
+}
+
+.navbar .connection-status input {
+    width: 4em;
+    text-align: center;
+}
+
+.navbar .connection-status.disconnected .connect-config {
+    display: inherit;
+}
+
+.navbar .connection-status.connected .connect-config,
+.navbar .connection-status.connecting .connect-config {
+    display: none;
 }
 
 .command-block .card {
