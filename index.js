@@ -10,7 +10,8 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
-const sockets = require('./api/web/spark-socket')
+const bookSocket = require('./api/web/spark-socket')
+const listSocket = require('./api/web/list-socket')
 const expressSession = require('express-session')
 const ioSession = require('express-socket.io-session')
 const MongoStore = require('connect-mongo')(expressSession)
@@ -57,8 +58,20 @@ app.use('/', require('./api/web/router-web'))
 
 io.use(ioSession(session))
 io.on('connect', socket => {
-    sockets(socket)
+    // Controle de acesso
+    console.log('base')
+    if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.usuario) {
+        console.warn('Login sem usuário detectado. Enviando comando de reload.')
+        socket.emit('reload')
+        return
+    }
 })
+io.of('/book')
+    .use(ioSession(session))
+    .on('connect', socket => bookSocket(socket))
+io.of('/list')
+    .use(ioSession(session))
+    .on('connect', socket => listSocket(socket))
 
 http.listen(port, () => {
     console.info(`Listening on port ${port}`)

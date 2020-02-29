@@ -47,9 +47,9 @@ router.post('/login', (req, res) => {
 
 router.get('/', (req, res) => {
     if (req.session.usuario) {
-        res.sendFile('book.html', { root: 'web/pages/' })
-    } else {
         res.sendFile('book-list.html', { root: 'web/pages/' })
+    } else {
+        res.sendFile('login.html', { root: 'web/pages/' })
     }
 })
 

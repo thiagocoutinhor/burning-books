@@ -3,13 +3,7 @@ const Stream = require('stream').PassThrough
 
 module.exports = socket => {
     const usuario = socket.handshake.session.usuario
-
-    if (!usuario) {
-        console.warn('Login sem usuário detectado. Enviando comando de reload.')
-        socket.emit('reload')
-        return
-    }
-    console.debug(`[IO - ${usuario.login}] Conectou`)
+    console.debug(`[IO SPARK - ${usuario.login}] Conectou`)
 
     if (!socket.shell) {
         socket.emit('spark.disconnected')
