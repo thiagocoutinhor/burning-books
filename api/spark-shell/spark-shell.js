@@ -105,3 +105,8 @@ class SparkSession {
 module.exports = {
     SparkSession
 }
+
+// Caso seja um ambiente de teste, moca a conexão com o servidor
+if (process.env.MODE === 'TEST') {
+    require('./spark-shell-stub')
+}
