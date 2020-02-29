@@ -1,11 +1,6 @@
 require('dotenv').config() // Carrega as configurações de ambiente
 require('./log') // Substitui as funções base de console por outras mais robustas
 
-// Caso seja um ambiente de teste, moca a conexão com o servidor
-if (process.env.MODE === 'TEST') {
-    require('./api/spark-shell/spark-shell-stub')
-}
-
 // Trata as promessas não tratadas com um print
 process.on('unhandledRejection', error => {
     console.error(error);
@@ -37,7 +32,7 @@ mongoose.connect(process.env.MONGO, {
 
 const session = expressSession({
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     secret: 'sparkbook',
     cookie: {
         sameSite: true,
@@ -45,20 +40,19 @@ const session = expressSession({
     },
     store: new MongoStore({
         mongooseConnection: mongoose.connection,
-        collection: 'sparkbook-sessions'
+        collection: 'sessions'
     })
 })
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
 app.use(session)
-
 app.use((req, res, next) => {
     req.io = io
     next()
 })
 
+app.use('/api', require('./api/router-api'))
 app.use('/', require('./api/web/router-web'))
 
 io.use(ioSession(session))
