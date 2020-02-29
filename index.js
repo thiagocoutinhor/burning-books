@@ -59,7 +59,6 @@ app.use('/', require('./api/web/router-web'))
 io.use(ioSession(session))
 io.on('connect', socket => {
     // Controle de acesso
-    console.log('base')
     if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.usuario) {
         console.warn('Login sem usuário detectado. Enviando comando de reload.')
         socket.emit('reload')
