@@ -10,7 +10,7 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
-const bookSocket = require('./api/web/spark-socket')
+const sparkSocket = require('./api/web/spark-socket')
 const listSocket = require('./api/web/list-socket')
 const expressSession = require('express-session')
 const ioSession = require('express-socket.io-session')
@@ -65,9 +65,10 @@ io.on('connect', socket => {
         return
     }
 })
-io.of('/book')
+io.of('/spark')
     .use(ioSession(session))
-    .on('connect', socket => bookSocket(socket))
+    .on('connect', socket => sparkSocket(socket))
+
 io.of('/list')
     .use(ioSession(session))
     .on('connect', socket => listSocket(socket))
