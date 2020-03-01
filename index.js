@@ -10,8 +10,8 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
-const sparkSocket = require('./api/web/spark-socket')
-const listSocket = require('./api/web/list-socket')
+const sparkSocket = require('./api/socket/spark-socket')
+const listSocket = require('./api/socket/list-socket')
 const expressSession = require('express-session')
 const ioSession = require('express-socket.io-session')
 const MongoStore = require('connect-mongo')(expressSession)
@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 })
 
 app.use('/api', require('./api/router-api'))
-app.use('/', require('./api/web/router-web'))
+app.use('/', require('./web/router-web'))
 
 io.use(ioSession(session))
 io.on('connect', socket => {
@@ -65,6 +65,7 @@ io.on('connect', socket => {
         return
     }
 })
+
 io.of('/spark')
     .use(ioSession(session))
     .on('connect', socket => sparkSocket(socket))

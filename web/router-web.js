@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const scriptRouter = express.Router()
 const cssRouter = express.Router()
-const SparkSession = require('../spark-shell/spark-shell').SparkSession
+const SparkSession = require('../api/spark-shell/spark-shell').SparkSession
 
 scriptRouter.use('/', express.static('./web/scripts'))
 scriptRouter.use('/io.js', express.static('./node_modules/socket.io-client/dist/socket.io.slim.js'))
