@@ -5,6 +5,11 @@ function init() {
         delay: defaultTooltipDelay
     })
 
+    io.on('reload', () => {
+        console.debug('Recarregando a pedido da api')
+        location.reload()
+    })
+
     io.on('list', books => {
         montaLista(books)
     })
