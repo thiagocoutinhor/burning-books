@@ -6,20 +6,18 @@ const defaultTooltipDelay = { show: 600, hide: 0 }
 
 function init() {
     // Prepara as tooltips
-    $('[data-toggle="tooltip"]').tooltip({
-        delay: defaultTooltipDelay
-    })
+    $('[data-toggle="tooltip"]').tooltip({ delay: defaultTooltipDelay })
 
     // Carrega o book atual
     preparabook()
 
     // Prepara para receber as mensagens do servidor
-    io.on('reload', () => {
+    spark.on('reload', () => {
         console.debug('Recarregando a pedido da api')
         location.reload()
     })
 
-    io.on('spark.ready', () => {
+    spark.on('ready', () => {
         console.debug('Console pronto para comandos')
         $('.connection-status')
             .removeClass('connecting')
@@ -34,29 +32,29 @@ function init() {
         running(false)
     })
 
-    io.on('spark.connect.error', erro => {
+    spark.on('connect.error', erro => {
         $('.connection-status')
             .removeClass('connecting')
             .addClass('disconnected')
         console.error(erro)
     })
 
-    io.on('spark.return.stream', retorno => {
+    spark.on('return.stream', retorno => {
         book.commands[executing].return += retorno
         const html = returnToHtml(book.commands[executing].return)
         $(`.block-${executing} .recibo`).html(html)
         $(`.block-${executing} .recibo`).show()
     })
 
-    io.on('spark.return.error', (erro) => {
+    spark.on('return.error', (erro) => {
         returnCommand(erro, true)
     })
 
-    io.on('spark.return', (retorno) => {
+    spark.on('return', (retorno) => {
         returnCommand(retorno)
     })
 
-    io.on('spark.disconnected', () => {
+    spark.on('disconnected', () => {
         running(true)
         $('.connection-status')
             .removeClass('connected')
@@ -66,6 +64,12 @@ function init() {
         $('.connection-status .connection-icon').removeAttr('data-toggle')
         $('.connection-status .connection-icon').dropdown('hide')
         $('.connection-status .connection-icon').dropdown('dispose')
+    })
+
+    // Mensagens do book
+    bookSocket.on('exit', () => {
+        console.debug('Saindo a pedido da api')
+        location.href = '/'
     })
 
     running(true)
@@ -78,7 +82,7 @@ function connect() {
         .removeClass('disconnected')
         .addClass('connecting')
 
-    io.emit('spark.connect', {
+    spark.emit('open', {
         executors: parseInt($('#executores').val()),
         cores: parseInt($('#nucleos').val()),
         memory: parseInt($('#memoria').val())
@@ -86,7 +90,7 @@ function connect() {
 }
 
 function disconnect() {
-    io.emit('spark.disconnect')
+    spark.emit('close')
 }
 
 function preparabook() {
@@ -264,7 +268,7 @@ function runCommand(index) {
     executing = index
     book.commands[index].return = ''
     $(`.block-${index}`).addClass('running')
-    io.emit('spark.run', book.commands[index].command)
+    spark.emit('run', book.commands[index].command)
     montaCards()
 }
 

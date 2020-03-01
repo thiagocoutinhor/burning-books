@@ -6,51 +6,51 @@ module.exports = socket => {
     console.debug(`[IO SPARK - ${usuario.login}] Conectou`)
 
     if (!socket.shell) {
-        socket.emit('spark.disconnected')
+        socket.emit('disconnected')
     }
 
-    socket.on('spark.connect', config => {
-        console.debug(`[IO - ${usuario.login}] Criando uma nova sessão`)
+    socket.on('open', config => {
+        console.debug(`[IO SPARK - ${usuario.login}] Criando uma nova sessão`)
         socket.shell = new SparkShell(usuario.login, usuario.senha, config)
         socket.shell.openShell().then(() => {
-            socket.emit('spark.ready')
+            socket.emit('ready')
         }).catch(error => {
             console.error(error)
-            socket.emit('spark.connect.error', error)
+            socket.emit('connect.error', error)
         })
     })
 
-    socket.on('spark.run', command => {
+    socket.on('run', command => {
         if (socket.shell) {
             const stream = new Stream()
 
             stream.on('data', data => {
-                socket.emit('spark.return.stream', data)
+                socket.emit('return.stream', data)
             })
 
             socket.shell.command(command, stream).then(retorno => {
-                socket.emit('spark.return', retorno)
+                socket.emit('return', retorno)
             })
             .catch(erro => {
-                socket.emit('spark.return.error', erro)
+                socket.emit('return.error', erro)
             })
         }
     })
 
-    socket.on('spark.disconnect', () => {
-        console.debug(`[IO - ${usuario.login}] Fechando a sessão`)
+    socket.on('close', () => {
+        console.debug(`[IO SPARK- ${usuario.login}] Fechando a sessão`)
         if (socket.shell) {
             socket.shell.closeShell()
-            socket.emit('spark.disconnected')
+            socket.emit('disconnected')
         }
     })
 
     socket.on('disconnect', () => {
         if (socket.shell) {
-            console.debug(`[IO - ${usuario.login}] Fechando a sessão`)
+            console.debug(`[IO SPARK- ${usuario.login}] Fechando a sessão`)
             socket.shell.closeShell()
             socket.shell = undefined
         }
-        console.debug(`[IO - ${usuario.login}] Desconectou`)
+        console.debug(`[IO SPARK- ${usuario.login}] Desconectou`)
     })
 }

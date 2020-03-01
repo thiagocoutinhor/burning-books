@@ -18,7 +18,9 @@
     <link rel="stylesheet" type="text/css" href="/css/book.css"/>
 
     <script>
-        var io = io('/spark');
+        const bookId = location.href.match(/(?<=\/book\/).*(?=\/)/)[0]
+        var spark = io('/spark');
+        var bookSocket = io(`/book?id=${bookId}`);
         $(document).ready(function() {
             init();
         })

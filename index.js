@@ -12,6 +12,7 @@ const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const sparkSocket = require('./api/socket/spark-socket')
 const listSocket = require('./api/socket/list-socket')
+const bookSocket = require('./api/socket/book-socket')
 const expressSession = require('express-session')
 const ioSession = require('express-socket.io-session')
 const MongoStore = require('connect-mongo')(expressSession)
@@ -73,6 +74,10 @@ io.of('/spark')
 io.of('/list')
     .use(ioSession(session))
     .on('connect', socket => listSocket(socket))
+
+io.of('/book')
+    .use(ioSession(session))
+    .on('connect', socket => bookSocket(socket))
 
 http.listen(port, () => {
     console.info(`Listening on port ${port}`)
