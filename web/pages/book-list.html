@@ -22,33 +22,69 @@
     </script>
 </head>
 
-<head>
+<body>
     <div class="navbar sticky-top">
         <div class="navbar-brand">
             Notebooks
         </div>
+        <div class="navbar-botoes">
+            <div class="pointer" onclick="createNewBook()" data-toggle="tooltip" data-placement="bottom" title="Novo Book">
+                <i class="fa fa-plus"></i>
+            </div>
+        </div>
     </div>
 
     <div class="m-3">
-        <button class="btn btn-primary w-100" onclick="createNewBook()">Novo</button>
-    </div>
-
-    <div class="card m-3">
-        <table class="table lista">
-            <thead>
+        <table class="table bg-white lista">
+            <thead class="thead-light">
                 <tr>
-                    <th>Nome</th>
-                    <th>Dono</th>
+                    <th style="padding-left: 35px; width: 70%">Nome</th>
+                    <th style="width: 25%">Dono</th>
+                    <th></th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>Teste</td>
-                    <td>Banana</td>
-                </tr>
-            </tbody>
+            <tr>
+                <td>
+                    <span class="pointer text-secondary" onclick="edit('XXXX')">
+                        <i class="fa fa-edit"></i>
+                    </span>
+                    Nome Teste
+                </td>
+                <td>Dono Teste</td>
+                <td class="text-right dropleft">
+                    <span class="text-secondary pointer" style="width: 30px" data-toggle="dropdown">
+                        <i class="fa fa-ellipsis-v"></i>
+                    </span>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#compartilhar">
+                            <i class="fa fa-share-alt"></i>
+                            Compartilhar
+                        </a>
+                        <a class="dropdown-item" href="#" onclick="remover('XXXX')">
+                            <i class="fa fa-trash"></i>
+                            Remover
+                        </a>
+                    </div>
+                    <div class="modal fade" id="compartilhar">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h6>Compartilhar</h6>
+                                </div>
+                                <div class="modal-body text-left">
+                                    Entre com a lista de compartilhamento separada por ";". Deixe em branco para não compartilhar
+                                    <input type="text" id="share-list" class="form-control mt-2 w-100"/>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary">Compartilhar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         </table>
     </div>
-</head>
+</body>
 
 </html>

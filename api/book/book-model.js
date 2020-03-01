@@ -2,11 +2,16 @@ const mongoose = require('mongoose')
 const newName = 'Novo Book'
 
 const schema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
     commands: [String],
     owner: { type: String, required: true },
     sharedWith: [String]
 })
+
+schema.index({
+    name: 1,
+    owner: 1
+}, { unique: true })
 
 // Monta o nome padrão do novo book
 schema.statics.defaultNewName = function(login) {
@@ -25,7 +30,7 @@ schema.statics.defaultNewName = function(login) {
 }
 
 schema.query.byUser = function(login) {
-    return this.where({$or: [{ owner: login }, { sharedWith: login }]})
+    return this.where({$or: [{ owner: new RegExp(login, 'i') }, { sharedWith: new RegExp(login, 'i') }]})
 }
 
 const model = mongoose.model('Book', schema)

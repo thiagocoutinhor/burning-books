@@ -6,3 +6,7 @@ body {
     background-color: rgb(88, 131, 131);
     color: white;
 }
+
+.pointer {
+    cursor: pointer;
+}

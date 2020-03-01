@@ -22,6 +22,7 @@ const port = process.env.PORT
 mongoose.connect(process.env.MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
     dbName: 'sparkbook',
     auth: {
         user: process.env.MONGO_USER,
