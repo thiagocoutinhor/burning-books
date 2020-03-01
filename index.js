@@ -53,7 +53,6 @@ app.use((req, res, next) => {
     next()
 })
 
-app.use('/api', require('./api/router-api'))
 app.use('/', require('./web/router-web'))
 
 io.use(ioSession(session))
