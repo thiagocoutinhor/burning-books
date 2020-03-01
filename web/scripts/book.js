@@ -161,8 +161,6 @@ function montaCards() {
             </div>
         `)
 
-
-
     const comandos = newCard.append('div')
         .attr('class', 'card-text')
 
