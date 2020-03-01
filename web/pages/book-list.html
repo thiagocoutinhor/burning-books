@@ -56,7 +56,7 @@
                         <i class="fa fa-ellipsis-v"></i>
                     </span>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#compartilhar">
+                        <a class="dropdown-item" href="#" onclick="compartilharScreen('XXX')"data-toggle="modal" data-target="#compartilhar">
                             <i class="fa fa-share-alt"></i>
                             Compartilhar
                         </a>
@@ -65,26 +65,29 @@
                             Remover
                         </a>
                     </div>
-                    <div class="modal fade" id="compartilhar">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h6>Compartilhar</h6>
-                                </div>
-                                <div class="modal-body text-left">
-                                    Entre com a lista de compartilhamento separada por ";". Deixe em branco para não compartilhar
-                                    <input type="text" id="share-list" class="form-control mt-2 w-100"/>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-primary">Compartilhar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </td>
             </tr>
         </table>
     </div>
+
+    <div class="modal fade" id="compartilhar">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6>Compartilhar</h6>
+                </div>
+                <div class="modal-body text-left">
+                    Entre com a lista de compartilhamento separada por ";". Deixe em branco para não compartilhar
+                    <input type="text" id="share-list" class="form-control mt-2 w-100"/>
+                    <input type="hidden" id="share-id"/>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="compartilhar()" data-dismiss="modal">Compartilhar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

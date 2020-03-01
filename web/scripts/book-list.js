@@ -61,7 +61,7 @@ function bookOptionsHtml(book) {
     if (book.mine) {
         retorno += `
             <div class="dropdown-menu">
-                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#compartilhar-${book._id}">
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#compartilhar" onclick="compartilharScreen('${book._id}', '${book.sharedWith.join(';')}')">
                     <i class="fa fa-share-alt"></i>
                     Compartilhar
                 </a>
@@ -69,22 +69,6 @@ function bookOptionsHtml(book) {
                     <i class="fa fa-trash"></i>
                     Remover
                 </a>
-            </div>
-            <div class="modal fade" id="compartilhar-${book._id}">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h6>Compartilhar</h6>
-                        </div>
-                        <div class="modal-body text-left">
-                            Entre com a lista de compartilhamento separada por ";". Deixe em branco para não compartilhar
-                            <input type="text" id="share-list-${book._id}" class="form-control mt-2 w-100" value="${book.sharedWith.join(';')}"/>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-primary" onclick="compartilhar('${book._id}')">Compartilhar</button>
-                        </div>
-                    </div>
-                </div>
             </div>
         `.trim()
     } else {
@@ -107,10 +91,15 @@ function edit(id) {
     // TODO fazer algo aqui
 }
 
-function compartilhar(id) {
+function compartilharScreen(id, usuarios) {
+    $('#share-id').val(id)
+    $('#share-list').val(usuarios)
+}
+
+function compartilhar() {
     io.emit('share', {
-        book: id,
-        with: $(`#share-list-${id}`).val().split(';').map(user => user.trim())
+        book: $('#share-id').val(),
+        with: $('#share-list').val().split(';').map(user => user.trim())
     })
 }
 
