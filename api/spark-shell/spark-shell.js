@@ -9,7 +9,6 @@ class SparkSession {
         this.__cores = configuration && configuration.cores ? `--executor-cores ${configuration.cores}` : ''
         this.__memory = configuration && configuration.memory? `--executor-memory ${configuration.memory}G` : ''
         this.__startCommand = `spark-shell ${this.__queue} ${this.__executors} ${this.__cores} ${this.__memory}`
-        console.debug(this.__startCommand)
         this.__user = user
         this.ssh = new Ssh({
             host: process.env.HOST,
