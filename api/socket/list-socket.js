@@ -21,7 +21,10 @@ module.exports = socket => {
                 commands: [],
                 owner: usuario.login
             }
-            Book.create(book).then(() => atualizarGrupo())
+            Book.create(book).then(() => {
+                socket.emit('created', book._id)
+                atualizarGrupo()
+            })
         })
     })
 

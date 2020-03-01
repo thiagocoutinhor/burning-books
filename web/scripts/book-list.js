@@ -9,6 +9,10 @@ function init() {
         montaLista(books)
     })
 
+    io.on('created', id => {
+        edit(id)
+    })
+
     io.on('update', () => {
         io.emit('list')
     })
@@ -88,7 +92,7 @@ function createNewBook() {
 }
 
 function edit(id) {
-    // TODO fazer algo aqui
+    location.href = `/book/${id}`
 }
 
 function compartilharScreen(id, usuarios) {
