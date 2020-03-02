@@ -3,7 +3,9 @@ const newName = 'Novo Book'
 
 const schema = new mongoose.Schema({
     name: { type: String, required: true },
-    commands: [String],
+    commands: [{
+        command: String
+    }],
     owner: { type: String, required: true },
     sharedWith: [String]
 })
