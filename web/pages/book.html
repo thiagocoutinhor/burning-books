@@ -18,8 +18,6 @@
     <link rel="stylesheet" type="text/css" href="/css/book.css"/>
 
     <script>
-        const bookId = location.href.match(/(?<=\/book\/).*(?=\/?)/)[0]
-        const bookSocket = io(`/book?id=${bookId}`);
         $(document).ready(function() {
             init();
         })

@@ -1,11 +1,15 @@
+const bookId = location.href.match(/(?<=\/book\/).*(?=\/?)/)[0]
 var spark = null
 var book = { commands: [] }
 var executing = null
 var isRunning = true
+var bookSocket = null
 
 const defaultTooltipDelay = { show: 600, hide: 0 }
 
 function init() {
+    bookSocket = io(`/book?id=${bookId}`)
+
     // Prepara as tooltips
     $('[data-toggle="tooltip"]').tooltip({ delay: defaultTooltipDelay })
 

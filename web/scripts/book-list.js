@@ -1,6 +1,9 @@
 const defaultTooltipDelay = { show: 600, hide: 0 }
+var io =
 
 function init() {
+    io = io('/list');
+
     $('[data-toggle="tooltip"]').tooltip({
         delay: defaultTooltipDelay
     })
