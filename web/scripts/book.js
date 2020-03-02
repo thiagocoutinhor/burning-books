@@ -1,4 +1,4 @@
-const bookId = location.href.match(/(?<=\/book\/).*(?=\/?)/)[0]
+const bookId = location.href.match(new RegExp('\/book\/.*\/?'))[0].replace('/book/', '').replace('/', '')
 var spark = null
 var book = { commands: [] }
 var executing = null
@@ -22,7 +22,18 @@ function init() {
     bookSocket.on('book', book => {
         console.debug('Book recebido')
         this.book = book
+        $('.navbar .titulo').text(book.name)
         montaCards()
+    })
+
+    bookSocket.on('structure', book => {
+        this.book = book
+        montaCards()
+    })
+
+    bookSocket.on('update', (index, command) => {
+        book.commands[index] = command
+        $(`.block-${index} .command-text`).html(commandToHtml(command))
     })
 
     running(true)
@@ -53,7 +64,6 @@ function connect() {
             .removeClass('connecting')
             .addClass('connected')
 
-        book.commands.forEach(retorno => retorno.command = '')
         montaCards()
 
         $('.connection-status .connection-icon').attr('data-toggle', 'dropdown')
@@ -199,19 +209,6 @@ function running(running) {
     $('.run-button').attr('disabled', running)
 }
 
-function newCommand() {
-    book.commands.push({
-        command: ''
-    })
-    $('button.new-command').blur()
-    montaCards()
-}
-
-function removeCommand(index) {
-    book.commands.splice(index, 1)
-    montaCards()
-}
-
 function copyCommand(index) {
     const command = `// BLOCK ${index}\n${book.commands[index].command}`.trim()
     navigator.clipboard.writeText(command)
@@ -222,8 +219,25 @@ function copyAllCommands() {
     navigator.clipboard.writeText(commands.join('\n\n'))
 }
 
+function newCommand() {
+    book.commands.push({
+        command: ''
+    })
+    $('button.new-command').blur()
+    montaCards()
+    bookSocket.emit('new')
+}
+
+function removeCommand(index) {
+    book.commands.splice(index, 1)
+    montaCards()
+    bookSocket.emit('remove', index)
+}
+
 function editCommand(index, div) {
-    book.commands[index].command = htmlToCommand($(`.block-${index} .command-text`).html())
+    const command = htmlToCommand($(`.block-${index} .command-text`).html())
+    book.commands[index].command = command
+    bookSocket.emit('update', index, command)
 
     // TODO fazer algo aqui para editar o html sem perder a posição do caret
     // const focusNode = document.getSelection().focusNode
