@@ -3,7 +3,7 @@ const { PassThrough } = require('stream')
 
 // Configuração do mock para facil mudança
 const config = {
-    shellOpenTime: 1 * 1000,
+    shellOpenTime: 5 * 1000,
     mockRunCommand: (user, comando, stream) => {
         console.log(`[SPARK MOCK - ${user}] Run recieved\n${comando}`)
 
