@@ -170,6 +170,7 @@ function montaCards() {
     comandos.append('div')
         .attr('contenteditable', true)
         .attr('class', (d, i) => `command-text`)
+        .attr('onkeydown', 'characterControl(event)')
         .attr('onkeyup', (d, i) => `editCommand(${i}, this, event)`)
         .html(d => commandToHtml(d.command))
 
@@ -249,7 +250,8 @@ function characterControl(event) {
         event.preventDefault()
         var range = window.getSelection().getRangeAt(0);
 
-        var tabNode = document.createTextNode("\u00a0\u00a0\u00a0\u00a0")
+        // var tabNode = document.createTextNode("\u00a0\u00a0\u00a0\u00a0")
+        var tabNode = document.createTextNode('\t')
         range.insertNode(tabNode)
 
         range.setStartAfter(tabNode)
