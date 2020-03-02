@@ -1,28 +1,28 @@
 const defaultTooltipDelay = { show: 600, hide: 0 }
-var io =
+var socket = null
 
 function init() {
-    io = io('/list');
+    socket = io('/list');
 
     $('[data-toggle="tooltip"]').tooltip({
         delay: defaultTooltipDelay
     })
 
-    io.on('reload', () => {
+    socket.on('reload', () => {
         console.debug('Recarregando a pedido da api')
         location.reload()
     })
 
-    io.on('list', books => {
+    socket.on('list', books => {
         montaLista(books)
     })
 
-    io.on('created', id => {
+    socket.on('created', id => {
         edit(id)
     })
 
-    io.on('update', () => {
-        io.emit('list')
+    socket.on('update', () => {
+        socket.emit('list')
     })
 }
 
@@ -95,8 +95,9 @@ function bookOptionsHtml(book) {
     }
     return retorno
 }
+
 function createNewBook() {
-    io.emit('create')
+    socket.emit('create')
 }
 
 function edit(id) {
@@ -109,16 +110,16 @@ function compartilharScreen(id, usuarios) {
 }
 
 function compartilhar() {
-    io.emit('share', {
+    socket.emit('share', {
         book: $('#share-id').val(),
         with: $('#share-list').val().split(';').map(user => user.trim())
     })
 }
 
 function meRemover(id) {
-    io.emit('unshare-me', id)
+    socket.emit('unshare-me', id)
 }
 
 function remover(id) {
-    io.emit('remove', id)
+    socket.emit('remove', id)
 }
