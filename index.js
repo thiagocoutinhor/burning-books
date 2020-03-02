@@ -63,7 +63,7 @@ io.on('connect', socket => {
     if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.usuario) {
         console.warn('Login sem usuário detectado. Enviando comando de reload.')
         socket.emit('reload')
-        return
+        socket.disconnect()
     }
 })
 
