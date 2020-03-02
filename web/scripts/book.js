@@ -1,4 +1,5 @@
-var book = null
+var spark = null
+var book = { commands: [] }
 var executing = null
 var isRunning = true
 
@@ -8,10 +9,34 @@ function init() {
     // Prepara as tooltips
     $('[data-toggle="tooltip"]').tooltip({ delay: defaultTooltipDelay })
 
-    // Carrega o book atual
-    preparabook()
+    // Mensagens do book
+    bookSocket.on('exit', () => {
+        console.debug('Saindo a pedido da api')
+        location.href = '/'
+    })
 
-    // Prepara para receber as mensagens do servidor
+    bookSocket.on('book', book => {
+        console.debug('Book recebido')
+        this.book = book
+        montaCards()
+    })
+
+    running(true)
+    montaCards()
+}
+
+function connect() {
+    $('.connection-status')
+        .removeClass('connected')
+        .removeClass('disconnected')
+        .addClass('connecting')
+
+    const executors = parseInt($('#executores').val())
+    const cores = parseInt($('#nucleos').val())
+    const memory = parseInt($('#memoria').val())
+
+    spark = io(`/spark?executors=${executors}&cores=${cores}&memory=${memory}`);
+
     spark.on('reload', () => {
         console.debug('Recarregando a pedido da api')
         location.reload()
@@ -20,6 +45,7 @@ function init() {
     spark.on('ready', () => {
         console.debug('Console pronto para comandos')
         $('.connection-status')
+            .removeClass('disconnected')
             .removeClass('connecting')
             .addClass('connected')
 
@@ -53,61 +79,20 @@ function init() {
     spark.on('return', (retorno) => {
         returnCommand(retorno)
     })
-
-    spark.on('disconnected', () => {
-        running(true)
-        $('.connection-status')
-            .removeClass('connected')
-            .removeClass('connecting')
-            .addClass('disconnected')
-
-        $('.connection-status .connection-icon').removeAttr('data-toggle')
-        $('.connection-status .connection-icon').dropdown('hide')
-        $('.connection-status .connection-icon').dropdown('dispose')
-    })
-
-    // Mensagens do book
-    bookSocket.on('exit', () => {
-        console.debug('Saindo a pedido da api')
-        location.href = '/'
-    })
-
-    running(true)
-    montaCards()
-}
-
-function connect() {
-    $('.connection-status')
-        .removeClass('connected')
-        .removeClass('disconnected')
-        .addClass('connecting')
-
-    spark.emit('open', {
-        executors: parseInt($('#executores').val()),
-        cores: parseInt($('#nucleos').val()),
-        memory: parseInt($('#memoria').val())
-    })
 }
 
 function disconnect() {
-    spark.emit('close')
-}
+    spark.disconnect()
+    spark = null
+    running(true)
+    $('.connection-status')
+        .removeClass('connected')
+        .removeClass('connecting')
+        .addClass('disconnected')
 
-function preparabook() {
-    const bookString = localStorage.getItem('current-book')
-    if (!bookString) {
-        book = { commands: [] }
-        localStorage.setItem('current-book', JSON.stringify(book))
-    } else {
-        book = JSON.parse(bookString)
-    }
-
-    book.commands.forEach(command => command.return = undefined)
-
-    // Monta processo de salvamento automático do book
-    setInterval(() => {
-        localStorage.setItem('current-book', JSON.stringify(book))
-    }, 1000)
+    $('.connection-status .connection-icon').removeAttr('data-toggle')
+    $('.connection-status .connection-icon').dropdown('hide')
+    $('.connection-status .connection-icon').dropdown('dispose')
 }
 
 function montaCards() {

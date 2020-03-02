@@ -19,8 +19,7 @@
 
     <script>
         const bookId = location.href.match(/(?<=\/book\/).*(?=\/?)/)[0]
-        var spark = io('/spark');
-        var bookSocket = io(`/book?id=${bookId}`);
+        const bookSocket = io(`/book?id=${bookId}`);
         $(document).ready(function() {
             init();
         })
