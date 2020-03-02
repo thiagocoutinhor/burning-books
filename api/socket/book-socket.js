@@ -8,13 +8,16 @@ module.exports = socket => {
         if (!temAcesso(book)) {
             console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso indevida ao book ${bookId}`)
             socket.emit('exit')
+            socket.disconnect()
+            return
         }
-    })
 
-    console.debug(`[IO BOOK - ${usuario.login}] Conectou no book ${bookId}`)
+        console.debug(`[IO BOOK - ${usuario.login}] Conectou no book ${bookId}`)
+        socket.emit('book', book.toJSON())
 
-    socket.on('disconnect', () => {
-        console.debug(`[IO BOOK - ${usuario.login}] Disconectou`)
+        socket.on('disconnect', () => {
+            console.debug(`[IO BOOK - ${usuario.login}] Disconectou`)
+        })
     })
 
     // Funcoes auxiliares
