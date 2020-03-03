@@ -42,6 +42,10 @@ function init() {
     montaCards()
 }
 
+function voltar() {
+    location.href = '/'
+}
+
 function mudarTitulo() {
     const titulo = $('#titulo').val()
     console.log(titulo)
