@@ -1,7 +1,7 @@
 {
   "name": "burning-book",
-  "version": "1.0.0",
-  "description": "Spark Notebook web application",
+  "version": "0.1.0",
+  "description": "Spark Notebook web application centered around ssh connection",
   "main": "index.js",
   "repository": {
     "url": "git@gitlab.com:tcoutinho/spark-book.git"
@@ -9,8 +9,7 @@
   "scripts": {
     "prestart": "docker-compose -f docker-compose-hml.yml up -d",
     "start": "nodemon",
-    "stop": "docker-compose -f docker-compose-hml.yml stop",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "stop": "docker-compose -f docker-compose-hml.yml stop"
   },
   "nodemonConfig": {
     "ignore": [
@@ -21,7 +20,7 @@
     "spark",
     "notebook"
   ],
-  "author": "Thiago Coutinho",
+  "author": "Thiago Coutinho do Rego",
   "license": "ISC",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.12.1",
