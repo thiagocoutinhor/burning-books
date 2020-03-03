@@ -30,12 +30,12 @@ module.exports = socket => {
         socket.emit('book', book.toJSON())
         socket.join(bookId)
 
-        socket.on('title', title => {
+        socket.on('name', title => {
             console.log(title)
             book.name = title
             book.save().then(book => {
-                socket.emit('title', book.name)
-                socket.broadcast.to(bookId).emit('title', book.name)
+                socket.emit('name', book.name)
+                socket.broadcast.to(bookId).emit('name', book.name)
             })
         })
 

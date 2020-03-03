@@ -19,7 +19,7 @@ function init() {
         location.href = '/'
     })
 
-    bookSocket.on('title', title => {
+    bookSocket.on('name', title => {
         book.name = title
         $('.navbar .titulo').text(title)
         $('#titulo').val(title)
@@ -45,7 +45,7 @@ function init() {
 function mudarTitulo() {
     const titulo = $('#titulo').val()
     console.log(titulo)
-    bookSocket.emit('title', titulo)
+    bookSocket.emit('name', titulo)
 }
 
 function connect() {
