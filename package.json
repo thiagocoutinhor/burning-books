@@ -7,9 +7,9 @@
     "url": "git@gitlab.com:tcoutinho/spark-book.git"
   },
   "scripts": {
-    "prestart": "docker-compose up -d",
+    "prestart": "docker-compose -f docker-compose-hml.yml up -d",
     "start": "nodemon",
-    "stop": "docker-compose stop",
+    "stop": "docker-compose -f docker-compose-hml.yml stop",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "nodemonConfig": {

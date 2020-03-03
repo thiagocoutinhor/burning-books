@@ -11,7 +11,7 @@ class SparkSession {
         this.__startCommand = `spark-shell ${this.__queue} ${this.__executors} ${this.__cores} ${this.__memory}`
         this.__user = user
         this.ssh = new Ssh({
-            host: process.env.HOST,
+            host: process.env.SPARK_HOST,
             username: user.toLowerCase(),
             password: password
         })
