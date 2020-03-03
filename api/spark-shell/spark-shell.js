@@ -79,7 +79,8 @@ class SparkSession {
                 }
 
                 // Garantia de nao receber o comando inicial de volta
-                stream.write(`:paste\r\n${command}\r\n`)
+                const cleanCommand = command.replace(/\t/g, '')
+                stream.write(`:paste\r\n${cleanCommand}\r\n`)
                 setTimeout(() => {
                     stream.on('data', watcher)
                     stream.write('\x04')
