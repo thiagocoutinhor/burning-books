@@ -19,15 +19,17 @@ function init() {
         location.href = '/'
     })
 
+    bookSocket.on('title', title => {
+        book.name = title
+        $('.navbar .titulo').text(title)
+        $('#titulo').val(title)
+    })
+
     bookSocket.on('book', book => {
         console.debug('Book recebido')
         this.book = book
         $('.navbar .titulo').text(book.name)
-        montaCards()
-    })
-
-    bookSocket.on('structure', book => {
-        this.book = book
+        $('#titulo').val(book.name)
         montaCards()
     })
 
@@ -38,6 +40,12 @@ function init() {
 
     running(true)
     montaCards()
+}
+
+function mudarTitulo() {
+    const titulo = $('#titulo').val()
+    console.log(titulo)
+    bookSocket.emit('title', titulo)
 }
 
 function connect() {

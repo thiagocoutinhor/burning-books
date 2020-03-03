@@ -27,7 +27,11 @@
 <body>
     <div class="navbar sticky-top">
         <div class="d-flex align-items-center">
-            <div class="titulo navbar-brand">Título</div>
+            <div class="navbar-brand nav-button" data-toggle="modal" data-target="#muda-titulo">
+                <span class="titulo" data-toggle="tooltip" data-placement="bottom" title="Alterar">
+                    Título
+                </span>
+            </div>
             <div class="connection-status disconnected d-flex align-items-center form-inline">
                 <div class="nav-button connection-icon dropdown">
                     <i class="fa fa-wifi"></i>
@@ -117,6 +121,22 @@
         <button class="new-command" onclick="newCommand()" data-toggle="tooltip" data-placement="top" title="Adicionar Bloco">
             <i class="fa fa-plus"></i>
         </button>
+    </div>
+
+    <div class="modal fade" id="muda-titulo">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6>Título</h6>
+                </div>
+                <div class="modal-body text-left">
+                    <input type="text" id="titulo" class="form-control w-100"/>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="mudarTitulo()" data-dismiss="modal">Alterar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 </body>

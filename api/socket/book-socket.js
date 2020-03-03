@@ -30,26 +30,27 @@ module.exports = socket => {
         socket.emit('book', book.toJSON())
         socket.join(bookId)
 
-        socket.on('disconnect', () => {
-            console.debug(`[IO BOOK - ${usuario.login}] Disconectou`)
-            books[bookId].count--
-            if (books[bookId].count === 0) {
-                books[bookId] = undefined
-            }
+        socket.on('title', title => {
+            console.log(title)
+            book.name = title
+            book.save().then(book => {
+                socket.emit('title', book.name)
+                socket.broadcast.to(bookId).emit('title', book.name)
+            })
         })
 
         socket.on('new', () => {
             book.commands.push({ command: '' })
             book.save()
 
-            socket.broadcast.to(bookId).emit('structure', book.toJSON())
+            socket.broadcast.to(bookId).emit('book', book.toJSON())
         })
 
         socket.on('remove', index => {
             book.commands.splice(index, 1)
             book.save()
 
-            socket.broadcast.to(bookId).emit('structure', book)
+            socket.broadcast.to(bookId).emit('book', book)
         })
 
         var saveDelay = null
@@ -63,6 +64,14 @@ module.exports = socket => {
             saveDelay = setTimeout(() => book.save(), 2 * 1000)
 
             socket.broadcast.to(bookId).emit('update', index, command)
+        })
+
+        socket.on('disconnect', () => {
+            console.debug(`[IO BOOK - ${usuario.login}] Disconectou`)
+            books[bookId].count--
+            if (books[bookId].count === 0) {
+                books[bookId] = undefined
+            }
         })
     })
 
