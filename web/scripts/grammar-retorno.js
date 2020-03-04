@@ -10,6 +10,7 @@ const grammarRetorno = {
             // O valor é calculado pelo próprio formato do texto com um eval
             return {
                 id: /Stage \d+/.exec(texto)[0],
+                numeros: /\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(texto)[0],
                 valor: eval(/\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(texto)[0]) * 100
             }
         }
@@ -38,7 +39,10 @@ function returnToHtml(retorno) {
                 // Como aparecem multiplas vezes cada vez maiores, precisam da
                 // variavel de controle
                 const progresso = token.value
-                progressos[progresso.id] = progresso.valor
+                progressos[progresso.id] = {
+                    valor: progresso.valor,
+                    numeros: progresso.numeros
+                }
             } else {
                 // Todo o restante vira o texto
                 html += token.text
@@ -56,9 +60,11 @@ function returnToHtml(retorno) {
 
         // Acrescenta as barras de progresso no topo
         Object.keys(progressos).forEach(id => {
-            const valor = progressos[id]
+            const valor = progressos[id].valor
+            const numeros = progressos[id].numeros
             html = `<div class="progress mb-2">
-                <div class="progress-bar ${valor >= 100 ? 'bg-success' : ''}" style="width: ${valor}%">${id}</div>
+                <div class="progress-bar ${valor >= 100 ? 'bg-success' : ''}" style="width: ${valor}%"></div>
+                <div class="position-absolute w-100 pl-1">${id}: ${numeros}</div>
             </div>${html}`
         })
 
