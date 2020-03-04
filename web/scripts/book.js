@@ -224,12 +224,24 @@ function running(running) {
 
 function copyCommand(index) {
     const command = `// BLOCK ${index}\n${book.commands[index].command}`.trim()
-    navigator.clipboard.writeText(command)
+    doCopy(command)
 }
 
 function copyAllCommands() {
     const commands = book.commands.map((command, index) => `// BLOCK ${index}\n${book.commands[index].command}`.trim())
-    navigator.clipboard.writeText(commands.join('\n\n'))
+    doCopy(commands.join('\n\n'))
+}
+
+function doCopy(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text)
+    } else {
+        const textarea = $(`<textarea>${text}</textarea>`)
+        $('body').append(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        textarea.remove()
+    }
 }
 
 function newCommand() {
