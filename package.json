@@ -7,6 +7,7 @@
     "url": "git@gitlab.com:tcoutinho/spark-book.git"
   },
   "scripts": {
+    "docker": "docker-compose build && docker-compose up -d",
     "prestart": "docker-compose -f docker-compose-hml.yml up -d",
     "start": "nodemon",
     "stop": "docker-compose -f docker-compose-hml.yml stop"
