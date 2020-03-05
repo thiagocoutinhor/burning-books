@@ -4,11 +4,13 @@ const Ssh = require('ssh2-promise')
 class SparkSession {
 
     constructor(user, password, configuration) {
-        this.__queue = process.env.SPARK_QUEUE ? `--queue ${process.env.SPARK_QUEUE}` : ''
-        this.__executors = configuration && configuration.executors ? `--num-executors ${configuration.executors}` : ''
-        this.__cores = configuration && configuration.cores ? `--executor-cores ${configuration.cores}` : ''
-        this.__memory = configuration && configuration.memory? `--executor-memory ${configuration.memory}G` : ''
-        this.__startCommand = `spark-shell ${this.__queue} ${this.__executors} ${this.__cores} ${this.__memory}`
+        const queue = process.env.SPARK_QUEUE ? `--queue ${process.env.SPARK_QUEUE}` : ''
+        const executors = configuration && configuration.executors ? `--num-executors ${configuration.executors}` : ''
+        const cores = configuration && configuration.cores ? `--executor-cores ${configuration.cores}` : ''
+        const memory = configuration && configuration.memory ? `--executor-memory ${configuration.memory}G` : ''
+        const libraries = process.env.SPARK_LIBRARIES ? `--jars ${process.env.SPARK_LIBRARIES}G` : ''
+
+        this.__startCommand = `spark-shell ${queue} ${executors} ${cores} ${memory} ${libraries}`
         this.__user = user
         this.ssh = new Ssh({
             host: process.env.SPARK_HOST,
