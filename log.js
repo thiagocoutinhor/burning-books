@@ -30,7 +30,7 @@ function info(mensagem) {
         if (typeof mensagem === "object") {
             mensagem = JSON.stringify(mensagem)
         }
-        console.old.info(colors.blue(`[${getTime()} INFO] ${mensagem}`))
+        console.old.info(`[${getTime()} INFO] ${mensagem}`)
     }
 }
 
@@ -58,7 +58,7 @@ function log(mensagem) {
     if (typeof mensagem === "object") {
         mensagem = JSON.stringify(mensagem)
     }
-    console.old.log(`[${getTime()}] ${mensagem}`)
+    console.old.log(colors.blue(`[${getTime()}] ${mensagem}`))
 }
 
 console.info = info
