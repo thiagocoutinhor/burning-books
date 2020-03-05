@@ -286,6 +286,8 @@ function characterControl(event) {
 function htmlToCommand(html) {
     return html.replace(/<div[\/]?>/g, '\n')
         .replace(/<[\/]?.*?>/g, '')
+        .replace(/&gt;/g, '>')
+        .replace(/&lt;/g, '<')
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&')
         .trim()
