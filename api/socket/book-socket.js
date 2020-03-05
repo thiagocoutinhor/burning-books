@@ -26,7 +26,7 @@ module.exports = socket => {
             return
         }
 
-        console.debug(`[IO BOOK - ${usuario.login}] Conectou no book ${bookId}`)
+        console.info(`[IO BOOK - ${usuario.login}] Conectou no book ${bookId}`)
         socket.emit('book', book.toJSON())
         socket.join(bookId)
 
@@ -67,7 +67,7 @@ module.exports = socket => {
         })
 
         socket.on('disconnect', () => {
-            console.debug(`[IO BOOK - ${usuario.login}] Disconectou`)
+            console.info(`[IO BOOK - ${usuario.login}] Disconectou`)
             books[bookId].count--
             if (books[bookId].count === 0) {
                 books[bookId] = undefined
@@ -78,6 +78,6 @@ module.exports = socket => {
     // Funcoes auxiliares
     function temAcesso(book) {
         return book.owner.toLowerCase() === usuario.login.toLowerCase() ||
-            book.sharedWith.map(usr => usr.toLowerCase()).includes(usuario.login)
+            book.sharedWith.map(usr => usr.toLowerCase()).includes(usuario.login.toLowerCase())
     }
 }

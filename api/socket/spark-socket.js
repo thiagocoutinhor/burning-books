@@ -10,7 +10,7 @@ module.exports = socket => {
         socket.emit('disconnected')
     }
 
-    console.debug(`[IO SPARK - ${usuario.login}] Criando uma nova sessão`)
+    console.info(`[IO SPARK - ${usuario.login}] Criando uma nova sessão`)
     socket.shell = new SparkShell(usuario.login, usuario.senha, config)
     socket.shell.openShell().then(() => {
         socket.emit('ready')
@@ -41,6 +41,6 @@ module.exports = socket => {
         console.debug(`[IO SPARK- ${usuario.login}] Fechando a sessão`)
         socket.shell.closeShell()
         socket.shell = undefined
-        console.debug(`[IO SPARK- ${usuario.login}] Desconectou`)
+        console.info(`[IO SPARK- ${usuario.login}] Desconectou`)
     })
 }
