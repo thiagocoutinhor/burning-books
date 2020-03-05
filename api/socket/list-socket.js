@@ -57,8 +57,9 @@ module.exports = socket => {
     socket.on('unshare-me', id => {
         console.debug(`[IO LIST - ${usuario.login}] Removendo o usuário da lista de compartilhamento do book ${id}`)
         Book.findById(id).then(book => {
-            if (book.sharedWith.includes(usuario.login)) {
-                const index = book.sharedWith.indexOf(usuario.login)
+            const sharedTreated = book.sharedWith.map(user => user.toLowerCase())
+            if (sharedTreated.includes(usuario.login.toLowerCase())) {
+                const index = sharedTreated.indexOf(usuario.login.toLowerCase())
                 book.sharedWith.splice(index, 1)
                 book.save().then(() => atualizarGrupo(book.sharedWith.concat([book.owner])))
             }
