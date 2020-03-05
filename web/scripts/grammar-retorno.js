@@ -46,9 +46,6 @@ function returnToHtml(retorno) {
             } else {
                 // Todo o restante vira o texto
                 html += token.text
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/&/g, '&amp;')
             }
 
             // Envia uma mensagem de erro de parsamento nos erros
