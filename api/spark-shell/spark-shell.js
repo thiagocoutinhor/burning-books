@@ -8,10 +8,12 @@ class SparkSession {
         const executors = configuration && configuration.executors ? `--num-executors ${configuration.executors}` : ''
         const cores = configuration && configuration.cores ? `--executor-cores ${configuration.cores}` : ''
         const memory = configuration && configuration.memory ? `--executor-memory ${configuration.memory}G` : ''
-        const libraries = process.env.SPARK_LIBRARIES ? `--jars ${process.env.SPARK_LIBRARIES}G` : ''
+        const libraries = process.env.SPARK_LIBRARIES ? `--jars ${process.env.SPARK_LIBRARIES}` : ''
 
         this.__startCommand = `spark-shell ${queue} ${executors} ${cores} ${memory} ${libraries}`
         this.__user = user
+        console.debug(`[SPARK - ${this.__user}] Command:\n\t${this.__startCommand}`)
+
         this.ssh = new Ssh({
             host: process.env.SPARK_HOST,
             username: user.toLowerCase(),
