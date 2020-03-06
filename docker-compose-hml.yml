@@ -7,7 +7,7 @@ services:
             - 27017:27017
         environment:
             MONGO_INITDB_ROOT_USERNAME: notebook
-            MONGO_INITDB_ROOT_PASSWORD: sparkbook
+            MONGO_INITDB_ROOT_PASSWORD: burning-book
 
     mongo-express:
         image: mongo-express
@@ -20,4 +20,4 @@ services:
             - mongo
         environment:
             ME_CONFIG_MONGODB_ADMINUSERNAME: notebook
-            ME_CONFIG_MONGODB_ADMINPASSWORD: sparkbook
+            ME_CONFIG_MONGODB_ADMINPASSWORD: burning-book
