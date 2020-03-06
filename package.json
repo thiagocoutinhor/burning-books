@@ -1,10 +1,10 @@
 {
-  "name": "burning-book",
-  "version": "0.1.1",
+  "name": "burning-books",
+  "version": "0.1.1-alpha",
   "description": "Spark Notebook web application centered around ssh connection",
   "main": "index.js",
   "repository": {
-    "url": "git@gitlab.com:tcoutinho/spark-book.git"
+    "url": "git@github.com:thiagocoutinhor/burning-books.git"
   },
   "scripts": {
     "docker": "docker-compose build && docker-compose up -d",
