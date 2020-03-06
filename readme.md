@@ -1,3 +1,10 @@
+# Burning Books - SSH Driven Spark Notebook
+
+Burning Books is a web notebook that conveys it commands to a cluster thorugh a SSH connection.
+It uses the default SSH autentication to control access.
+
+It is in **alpha** right now, use at your own risk.
+
 ## Dependences
 
 This image depends on a mongodb instance running somewhere and an SSH host with spark installed to work.
@@ -40,3 +47,14 @@ services:
             MONGO_INITDB_ROOT_USERNAME: burning
             MONGO_INITDB_ROOT_PASSWORD: book
 ```
+
+## Enviroment Variables
+
+| Variable          | Default                   | Meaning                                       |
+|-------------------|---------------------------|-----------------------------------------------|
+| LOG_LEVEL         | INFO                      | Level of the log messages                     |
+| SPARK_HOST        | localhost                 | SSH host with spark-shell                     |
+| MONGO             | mongodb://localhost:27017 | Mongodb connection string                     |
+| USER_BLACKLIST    |                           | Users to be denied access                     |
+| SPARK_QUEUE       |                           | Default queue of all new spark-shell sessions |
+| SPARK_LIBRARIES   |                           | Libraries in SPARK_HOST to be used            |
