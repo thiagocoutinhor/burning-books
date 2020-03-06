@@ -1,10 +1,11 @@
 FROM node:11-alpine
 COPY / /app
 WORKDIR /app
-ENV SPARK_HOST=hdcpx02.interno
-ENV MONGO=localhost://mongo:27017
-ENV MONGO_USER=notebook
-ENV MONGO_PASSWORD=burning-book
+RUN rm /app/.env
+RUN npm i --production
+ENV LOG_LEVEL=INFO
+ENV SPARK_HOST=localhost
+ENV MONGO=mongodb://localhost:27017
 ENV USER_BLACKLIST=
 ENV SPARK_QUEUE=
 ENV SPARK_LIBRARIES=

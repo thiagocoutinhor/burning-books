@@ -9,7 +9,7 @@
   "scripts": {
     "docker": "docker-compose build && docker-compose up -d",
     "prestart": "docker-compose -f docker-compose-hml.yml up -d",
-    "start": "nodemon",
+    "start": "node index.js",
     "stop": "docker-compose -f docker-compose-hml.yml stop"
   },
   "nodemonConfig": {
@@ -39,7 +39,6 @@
     "moo": "^0.5.1",
     "popper.js": "^1.16.1",
     "socket.io": "^2.3.0",
-    "ssh2-promise": "^0.1.6",
-    "uuid": "^3.4.0"
+    "ssh2-promise": "^0.1.6"
   }
 }

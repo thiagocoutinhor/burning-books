@@ -18,17 +18,13 @@ const ioSession = require('express-socket.io-session')
 const MongoStore = require('connect-mongo')(expressSession)
 const mongoose = require('mongoose');
 
-const port = process.env.PORT
+const port = process.env.PORT ? process.env.PORT : 9085
 
 mongoose.connect(process.env.MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
-    dbName: 'sparkbook',
-    auth: {
-        user: process.env.MONGO_USER,
-        password: process.env.MONGO_PASSWORD
-    }
+    dbName: 'sparkbook'
 }).then(() => {
     console.info('Conectado ao mongo')
 })
