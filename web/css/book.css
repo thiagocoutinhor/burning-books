@@ -23,7 +23,7 @@ body {
 }
 
 .navbar .connection-status.connecting .connection-icon {
-    color: yellow;
+    color: red;
     animation: connecting 2s;
     animation-iteration-count: infinite;
 }
@@ -33,9 +33,9 @@ body {
 }
 
 @keyframes connecting {
-    0% { color: palegoldenrod }
+    0% { color: red }
     50% { color: chartreuse }
-    100% { color: palegoldenrod }
+    100% { color: red }
 }
 
 .navbar .connection-status.connected .connection-icon {
