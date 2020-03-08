@@ -1,8 +1,7 @@
 # v0.1.2-alpha
 
 ### Quality of Life
-- Added Ctrl+Enter and Shift+Enter funcionality
-- Added run all before funcionality
+- Changed connecting color rotation to better attract attention
 
 # v0.1.1-alpha
 
