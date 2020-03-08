@@ -16,6 +16,9 @@ scriptRouter.use('/popper.js', express.static('./node_modules/popper.js/dist/umd
 cssRouter.use('/', express.static('./web/css'))
 cssRouter.use('/bootstrap.css', express.static('./node_modules/bootstrap/dist/css/bootstrap.min.css'))
 
+router.get('/favicon.ico', (req, res) => {
+    res.sendFile('./favicon.ico', { root: __dirname})
+})
 router.use('/script', scriptRouter)
 router.use('/css', cssRouter)
 

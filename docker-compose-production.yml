@@ -1,5 +1,15 @@
 version: '3'
 services:
+    web:
+        build: .
+        ports:
+            - 9085:9085
+        links:
+            - mongo
+        restart: always
+        environment:
+            MONGO: mongodb://notebook:burning-book@localhost:27017
+
     mongo:
         image: mongo
         restart: always

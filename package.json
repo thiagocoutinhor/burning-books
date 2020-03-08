@@ -7,10 +7,10 @@
     "url": "git@github.com:thiagocoutinhor/burning-books.git"
   },
   "scripts": {
-    "docker": "docker-compose build && docker-compose up -d",
-    "prestart": "docker-compose -f docker-compose-hml.yml up -d",
-    "start": "node index.js",
-    "stop": "docker-compose -f docker-compose-hml.yml stop"
+    "production": "docker-compose -f docker-compose-production build && docker-compose -f docker-compose-production up -d",
+    "prestart": "docker-compose up -d",
+    "start": "nodemon",
+    "stop": "docker-compose stop"
   },
   "nodemonConfig": {
     "ignore": [
