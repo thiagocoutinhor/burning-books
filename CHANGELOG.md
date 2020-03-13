@@ -2,6 +2,7 @@
 
 ### Quality of Life
 - Changed connecting color rotation to better attract attention
+- Added healthcheck to the docker image
 
 # v0.1.1-alpha
 
