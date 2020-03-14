@@ -8,6 +8,7 @@ v0.1.2-alpha
 ### Quality of Life
 - Changed connecting color rotation to better attract attention
 - Added healthcheck to the docker image
+- The chunks can be run by pressing Ctrl+Enter while editing
 
 ### Internal
 - Refactor of the log system (now it handles objects better)

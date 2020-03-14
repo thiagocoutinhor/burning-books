@@ -189,8 +189,8 @@ function montaCards() {
 
     comandos.append('div')
         .attr('contenteditable', true)
-        .attr('class', (d, i) => `command-text`)
-        .attr('onkeydown', 'characterControl(event)')
+        .attr('class', 'command-text')
+        .attr('onkeydown', (d, i) => `characterControl(event, ${i})`)
         .attr('onkeyup', (d, i) => `editCommand(${i}, this, event)`)
         .html(d => commandToHtml(d.command))
 
@@ -277,17 +277,19 @@ function editCommand(index, div) {
     // document.getSelection().focusNode
 }
 
-function characterControl(event) {
+function characterControl(event, index) {
     if (event.keyCode === 9) {
         event.preventDefault()
         var range = window.getSelection().getRangeAt(0);
-
-        // var tabNode = document.createTextNode("\u00a0\u00a0\u00a0\u00a0")
         var tabNode = document.createTextNode('\t')
         range.insertNode(tabNode)
 
         range.setStartAfter(tabNode)
         range.setEndAfter(tabNode)
+    } else if (event.keyCode === 13 && !isRunning) {
+        if (event.ctrlKey) {
+            runCommand(index)
+        }
     }
 }
 
