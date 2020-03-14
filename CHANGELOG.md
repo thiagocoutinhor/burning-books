@@ -7,6 +7,9 @@
 - Changed connecting color rotation to better attract attention
 - Added healthcheck to the docker image
 
+### Internal
+- Refactor of the log system (now it handles objects better)
+
 # v0.1.1-alpha
 
 ### Bug Fixes
