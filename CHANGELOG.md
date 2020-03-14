@@ -1,7 +1,9 @@
-# v0.1.2-alpha
+v0.1.2-alpha
+===============================================================================
 
 ### Bug Fixes
 - Now errors when trying to raname a book show in the screen
+- Trying to acess a non existent book brings the user back to the book list
 
 ### Quality of Life
 - Changed connecting color rotation to better attract attention
@@ -10,7 +12,8 @@
 ### Internal
 - Refactor of the log system (now it handles objects better)
 
-# v0.1.1-alpha
+v0.1.1-alpha
+================================================================================
 
 ### Bug Fixes
 - Solves copying issues in some browsers
@@ -28,7 +31,8 @@
 - Changed default port from 9085 to 9099, docker-compose now owns the 9085 port
 - Changed the log color schema
 - Changed the level of some logs
-- Changed the docker and enviroment variables (and some code) to better automate docker build
+- Changed the docker and enviroment variables (and some code) to better automate
+docker build
 - Basic documentation
 
 # v0.1-alpha
