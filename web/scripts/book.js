@@ -25,6 +25,15 @@ function init() {
         $('#titulo').val(title)
     })
 
+    bookSocket.on('name.error', err => {
+        console.debug('Erro durante renomeação', err)
+        var mensagem = err.errmsg
+        if (err.code = 11000) {
+            mensagem = `Você já tem um book com esse nome (${err.keyValue.name})`
+        }
+        erro(mensagem)
+    })
+
     bookSocket.on('book', book => {
         console.debug('Book recebido')
         this.book = book
@@ -48,7 +57,6 @@ function voltar() {
 
 function mudarTitulo() {
     const titulo = $('#titulo').val()
-    console.log(titulo)
     bookSocket.emit('name', titulo)
 }
 
@@ -310,4 +318,21 @@ function returnCommand(retorno, erro) {
     $(`.block-${executing}`).removeClass('running')
     executing = null
     running(false)
+}
+
+function erro(mensagem) {
+    const html = $(`
+        <div class="alert alert-danger fixed-top alert-dismissable mr-4 ml-4 mt-2" role="alert">
+            <span class="mensagem">
+                ${mensagem}
+            </span>
+            <button class="close" data-dismiss="alert">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    `)
+
+    $('body').append(html)
+
+    setTimeout(() => html.remove(), 10 * 1000)
 }

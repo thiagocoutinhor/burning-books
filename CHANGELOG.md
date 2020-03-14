@@ -1,5 +1,8 @@
 # v0.1.2-alpha
 
+### Bug Fixes
+- Now errors when trying to raname a book show in the screen
+
 ### Quality of Life
 - Changed connecting color rotation to better attract attention
 - Added healthcheck to the docker image

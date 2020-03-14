@@ -31,11 +31,13 @@ module.exports = socket => {
         socket.join(bookId)
 
         socket.on('name', title => {
-            console.log(title)
             book.name = title
             book.save().then(book => {
                 socket.emit('name', book.name)
                 socket.broadcast.to(bookId).emit('name', book.name)
+            }).catch(erro => {
+                console.info(`[IO BOOK - ${usuario.login}] Erro ao renomear o book ${bookId}`, erro)
+                socket.emit('name.error', erro)
             })
         })
 
