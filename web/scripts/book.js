@@ -117,9 +117,14 @@ function connect() {
 }
 
 function disconnect() {
+    if (executing) {
+        returnCommand("Disconnected", true)
+    }
+
     spark.disconnect()
     spark = null
     running(true)
+
     $('.connection-status')
         .removeClass('connected')
         .removeClass('connecting')

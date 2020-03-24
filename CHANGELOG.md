@@ -5,6 +5,7 @@ v0.1.2-alpha
 - Now errors when trying to raname a book show in the screen
 - Trying to acess a non existent book brings the user back to the book list
 - Removes the horizontal scrollbar from the book page
+- Chunck don't appear as running when disconnected
 
 ### Quality of Life
 - Changed connecting color rotation to better attract attention
