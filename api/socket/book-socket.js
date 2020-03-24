@@ -73,7 +73,7 @@ module.exports = socket => {
             if (saveDelay) {
                 clearTimeout(saveDelay)
             }
-            saveDelay = setTimeout(() => book.save(), 2 * 1000)
+            saveDelay = setTimeout(() => book.save(), 1 * 1000)
 
             socket.broadcast.to(bookId).emit('update', index, command)
         })
