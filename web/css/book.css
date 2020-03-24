@@ -4,6 +4,10 @@ body {
     overflow-x: hidden;
 }
 
+.pointer {
+    cursor: pointer;
+}
+
 .navbar {
     background-color: rgb(88, 131, 131);
     color: white;
@@ -11,10 +15,6 @@ body {
 
 .navbar .titulo {
     font-weight: bold;
-}
-
-.navbar .nav-button {
-    cursor: pointer;
 }
 
 .navbar .connection-status {

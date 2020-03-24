@@ -11,6 +11,7 @@ v0.1.2-alpha
 - Added healthcheck to the docker image
 - The chunks can be run by pressing Ctrl+Enter while editing
 - Added hability to run everything before one chunk
+- Added reordering of chunks
 
 ### Internal
 - Refactor of the log system (now it handles objects better)

@@ -162,10 +162,24 @@ function montaCards() {
         .attr('class', 'card-body')
 
     const titulo = newCard.append('div')
-        .attr('class', 'card-title d-flex justify-content-between')
+        .attr('class', 'card-title d-flex')
 
     titulo.append('span')
         .text((d, i) => `[Bloco ${i}]`)
+
+    titulo.append('span')
+        .attr('class', 'flex-grow-1')
+
+    const order = titulo.append('div')
+        .attr('class', 'd-flex flex-column')
+        .html((d, i) => `
+            <div class="pointer" style="width: 15px;" onclick="moveUp(${i})">
+                <i class="fa fa-angle-up"></i>
+            </div>
+            <div class="pointer" style="width: 15px;" onclick="moveDown(${i})">
+                <i class="fa fa-angle-down"></i>
+            </div>
+        `)
 
     titulo.append('div')
         .attr('class', 'btn-group dropleft')
@@ -239,6 +253,30 @@ function running(running) {
         $('.rodar-ate').removeClass('disabled')
     }
     $('.run-button').attr('disabled', running)
+}
+
+function moveUp(index) {
+    if (index > 0) {
+        const previousCommand = book.commands[index - 1].command
+        const command = book.commands[index].command
+        book.commands[index - 1].command = command
+        book.commands[index].command = previousCommand
+        montaCards()
+        bookSocket.emit('update', index - 1, command)
+        bookSocket.emit('update', index, previousCommand)
+    }
+}
+
+function moveDown(index) {
+    if (index < book.commands.length-1) {
+        const command = book.commands[index].command
+        const nextCommand = book.commands[index + 1].command
+        book.commands[index].command = nextCommand
+        book.commands[index + 1].command = command
+        montaCards()
+        bookSocket.emit('update', index, nextCommand)
+        bookSocket.emit('update', index + 1, command)
+    }
 }
 
 function copyCommand(index) {
