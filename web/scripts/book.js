@@ -2,6 +2,7 @@ const bookId = location.href.match(new RegExp('\/book\/.*\/?'))[0].replace('/boo
 var spark = null
 var book = { commands: [] }
 var executing = null
+var executeTo = null
 var isRunning = true
 var bookSocket = null
 
@@ -177,6 +178,11 @@ function montaCards() {
                     <i class="fa fa-clone"></i>
                     Copiar
                 </a>
+                <a class="dropdown-item rodar-ate ${isRunning ? 'disabled' : ''}" href="#" onclick="runAllTo(${i})">
+                    <i class="fa fa-play"></i>
+                    Rodar todos acima
+                </a>
+                <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="#" onclick="removeCommand(${i})">
                     <i class="fa fa-trash"></i>
                     Remover
@@ -227,6 +233,11 @@ function montaCards() {
 
 function running(running) {
     isRunning = running
+    if (running) {
+        $('.rodar-ate').addClass('disabled')
+    } else {
+        $('.rodar-ate').removeClass('disabled')
+    }
     $('.run-button').attr('disabled', running)
 }
 
@@ -313,13 +324,28 @@ function runCommand(index) {
     montaCards()
 }
 
+function runAllTo(index) {
+    if (index > 0 && !isRunning) {
+        executeTo = index - 1
+        runCommand(0)
+    }
+}
+
 function returnCommand(retorno, erro) {
     if (erro) {
         console.error(retorno)
     }
+
     $(`.block-${executing}`).removeClass('running')
-    executing = null
-    running(false)
+
+    if (executing < executeTo) {
+        console.log('banana')
+        $('body').scrollTop($(`.block-${executing + 1}`).offset().top)
+        runCommand(executing + 1)
+    } else {
+        executing = null
+        running(false)
+    }
 }
 
 function erro(mensagem) {
