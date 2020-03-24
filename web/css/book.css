@@ -1,6 +1,7 @@
 body {
     background-color: darkslategray;
     tab-size: 4;
+    overflow-x: hidden;
 }
 
 .navbar {
