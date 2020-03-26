@@ -18,6 +18,8 @@ class SparkSession {
             host: process.env.SPARK_HOST,
             username: user.toLowerCase(),
             password: password
+            // Para manter a conexão viva
+            // keepaliveInterval: 60 * 1000
         })
     }
 
@@ -35,13 +37,20 @@ class SparkSession {
             this.shell = this.ssh.shell()
                 .then(stream => {
                     return new Promise((resolve, reject) => {
+                        const timeout = setTimeout(() => {
+                            reject("Connection timeout")
+                        }, 5 * 60 * 1000)
+
                         const watcher = data => {
                             if (data.includes('scala>')) {
+                                clearTimeout(timeout)
+
                                 console.debug(`[SPARK - ${this.__user}] Shell rodando`)
                                 stream.removeListener('data', watcher)
                                 resolve(stream)
                             }
                         }
+
                         stream.write(`${this.__startCommand}\r\n`)
                         stream.on('data', watcher)
                     })

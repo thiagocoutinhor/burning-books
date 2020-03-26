@@ -16,6 +16,7 @@ v0.1.2-alpha
 
 ### Internal
 - Refactor of the log system (now it handles objects better)
+- Added a timout mechanism to the ssh connection
 
 v0.1.1-alpha
 ================================================================================
