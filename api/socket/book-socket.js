@@ -79,7 +79,7 @@ module.exports = socket => {
         })
 
         socket.on('disconnect', () => {
-            console.info(`[IO BOOK - ${usuario.login}] Disconectou`)
+            console.info(`[IO BOOK - ${usuario.login}] Desconectou`)
             books[bookId].count--
             if (books[bookId].count === 0) {
                 books[bookId] = undefined
