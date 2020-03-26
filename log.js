@@ -13,7 +13,7 @@ const levels = ['DEBUG', 'INFO', 'WARN', 'ERROR']
 const logLevel = levels.indexOf(process.env.LOG_LEVEL)
 
 function getTime() {
-    return moment().format('HH:MM:ss.SSS')
+    return moment().format('HH:mm:ss.SSS')
 }
 
 function debug(mensagem, ...messages) {
