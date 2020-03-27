@@ -17,9 +17,8 @@ class SparkSession {
         this.ssh = new Ssh({
             host: process.env.SPARK_HOST,
             username: user.toLowerCase(),
-            password: password
-            // Para manter a conexão viva
-            // keepaliveInterval: 60 * 1000
+            password: password,
+            keepaliveInterval: 60 * 1000
         })
     }
 
