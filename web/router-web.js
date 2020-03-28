@@ -69,6 +69,11 @@ router.post('/login', (req, res) => {
         })
 })
 
+router.post('/logoff', (req, res) => {
+    req.session.usuario = undefined
+    res.redirect('/')
+})
+
 router.get('/book/:id', (req, res) => {
     if (req.session.usuario) {
         res.sendFile('book.html', { root: 'web/pages/' })

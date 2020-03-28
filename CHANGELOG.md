@@ -15,6 +15,7 @@ v0.1.2-alpha
 - Added reordering of chunks
 - Keep the connecion alive, no matter what
 - Check credentials once per hour when changing pages
+- Option to logout
 
 ### Internal
 - Refactor of the log system (now it handles objects better)
