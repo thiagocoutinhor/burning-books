@@ -2,6 +2,7 @@ const bookId = location.href.match(new RegExp('\/book\/.*\/?'))[0].replace('/boo
 var spark = null
 var book = { commands: [] }
 var executing = null
+var executeTo = null
 var isRunning = true
 var bookSocket = null
 
@@ -23,6 +24,15 @@ function init() {
         book.name = title
         $('.navbar .titulo').text(title)
         $('#titulo').val(title)
+    })
+
+    bookSocket.on('name.error', err => {
+        console.debug('Erro durante renomeação', err)
+        var mensagem = err.errmsg
+        if (err.code = 11000) {
+            mensagem = `Você já tem um book com esse nome (${err.keyValue.name})`
+        }
+        erro(mensagem)
     })
 
     bookSocket.on('book', book => {
@@ -48,7 +58,6 @@ function voltar() {
 
 function mudarTitulo() {
     const titulo = $('#titulo').val()
-    console.log(titulo)
     bookSocket.emit('name', titulo)
 }
 
@@ -108,9 +117,14 @@ function connect() {
 }
 
 function disconnect() {
+    if (executing) {
+        returnCommand("Disconnected", true)
+    }
+
     spark.disconnect()
     spark = null
     running(true)
+
     $('.connection-status')
         .removeClass('connected')
         .removeClass('connecting')
@@ -153,10 +167,24 @@ function montaCards() {
         .attr('class', 'card-body')
 
     const titulo = newCard.append('div')
-        .attr('class', 'card-title d-flex justify-content-between')
+        .attr('class', 'card-title d-flex')
 
     titulo.append('span')
         .text((d, i) => `[Bloco ${i}]`)
+
+    titulo.append('span')
+        .attr('class', 'flex-grow-1')
+
+    const order = titulo.append('div')
+        .attr('class', 'd-flex flex-column')
+        .html((d, i) => `
+            <div class="pointer" style="width: 15px;" onclick="moveUp(${i})">
+                <i class="fa fa-angle-up"></i>
+            </div>
+            <div class="pointer" style="width: 15px;" onclick="moveDown(${i})">
+                <i class="fa fa-angle-down"></i>
+            </div>
+        `)
 
     titulo.append('div')
         .attr('class', 'btn-group dropleft')
@@ -169,6 +197,11 @@ function montaCards() {
                     <i class="fa fa-clone"></i>
                     Copiar
                 </a>
+                <a class="dropdown-item rodar-ate ${isRunning ? 'disabled' : ''}" href="#" onclick="runAllTo(${i})">
+                    <i class="fa fa-play"></i>
+                    Rodar todos acima
+                </a>
+                <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="#" onclick="removeCommand(${i})">
                     <i class="fa fa-trash"></i>
                     Remover
@@ -181,8 +214,8 @@ function montaCards() {
 
     comandos.append('div')
         .attr('contenteditable', true)
-        .attr('class', (d, i) => `command-text`)
-        .attr('onkeydown', 'characterControl(event)')
+        .attr('class', 'command-text')
+        .attr('onkeydown', (d, i) => `characterControl(event, ${i})`)
         .attr('onkeyup', (d, i) => `editCommand(${i}, this, event)`)
         .html(d => commandToHtml(d.command))
 
@@ -219,7 +252,36 @@ function montaCards() {
 
 function running(running) {
     isRunning = running
+    if (running) {
+        $('.rodar-ate').addClass('disabled')
+    } else {
+        $('.rodar-ate').removeClass('disabled')
+    }
     $('.run-button').attr('disabled', running)
+}
+
+function moveUp(index) {
+    if (index > 0) {
+        const previousCommand = book.commands[index - 1].command
+        const command = book.commands[index].command
+        book.commands[index - 1].command = command
+        book.commands[index].command = previousCommand
+        montaCards()
+        bookSocket.emit('update', index - 1, command)
+        bookSocket.emit('update', index, previousCommand)
+    }
+}
+
+function moveDown(index) {
+    if (index < book.commands.length-1) {
+        const command = book.commands[index].command
+        const nextCommand = book.commands[index + 1].command
+        book.commands[index].command = nextCommand
+        book.commands[index + 1].command = command
+        montaCards()
+        bookSocket.emit('update', index, nextCommand)
+        bookSocket.emit('update', index + 1, command)
+    }
 }
 
 function copyCommand(index) {
@@ -269,17 +331,19 @@ function editCommand(index, div) {
     // document.getSelection().focusNode
 }
 
-function characterControl(event) {
+function characterControl(event, index) {
     if (event.keyCode === 9) {
         event.preventDefault()
         var range = window.getSelection().getRangeAt(0);
-
-        // var tabNode = document.createTextNode("\u00a0\u00a0\u00a0\u00a0")
         var tabNode = document.createTextNode('\t')
         range.insertNode(tabNode)
 
         range.setStartAfter(tabNode)
         range.setEndAfter(tabNode)
+    } else if (event.keyCode === 13 && !isRunning) {
+        if (event.ctrlKey) {
+            runCommand(index)
+        }
     }
 }
 
@@ -303,11 +367,43 @@ function runCommand(index) {
     montaCards()
 }
 
+function runAllTo(index) {
+    if (index > 0 && !isRunning) {
+        executeTo = index - 1
+        runCommand(0)
+    }
+}
+
 function returnCommand(retorno, erro) {
     if (erro) {
         console.error(retorno)
     }
+
     $(`.block-${executing}`).removeClass('running')
-    executing = null
-    running(false)
+
+    if (executing < executeTo) {
+        console.log('banana')
+        $('body').scrollTop($(`.block-${executing + 1}`).offset().top)
+        runCommand(executing + 1)
+    } else {
+        executing = null
+        running(false)
+    }
+}
+
+function erro(mensagem) {
+    const html = $(`
+        <div class="alert alert-danger fixed-top alert-dismissable mr-4 ml-4 mt-2" role="alert">
+            <span class="mensagem">
+                ${mensagem}
+            </span>
+            <button class="close" data-dismiss="alert">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    `)
+
+    $('body').append(html)
+
+    setTimeout(() => html.remove(), 10 * 1000)
 }

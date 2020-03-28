@@ -16,9 +16,19 @@ module.exports = socket => {
                     count: 1
                 }
                 resolve(book)
+            }).catch(erro => {
+                reject(erro)
             })
         }
-    }).then(book => {
+    })
+    .then(book => {
+        if (!book) {
+            console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
+            socket.emit('exit')
+            socket.disconnect()
+            returns
+        }
+
         if (!temAcesso(book)) {
             console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso indevida ao book ${bookId}`)
             socket.emit('exit')
@@ -31,11 +41,13 @@ module.exports = socket => {
         socket.join(bookId)
 
         socket.on('name', title => {
-            console.log(title)
             book.name = title
             book.save().then(book => {
                 socket.emit('name', book.name)
                 socket.broadcast.to(bookId).emit('name', book.name)
+            }).catch(erro => {
+                console.info(`[IO BOOK - ${usuario.login}] Erro ao renomear o book ${bookId}`, erro)
+                socket.emit('name.error', erro)
             })
         })
 
@@ -61,18 +73,23 @@ module.exports = socket => {
             if (saveDelay) {
                 clearTimeout(saveDelay)
             }
-            saveDelay = setTimeout(() => book.save(), 2 * 1000)
+            saveDelay = setTimeout(() => book.save(), 1 * 1000)
 
             socket.broadcast.to(bookId).emit('update', index, command)
         })
 
         socket.on('disconnect', () => {
-            console.info(`[IO BOOK - ${usuario.login}] Disconectou`)
+            console.info(`[IO BOOK - ${usuario.login}] Desconectou`)
             books[bookId].count--
             if (books[bookId].count === 0) {
                 books[bookId] = undefined
             }
         })
+    })
+    .catch(erro => {
+        console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
+        socket.emit('exit')
+        socket.disconnect()
     })
 
     // Funcoes auxiliares

@@ -26,6 +26,10 @@ function init() {
     })
 }
 
+function logoff() {
+    $.post('/logoff').then(() => location.reload())
+}
+
 function montaLista(books) {
     const bookRows = d3.select('table.lista tbody')
         .selectAll('tr')

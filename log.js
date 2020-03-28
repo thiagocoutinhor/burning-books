@@ -13,52 +13,47 @@ const levels = ['DEBUG', 'INFO', 'WARN', 'ERROR']
 const logLevel = levels.indexOf(process.env.LOG_LEVEL)
 
 function getTime() {
-    return moment().format('HH:MM:ss.SSS')
+    return moment().format('HH:mm:ss.SSS')
 }
 
-function debug(mensagem) {
+function debug(mensagem, ...messages) {
     if (logLevel <= 0) {
-        if (typeof mensagem === "object") {
-            mensagem = JSON.stringify(mensagem)
+        if (typeof mensagem !== "object") {
+            mensagem = colors.gray(mensagem)
         }
-        console.old.debug(colors.gray(`[${getTime()} DEBUG] ${mensagem}`))
+        console.old.debug(colors.gray(`[${getTime()} DEBUG]`), mensagem, ...messages)
     }
 }
 
-function info(mensagem) {
+function info(mensagem, ...messages) {
     if (logLevel <= 1) {
-        if (typeof mensagem === "object") {
-            mensagem = JSON.stringify(mensagem)
-        }
-        console.old.info(`[${getTime()} INFO] ${mensagem}`)
+        console.old.info(`[${getTime()} INFO]`, mensagem, ...messages)
     }
 }
 
-function warn(mensagem) {
+function warn(mensagem, ...messages) {
     if (logLevel <= 2) {
-        if (typeof mensagem === "object") {
-            mensagem = JSON.stringify(mensagem)
+        if (typeof mensagem !== "object") {
+            mensagem = colors.yellow(mensagem)
         }
-        console.old.warn(colors.yellow(`[${getTime()} WARN] ${mensagem}`))
+        console.old.warn(colors.yellow(`[${getTime()} WARN]`), mensagem, ...messages)
     }
 }
 
-function error(mensagem) {
+function error(mensagem, ...messages) {
     if (logLevel <= 3) {
-        if (typeof mensagem === "object") {
-            console.old.error(colors.red(`[${getTime()} ERROR] ${mensagem}`))
-            console.old.error(colors.red(mensagem))
-        } else {
-            console.old.error(colors.red(`[${getTime()} ERROR] ${mensagem}`))
+        if (typeof mensagem !== "object") {
+            mensagem = colors.red(mensagem)
         }
+        console.old.error(colors.red(`[${getTime()} ERROR]`), mensagem, ...messages)
     }
 }
 
-function log(mensagem) {
-    if (typeof mensagem === "object") {
-        mensagem = JSON.stringify(mensagem)
+function log(mensagem, ...messages) {
+    if (typeof mensagem !== "object") {
+        mensagem = colors.blue(mensagem)
     }
-    console.old.log(colors.blue(`[${getTime()}] ${mensagem}`))
+    console.old.log(colors.blue(`[${getTime()}]`), mensagem, ...messages)
 }
 
 console.info = info

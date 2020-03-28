@@ -23,8 +23,16 @@
 
 <body>
     <div class="navbar sticky-top">
-        <div class="navbar-brand">
-            Notebooks
+        <div class="dropright">
+            <div class="navbar-brand pointer" data-toggle="dropdown">
+                Burning Books
+            </div>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="#" onclick="logoff()">
+                    <i class="fa fa-sign-out-alt"></i>
+                    Sair
+                </a>
+            </div>
         </div>
         <div class="navbar-botoes">
             <div class="pointer" onclick="createNewBook()" data-toggle="tooltip" data-placement="bottom" title="Novo Book">
@@ -59,6 +67,11 @@
                             <i class="fa fa-share-alt"></i>
                             Compartilhar
                         </a>
+                        <a class="dropdown-item rodar-ate disabled" href="#" onclick="runAllTo(0)">
+                            <i class="fa fa-play"></i>
+                            Rodar todos acima
+                        </a>
+                        <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#" onclick="remover('XXXX')">
                             <i class="fa fa-trash"></i>
                             Remover

@@ -27,16 +27,16 @@
 <body>
     <div class="navbar sticky-top">
         <div class="d-flex align-items-center">
-            <div class="nav-button mr-2 " onclick="voltar()">
+            <div class="pointer mr-2 " onclick="voltar()">
                 <i class="fa fa-chevron-left fa-lg"></i>
             </div>
-            <div class="navbar-brand nav-button" data-toggle="modal" data-target="#muda-titulo">
+            <div class="navbar-brand pointer" data-toggle="modal" data-target="#muda-titulo">
                 <span class="titulo" data-toggle="tooltip" data-placement="bottom" title="Alterar">
                     Título
                 </span>
             </div>
             <div class="connection-status disconnected d-flex align-items-center form-inline">
-                <div class="nav-button connection-icon dropdown">
+                <div class="pointer connection-icon dropdown">
                     <i class="fa fa-wifi"></i>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" href="#" onclick="disconnect()">
@@ -70,7 +70,7 @@
         </div>
         <div class="d-flex">
             <div onclick="copyAllCommands()" data-toggle="tooltip" data-placement="bottom" title="Copiar tudo">
-                <i class="fa fa-clone mr-2 nav-button"></i>
+                <i class="fa fa-clone mr-2 pointer"></i>
             </div>
         </div>
     </div>
@@ -79,8 +79,17 @@
         <div class="m-3 command-block block-0">
             <div class="card">
                 <div class="card-body">
-                    <div class="card-title d-flex justify-content-between">
+                    <div class="card-title d-flex">
                         <span class="bloco">[Bloco 0]</span>
+                        <span class="flex-grow-1"></span>
+                        <div class="d-flex flex-column">
+                            <div class="pointer" onclick="moveUp(0)">
+                                <i class="fa fa-angle-up"></i>
+                            </div>
+                            <div class="pointer" onclick="moveDown(0)">
+                                <i class="fa fa-angle-down"></i>
+                            </div>
+                        </div>
                         <div class="btn-group dropleft">
                             <button type="button" class="btn" data-toggle="dropdown">
                                 <i class="fas fa-ellipsis-v"></i>
@@ -99,7 +108,7 @@
                     </div>
 
                     <div class="card-text">
-                        <div class="command-text" contenteditable="true" onkeydown="characterControl(event)" oninput="editCommand(0, this)">Código aqui</div>
+                        <div class="command-text" contenteditable="true" onkeydown="characterControl(event, 0)" oninput="editCommand(0, this)">Código aqui</div>
                     </div>
 
                     <div class="buttons text-right mt-2">
