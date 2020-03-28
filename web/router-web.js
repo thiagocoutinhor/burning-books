@@ -3,6 +3,7 @@ const router = express.Router()
 const scriptRouter = express.Router()
 const cssRouter = express.Router()
 const SparkSession = require('../api/spark-shell/spark-shell').SparkSession
+const moment = require('moment')
 
 scriptRouter.use('/', express.static('./web/scripts'))
 scriptRouter.use('/io.js', express.static('./node_modules/socket.io-client/dist/socket.io.slim.js'))
@@ -16,6 +17,26 @@ scriptRouter.use('/popper.js', express.static('./node_modules/popper.js/dist/umd
 cssRouter.use('/', express.static('./web/css'))
 cssRouter.use('/bootstrap.css', express.static('./node_modules/bootstrap/dist/css/bootstrap.min.css'))
 
+router.use('/', (req, res, next) => {
+    const umaHoraAtras = moment().subtract(1, "hour")
+    const usuario = req.session.usuario
+
+    if (req.session && req.session.usuario && moment(usuario.lastCheck).isBefore(umaHoraAtras)) {
+        console.log(usuario)
+        req.session.usuario.lastCheck = moment()
+        checkLogin(usuario.login, usuario.senha)
+            .then(() => {
+                next()
+            })
+            .catch(() => {
+                req.session.usuario = undefined
+                next()
+            })
+    } else {
+        next()
+    }
+})
+
 router.get('/favicon.ico', (req, res) => {
     res.sendFile('./favicon.ico', { root: __dirname})
 })
@@ -25,7 +46,8 @@ router.use('/css', cssRouter)
 router.post('/login', (req, res) => {
     const usuario = {
         login: req.body.login.trim(),
-        senha: req.body.senha.trim()
+        senha: req.body.senha.trim(),
+        lastCheck: moment()
     }
 
     if (process.env.USER_BLACKLIST.toLowerCase().split(',').includes(usuario.login.toLowerCase())) {
@@ -35,14 +57,13 @@ router.post('/login', (req, res) => {
     }
 
     // Testa a conexão antes de seguir adiante
-    const sparkShell = new SparkSession(usuario.login, usuario.senha)
-    sparkShell.connect()
+    checkLogin(usuario.login, usuario.senha)
         .then(() => {
             console.debug(`[LOGIN - ${usuario.login}] Login bem sucedido`)
             req.session.usuario = usuario
             res.redirect('/')
         })
-        .catch(erro => {
+        .catch(() => {
             console.info(`[LOGIN - ${usuario.login}] Login falhou`)
             res.redirect('/')
         })
@@ -63,5 +84,10 @@ router.get('/', (req, res) => {
         res.sendFile('login.html', { root: 'web/pages/' })
     }
 })
+
+function checkLogin(login, senha) {
+    const sparkShell = new SparkSession(login, senha)
+    return sparkShell.connect()
+}
 
 module.exports = router;
