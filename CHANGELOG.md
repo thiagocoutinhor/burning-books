@@ -1,3 +1,13 @@
+v0.1.3-alpha
+===============================================================================
+
+### Bug Fixes
+- Corrects the progress bar calculation (was adding the numbers in parentesis
+before)
+
+### Quality of Life
+-
+
 v0.1.2-alpha
 ===============================================================================
 

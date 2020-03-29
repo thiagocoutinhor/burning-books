@@ -7,11 +7,14 @@ const grammarRetorno = {
         match: /\[Stage \d+:=*>\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
         value: texto => {
             // Quebra o stage em id e valor
-            // O valor é calculado pelo próprio formato do texto com um eval
+            const numeros = /\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(texto)[0]
+            const posicao = numeros.split('+')[0].replace('(', '').trim()
+            const total = numeros.split('/')[1].trim()
+            console.log(numeros, posicao, total)
             return {
                 id: /Stage \d+/.exec(texto)[0],
-                numeros: /\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(texto)[0],
-                valor: eval(/\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(texto)[0]) * 100
+                numeros: numeros,
+                valor: parseInt(posicao) / parseInt(total) * 100
             }
         }
     },
