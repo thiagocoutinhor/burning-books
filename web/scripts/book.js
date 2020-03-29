@@ -170,6 +170,7 @@ function montaCards() {
         .attr('class', 'card-title d-flex')
 
     titulo.append('span')
+        .attr('class', 'bloco')
         .text((d, i) => `[Bloco ${i}]`)
 
     titulo.append('span')
@@ -362,7 +363,7 @@ function runCommand(index) {
     running(true)
     executing = index
     book.commands[index].return = ''
-    $(`.block-${index}`).addClass('running')
+    $(`.block-${index}`).addClass('running').removeClass('done')
     spark.emit('run', book.commands[index].command)
     montaCards()
 }
@@ -379,7 +380,7 @@ function returnCommand(retorno, erro) {
         console.error(retorno)
     }
 
-    $(`.block-${executing}`).removeClass('running')
+    $(`.block-${executing}`).removeClass('running').addClass('done')
     $(`.block-${executing} .recibo .progress-bar`).addClass('bg-success').css('width', '100%')
 
     if (executing < executeTo) {

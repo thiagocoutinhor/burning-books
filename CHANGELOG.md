@@ -7,7 +7,7 @@ before)
 - Progress bars are always marked as done when the chunk is done running
 
 ### Quality of Life
--
+- Execution tags on the chunks
 
 ### Internal
 - Protects the user password in the session store
