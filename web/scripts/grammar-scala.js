@@ -31,7 +31,7 @@ function commandToHtml(command) {
         // Envia uma mensagem de erro de parsamento nos erros
         // mesmo os imprimindo na tela
         if (token.type === 'erro') {
-            console.error(`Erro de parseamento: ${token.text}`)
+            console.error(`[SCALA] Erro de parseamento: ${token.text}`)
         }
     })
     html += '</div>'

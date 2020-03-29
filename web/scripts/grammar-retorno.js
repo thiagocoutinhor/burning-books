@@ -51,7 +51,7 @@ function returnToHtml(retorno) {
             // Envia uma mensagem de erro de parsamento nos erros
             // mesmo os imprimindo na tela
             if (token.type === 'error') {
-                console.error(`Erro de parseamento: ${token.text}`)
+                console.error(`[RETORNO] Erro de parseamento: ${token.text}`)
             }
         })
 
