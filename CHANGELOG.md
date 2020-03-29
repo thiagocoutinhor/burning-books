@@ -9,6 +9,9 @@ before)
 ### Quality of Life
 -
 
+### Internal
+- Protects the user password in the session store
+
 v0.1.2-alpha
 ===============================================================================
 

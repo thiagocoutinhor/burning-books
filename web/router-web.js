@@ -4,6 +4,7 @@ const scriptRouter = express.Router()
 const cssRouter = express.Router()
 const SparkSession = require('../api/spark-shell/spark-shell').SparkSession
 const moment = require('moment')
+const passwordUtils = require('../api/crypt/password-utils')
 
 scriptRouter.use('/', express.static('./web/scripts'))
 scriptRouter.use('/io.js', express.static('./node_modules/socket.io-client/dist/socket.io.slim.js'))
@@ -17,18 +18,19 @@ scriptRouter.use('/popper.js', express.static('./node_modules/popper.js/dist/umd
 cssRouter.use('/', express.static('./web/css'))
 cssRouter.use('/bootstrap.css', express.static('./node_modules/bootstrap/dist/css/bootstrap.min.css'))
 
-router.use('/', (req, res, next) => {
-    const umaHoraAtras = moment().subtract(1, "hour")
+router.use((req, res, next) => {
+    const limiteChecagem = moment().subtract(5, "minutes")
     const usuario = req.session.usuario
 
-    if (req.session && req.session.usuario && moment(usuario.lastCheck).isBefore(umaHoraAtras)) {
-        console.log(usuario)
+    if (req.session && req.session.usuario && moment(usuario.lastCheck).isBefore(limiteChecagem)) {
+        console.debug(`[LOGIN - ${usuario.login}] Validando login`)
         req.session.usuario.lastCheck = moment()
         checkLogin(usuario.login, usuario.senha)
             .then(() => {
                 next()
             })
             .catch(() => {
+                console.warn(`[LOGIN - ${usuario.login}] Validação de login mal sucedida`)
                 req.session.usuario = undefined
                 next()
             })
@@ -46,7 +48,7 @@ router.use('/css', cssRouter)
 router.post('/login', (req, res) => {
     const usuario = {
         login: req.body.login.trim(),
-        senha: req.body.senha.trim(),
+        senha: passwordUtils.crush(req.body.senha.trim()),
         lastCheck: moment()
     }
 
@@ -91,7 +93,7 @@ router.get('/', (req, res) => {
 })
 
 function checkLogin(login, senha) {
-    const sparkShell = new SparkSession(login, senha)
+    const sparkShell = new SparkSession(login, passwordUtils.uncrush(senha))
     return sparkShell.connect()
 }
 
