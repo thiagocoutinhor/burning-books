@@ -62,10 +62,12 @@ function returnToHtml(retorno) {
         Object.keys(progressos).forEach(id => {
             const valor = progressos[id].valor
             const numeros = progressos[id].numeros
-            html = `<div class="progress mb-2">
-                <div class="progress-bar ${valor >= 100 ? 'bg-success' : ''}" style="width: ${valor}%"></div>
-                <div class="position-absolute w-100 pl-1">${id}: ${numeros}</div>
-            </div>${html}`
+            html = `
+                <div class="progress mb-2">
+                    <div class="progress-bar ${valor >= 100 ? 'bg-success' : ''}" style="width: ${valor}%"></div>
+                    <div class="position-absolute w-100 pl-1">${id}: ${numeros}</div>
+                </div>
+            `.trim() + html
         })
 
         return html

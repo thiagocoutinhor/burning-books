@@ -380,6 +380,7 @@ function returnCommand(retorno, erro) {
     }
 
     $(`.block-${executing}`).removeClass('running')
+    $(`.block-${executing} .recibo .progress-bar`).addClass('bg-success').css('width', '100%')
 
     if (executing < executeTo) {
         console.log('banana')

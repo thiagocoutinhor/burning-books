@@ -4,6 +4,7 @@ v0.1.3-alpha
 ### Bug Fixes
 - Corrects the progress bar calculation (was adding the numbers in parentesis
 before)
+- Progress bars are always marked as done when the chunk is done running
 
 ### Quality of Life
 -
