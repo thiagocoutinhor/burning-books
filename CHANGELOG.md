@@ -8,6 +8,7 @@ before)
 
 ### Quality of Life
 - Execution tags on the chunks
+- Adds formatted tables to the result card
 
 ### Internal
 - Protects the user password in the session store

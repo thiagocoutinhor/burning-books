@@ -150,6 +150,11 @@ body {
     color: white
 }
 
+.recibo .table td,
+.recibo .table th {
+    border: none
+}
+
 button.new-command {
     width: 100%;
     background-color: rgba(0, 0, 0, 0.13);
