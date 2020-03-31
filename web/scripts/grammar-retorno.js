@@ -10,7 +10,6 @@ const grammarRetorno = {
             const numeros = /\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(texto)[0]
             const posicao = numeros.split('+')[0].replace('(', '').trim()
             const total = numeros.split('/')[1].trim()
-            console.log(numeros, posicao, total)
             return {
                 id: /Stage \d+/.exec(texto)[0],
                 numeros: numeros,
