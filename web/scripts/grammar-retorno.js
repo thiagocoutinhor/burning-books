@@ -11,7 +11,7 @@ const grammarRetorno = {
     },
     // Controle das barras de progresso
     progress: {
-        match: /\[Stage \d+:=*>\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
+        match: /\[Stage \d+:?=*>?\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
         value: texto => {
             // Quebra o stage em id e valor
             const numeros = /\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(texto)[0]
