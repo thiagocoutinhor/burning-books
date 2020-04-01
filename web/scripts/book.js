@@ -388,6 +388,7 @@ function returnCommand(retorno, erro) {
         $('body').scrollTop($(`.block-${executing + 1}`).offset().top)
         runCommand(executing + 1)
     } else {
+        executeTo = null
         executing = null
         running(false)
     }
