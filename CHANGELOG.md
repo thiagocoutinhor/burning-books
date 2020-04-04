@@ -7,6 +7,7 @@ before)
 - Progress bars are always marked as done when the chunk is done running
 - Fixes the "run all above" bug where once activatede always runs to the end
 - Fixes the progress bar bug when there where no "=" or ">" character
+- Fixes the receit not following the chunk on move up and down
 
 ### Quality of Life
 - Execution tags on the chunks

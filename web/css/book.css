@@ -134,6 +134,11 @@ body {
     margin-left: 5px;
 }
 
+.command-block.done .recibo .progress-bar {
+    background-color: #28a745;
+    width: 100%!important;
+}
+
 .recibo {
     font-family: 'Courier New', Courier, monospace;
     border: 1px solid gray;

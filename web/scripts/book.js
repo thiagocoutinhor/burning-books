@@ -44,7 +44,7 @@ function init() {
     })
 
     bookSocket.on('update', (index, command) => {
-        book.commands[index] = command
+        book.commands[index].command = command
         $(`.block-${index} .command-text`).html(commandToHtml(command))
     })
 
@@ -104,7 +104,7 @@ function connect() {
         book.commands[executing].return += retorno
         const html = returnToHtml(book.commands[executing].return)
         $(`.block-${executing} .recibo`).html(html)
-        $(`.block-${executing} .recibo`).show()
+        $(`.block-${executing} .recibo`).removeClass('d-none')
     })
 
     spark.on('return.error', (erro) => {
@@ -141,6 +141,9 @@ function montaCards() {
 
     // Manutentção de cards já existentes
     commandCards
+        .attr('class', (d, i) => `m-3 command-block block-${i} ${d.status ? d.status : ''}`)
+
+    commandCards
         .select('div.card-title span.bloco')
         .text((d, i) => `[Bloco ${i}]`)
 
@@ -150,7 +153,7 @@ function montaCards() {
 
     commandCards
         .select('div.recibo')
-        .style('display', d => d.return ? 'inherited' : 'none')
+        .attr('class', d => `mr-4 ml-4 recibo ${d.return ? '' : 'd-none'}`)
         .html(d => returnToHtml(d.return))
 
     // Remoção dos cards
@@ -159,7 +162,7 @@ function montaCards() {
     // Criação de novos cards
     const newCommand = commandCards.enter()
         .append('div')
-        .attr('class', (d, i) => `m-3 command-block block-${i}`)
+        .attr('class', (d, i) => `m-3 command-block block-${i} ${d.status ? d.status : ''}`)
 
     const newCard = newCommand.append('div')
         .attr('class', 'card')
@@ -176,8 +179,8 @@ function montaCards() {
     titulo.append('span')
         .attr('class', 'flex-grow-1')
 
-    const order = titulo.append('div')
-        .attr('class', 'd-flex flex-column')
+    titulo.append('div')
+        .attr('class', 'd-flex flex-column ordem')
         .html((d, i) => `
             <div class="pointer" style="width: 15px;" onclick="moveUp(${i})">
                 <i class="fa fa-angle-up"></i>
@@ -246,8 +249,7 @@ function montaCards() {
         .html('<i class="fa fa-play">')
 
     newCommand.append('div')
-        .attr('class', 'mr-4 ml-4 recibo')
-        .style('display', d => d.return ? 'inherited' : 'none')
+        .attr('class', d => `mr-4 ml-4 recibo ${d.return ? '' : 'd-none'}`)
         .html(d => returnToHtml(d.return))
 }
 
@@ -263,25 +265,25 @@ function running(running) {
 
 function moveUp(index) {
     if (index > 0) {
-        const previousCommand = book.commands[index - 1].command
-        const command = book.commands[index].command
-        book.commands[index - 1].command = command
-        book.commands[index].command = previousCommand
+        const previousCommand = book.commands[index - 1]
+        const command = book.commands[index]
+        book.commands[index - 1] = command
+        book.commands[index] = previousCommand
         montaCards()
-        bookSocket.emit('update', index - 1, command)
-        bookSocket.emit('update', index, previousCommand)
+        bookSocket.emit('update', index - 1, command.command)
+        bookSocket.emit('update', index, previousCommand.command)
     }
 }
 
 function moveDown(index) {
     if (index < book.commands.length-1) {
-        const command = book.commands[index].command
-        const nextCommand = book.commands[index + 1].command
-        book.commands[index].command = nextCommand
-        book.commands[index + 1].command = command
+        const command = book.commands[index]
+        const nextCommand = book.commands[index + 1]
+        book.commands[index] = nextCommand
+        book.commands[index + 1] = command
         montaCards()
-        bookSocket.emit('update', index, nextCommand)
-        bookSocket.emit('update', index + 1, command)
+        bookSocket.emit('update', index, nextCommand.command)
+        bookSocket.emit('update', index + 1, command.command)
     }
 }
 
@@ -363,9 +365,10 @@ function runCommand(index) {
     running(true)
     executing = index
     book.commands[index].return = ''
-    $(`.block-${index}`).addClass('running').removeClass('done')
+    book.commands[index].status = 'running'
     spark.emit('run', book.commands[index].command)
     montaCards()
+    $('.ordem').addClass('d-none').removeClass('d-flex')
 }
 
 function runAllTo(index) {
@@ -380,8 +383,9 @@ function returnCommand(retorno, erro) {
         console.error(retorno)
     }
 
+    book.commands[executing].status = 'done'
+
     $(`.block-${executing}`).removeClass('running').addClass('done')
-    $(`.block-${executing} .recibo .progress-bar`).addClass('bg-success').css('width', '100%')
 
     if (executing < executeTo) {
         console.log('banana')
@@ -391,6 +395,7 @@ function returnCommand(retorno, erro) {
         executeTo = null
         executing = null
         running(false)
+        $('.ordem').addClass('d-flex').removeClass('d-none')
     }
 }
 
