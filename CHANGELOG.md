@@ -12,6 +12,7 @@ before)
 ### Quality of Life
 - Execution tags on the chunks
 - Adds formatted tables to the result card
+- Naming chunks now is possible
 
 ### Internal
 - Protects the user password in the session store

@@ -27,7 +27,7 @@ function init() {
     })
 
     bookSocket.on('name.error', err => {
-        console.debug('Erro durante renomeação', err)
+        console.error('Erro durante renomeação', err)
         var mensagem = err.errmsg
         if (err.code = 11000) {
             mensagem = `Você já tem um book com esse nome (${err.keyValue.name})`
@@ -46,6 +46,18 @@ function init() {
     bookSocket.on('update', (index, command) => {
         book.commands[index].command = command
         $(`.block-${index} .command-text`).html(commandToHtml(command))
+    })
+
+    bookSocket.on('chunk.move', (source, destination) => {
+        const comSource = book.commands[source]
+        const comDestination = book.commands[destination]
+        book.commands[source] = comDestination
+        book.commands[destination] = comSource
+    })
+
+    bookSocket.on('chunk.name', (index, name) => {
+        book.commands[index].name = name
+        $(`.block-${index} bloco`).text(`[Bloco ${index}] ${name ? name : ''}`)
     })
 
     running(true)
@@ -145,7 +157,7 @@ function montaCards() {
 
     commandCards
         .select('div.card-title span.bloco')
-        .text((d, i) => `[Bloco ${i}]`)
+        .text((d, i) => `[Bloco ${i}] ${d.name ? d.name : ''}`)
 
     commandCards
         .select('div.card-text div.command-text')
@@ -173,8 +185,11 @@ function montaCards() {
         .attr('class', 'card-title d-flex')
 
     titulo.append('span')
-        .attr('class', 'bloco')
-        .text((d, i) => `[Bloco ${i}]`)
+        .attr('class', 'bloco pointer')
+        .attr("data-toggle", "modal")
+        .attr("data-target", "#nomeia-chunk")
+        .attr("onclick", (d, i) => `preparaNomeacao(${i})`)
+        .text((d, i) => `[Bloco ${i}] ${d.name ? d.name : ''}`)
 
     titulo.append('span')
         .attr('class', 'flex-grow-1')
@@ -263,6 +278,19 @@ function running(running) {
     $('.run-button').attr('disabled', running)
 }
 
+function preparaNomeacao(index) {
+    $('#nomeia-chunk #cod-chunk').val(index)
+    $('#nomeia-chunk #name').val(book.commands[index].name)
+}
+
+function mudarChunk() {
+    const id = $('#nomeia-chunk #cod-chunk').val()
+    const name = $('#nomeia-chunk #name').val()
+    book.commands[id].name = name.trim().length > 0 ? name.trim() : undefined
+    bookSocket.emit('chunk.name', id, name)
+    montaCards()
+}
+
 function moveUp(index) {
     if (index > 0) {
         const previousCommand = book.commands[index - 1]
@@ -270,8 +298,7 @@ function moveUp(index) {
         book.commands[index - 1] = command
         book.commands[index] = previousCommand
         montaCards()
-        bookSocket.emit('update', index - 1, command.command)
-        bookSocket.emit('update', index, previousCommand.command)
+        bookSocket.emit('chunk.move', index, index - 1)
     }
 }
 
@@ -282,18 +309,21 @@ function moveDown(index) {
         book.commands[index] = nextCommand
         book.commands[index + 1] = command
         montaCards()
-        bookSocket.emit('update', index, nextCommand.command)
-        bookSocket.emit('update', index + 1, command.command)
+        bookSocket.emit('chunk.move', index, index + 1)
     }
 }
 
+function getBlockComment(index) {
+    return `${'/'.repeat(80)}\n// BLOCK ${index}${book.commands[index].name ? ' - ' + book.commands[index].name : ''}\n${'/'.repeat(80)}\n\n`
+}
+
 function copyCommand(index) {
-    const command = `// BLOCK ${index}\n${book.commands[index].command}`.trim()
+    const command = `${getBlockComment(index)}${book.commands[index].command}`.trim()
     doCopy(command)
 }
 
 function copyAllCommands() {
-    const commands = book.commands.map((command, index) => `// BLOCK ${index}\n${book.commands[index].command}`.trim())
+    const commands = book.commands.map((command, index) => `${getBlockComment(index)}${command.command}`.trim())
     doCopy(commands.join('\n\n'))
 }
 
@@ -388,7 +418,6 @@ function returnCommand(retorno, erro) {
     $(`.block-${executing}`).removeClass('running').addClass('done')
 
     if (executing < executeTo) {
-        console.log('banana')
         $('body').scrollTop($(`.block-${executing + 1}`).offset().top)
         runCommand(executing + 1)
     } else {

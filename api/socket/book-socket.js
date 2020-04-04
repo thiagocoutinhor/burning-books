@@ -78,6 +78,24 @@ module.exports = socket => {
             socket.broadcast.to(bookId).emit('update', index, command)
         })
 
+        socket.on('chunk.name', (index, name) => {
+            book.commands[index].name = name
+            book.save()
+            socket.broadcast.to(bookId).emit('chunk.name', index, name)
+        })
+
+        socket.on('chunk.move', (source, destination) => {
+            const comSource = book.commands[source]
+            const comDestination = book.commands[destination]
+            book.commands[source] = comDestination
+            book.commands[destination] = comSource
+            book.markModified('commands')
+            book.save()
+            console.log(comDestination, book.commands[source])
+            console.log(`move ${source} > ${destination}`)
+            socket.broadcast.to(bookId).emit('chunk.move', source, destination)
+        })
+
         socket.on('disconnect', () => {
             console.info(`[IO BOOK - ${usuario.login}] Desconectou`)
             books[bookId].count--
