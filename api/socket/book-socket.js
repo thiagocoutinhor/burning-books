@@ -1,5 +1,7 @@
 const Book = require('../book/book-model').Book
-const books = {} // Controle para evitar dissincronia dos books entre sockets
+// Controle para evitar dissincronia dos books entre sockets
+// TODO impede o crescimento horizontal da aplicação. Rever talvez seja necessário
+const books = {}
 
 module.exports = socket => {
     const usuario = socket.handshake.session.usuario
