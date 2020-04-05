@@ -48,6 +48,12 @@ services:
             MONGO_INITDB_ROOT_PASSWORD: book
 ```
 
+## Connecting with identity files
+
+If you need a identity file to login in your spark host (AWS users, for example), set the
+enviroment variable `LOGIN_TYPE` to `SSH`. Changing it to `SSH` will make the login screen ask
+for your identity file during the login.
+
 ## Enviroment Variables
 
 | Variable          | Default                   | Meaning                                       |
@@ -58,3 +64,4 @@ services:
 | USER_BLACKLIST    |                           | Users to be denied access                     |
 | SPARK_QUEUE       |                           | Default queue of all new spark-shell sessions |
 | SPARK_LIBRARIES   |                           | Libraries in SPARK_HOST to be used            |
+| LOGIN_TYPE        | PASSWORD                  | Type of login, between PASSWORD and SSH       |

@@ -1,5 +1,7 @@
 const Ssh = require('ssh2-promise')
 
+const LOGIN_TYPE = process.env.LOGIN_TYPE ? process.env.LOGIN_TYPE : 'PASSWORD'
+
 // Classe responsável pela conexão e criação de uma nova sessão do spark
 class SparkSession {
 
@@ -14,12 +16,19 @@ class SparkSession {
         this.__user = user
         console.debug(`[SPARK - ${this.__user}] Command:\n\t${this.__startCommand}`)
 
-        this.ssh = new Ssh({
+        const parameters = {
             host: process.env.SPARK_HOST,
             username: user.toLowerCase(),
-            password: password,
             keepaliveInterval: 60 * 1000
-        })
+        }
+
+        if (LOGIN_TYPE === 'PASSWORD') {
+            parameters.password = password
+        } else if (LOGIN_TYPE === 'SSH') {
+            parameters.privateKey = password
+        }
+
+        this.ssh = new Ssh(parameters)
     }
 
     connect() {

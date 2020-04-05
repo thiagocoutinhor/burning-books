@@ -1,4 +1,5 @@
 const express = require('express')
+const fileUpload = require('express-fileupload')
 const router = express.Router()
 const scriptRouter = express.Router()
 const cssRouter = express.Router()
@@ -6,6 +7,9 @@ const SparkSession = require('../api/spark-shell/spark-shell').SparkSession
 const moment = require('moment')
 const passwordUtils = require('../api/crypt/password-utils')
 const Book = require('../api/book/book-model').Book
+const fs = require('fs')
+
+const LOGIN_TYPE = process.env.LOGIN_TYPE ? process.env.LOGIN_TYPE : 'PASSWORD'
 
 scriptRouter.use('/', express.static('./web/scripts'))
 scriptRouter.use('/io.js', express.static('./node_modules/socket.io-client/dist/socket.io.slim.js'))
@@ -53,6 +57,9 @@ router.use((req, res, next) => {
     }
 })
 
+// Controle de imagens
+router.use(fileUpload())
+
 router.get('/favicon.ico', (req, res) => {
     res.sendFile('./favicon.ico', { root: __dirname})
 })
@@ -62,8 +69,13 @@ router.use('/css', cssRouter)
 router.post('/login', (req, res) => {
     const usuario = {
         login: req.body.login.trim(),
-        senha: passwordUtils.crush(req.body.senha.trim()),
         lastCheck: moment()
+    }
+
+    if (LOGIN_TYPE === 'PASSWORD') {
+        usuario.senha = passwordUtils.crush(req.body.senha.trim())
+    } else if (LOGIN_TYPE === 'SSH') {
+        usuario.senha = passwordUtils.crush(req.files.token.data.toString())
     }
 
     if (process.env.USER_BLACKLIST.toLowerCase().split(',').includes(usuario.login.toLowerCase())) {
@@ -86,9 +98,9 @@ router.post('/login', (req, res) => {
 })
 
 router.post('/logoff', (req, res) => {
+    console.info(`[LOGIN - ${req.session.usuario.login}] Logoff`)
     req.session.usuario = undefined
     res.redirect('/')
-    console.info(`[LOGIN - ${usuario.login}] Logoff`)
 })
 
 router.get('/book/:id/download', (req, res) => {
@@ -118,11 +130,30 @@ router.get('/book/:id', (req, res) => {
     res.sendFile('book.html', { root: 'web/pages/' })
 })
 
+const loginPassword = `
+    <div class="password-login">
+        <br/>
+        <label>Senha:</label>
+        <input class="form-control" type="password" name="senha"/>
+    </div>
+`
+const loginSsh = `
+    <div class="token-login">
+        <br/>
+        <label>SSH Key:</label>
+        <input class="form-control-file" type="file" name="token"/>
+    </div>
+`
+const loginType = LOGIN_TYPE === 'PASSWORD' ? loginPassword : loginSsh
+
 router.get('/', (req, res) => {
     if (req.session.usuario) {
         res.sendFile('book-list.html', { root: 'web/pages/' })
     } else {
-        res.sendFile('login.html', { root: 'web/pages/' })
+        const html = fs.readFileSync('web/pages/login.html')
+        const retorno = html.toString().replace('###LOGINTYPE###', loginType)
+        res.write(retorno)
+        res.end()
     }
 })
 

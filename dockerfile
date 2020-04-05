@@ -4,6 +4,7 @@ WORKDIR /app
 RUN rm /app/.env
 RUN npm i --production
 ENV LOG_LEVEL=INFO
+ENV LOGIN_TYPE=PASSWORD
 ENV SPARK_HOST=localhost
 ENV MONGO=mongodb://localhost:27017
 ENV USER_BLACKLIST=
