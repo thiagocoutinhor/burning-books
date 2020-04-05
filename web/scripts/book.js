@@ -428,6 +428,10 @@ function jumpToReceipt(index) {
 function runAllTo(index) {
     if (index > 0 && !isRunning) {
         executeTo = index - 1
+        book.commands.filter((c, index) => index <= executeTo).forEach(command => {
+            command.status = 'running'
+            command.return = ''
+        })
         jumpToReceipt(0)
         runCommand(0)
     }

@@ -16,6 +16,7 @@ before)
 - Spark configuration is now saved in each book
 - Download of the code now is possible
 - When running all above the screen jumps to the receipt of the running chunk
+- Run all above now mark all the chunks above as running
 
 ### Internal
 - Protects the user password in the session store
