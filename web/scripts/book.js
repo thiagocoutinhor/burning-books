@@ -38,8 +38,10 @@ function init() {
     bookSocket.on('book', book => {
         console.debug('Book recebido')
         this.book = book
+        $('#downloadScala')
+            .attr('href', `/book/${book._id}/download`)
+            .attr('download', `${book.name}.scala`)
         if (book.sparkConfig) {
-            console.log(book)
             $('#executores').val(book.sparkConfig.executors)
             $('#nucleos').val(book.sparkConfig.cores)
             $('#memoria').val(book.sparkConfig.memory)
@@ -76,6 +78,8 @@ function voltar() {
 
 function mudarTitulo() {
     const titulo = $('#titulo').val()
+    book.name = titulo
+    $('#downloadScala').attr('download', `${book.name}.scala`)
     bookSocket.emit('name', titulo)
 }
 
@@ -160,6 +164,11 @@ function disconnect() {
     $('.connection-status .connection-icon').dropdown('dispose')
 }
 
+function copyAllCommands() {
+    const commands = book.commands.map((command, index) => `${getBlockComment(index)}${command.command}`.trim())
+    doCopy(commands.join('\n\n'))
+}
+
 function montaCards() {
     const commandCards = d3.select('div.commands').selectAll('div.command-block')
         .data(book.commands)
@@ -219,22 +228,22 @@ function montaCards() {
         `)
 
     titulo.append('div')
-        .attr('class', 'btn-group dropleft')
+        .attr('class', 'dropleft')
         .html((d, i) => `
-            <button type="button" class="btn" data-toggle="dropdown">
+            <div class="pointer p-2" data-toggle="dropdown" style="font-size: 120%">
                 <i class="fas fa-ellipsis-v"></i>
-            </button>
+            </div>
             <div class="dropdown-menu">
-                <a class="dropdown-item" href="#" onclick="copyCommand(${i})">
+                <a class="dropdown-item" onclick="copyCommand(${i})">
                     <i class="fa fa-clone"></i>
                     Copiar
                 </a>
-                <a class="dropdown-item rodar-ate ${isRunning ? 'disabled' : ''}" href="#" onclick="runAllTo(${i})">
+                <a class="dropdown-item rodar-ate ${isRunning ? 'disabled' : ''}" onclick="runAllTo(${i})">
                     <i class="fa fa-play"></i>
                     Rodar todos acima
                 </a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#" onclick="removeCommand(${i})">
+                <a class="dropdown-item" onclick="removeCommand(${i})">
                     <i class="fa fa-trash"></i>
                     Remover
                 </a>
@@ -333,11 +342,6 @@ function getBlockComment(index) {
 function copyCommand(index) {
     const command = `${getBlockComment(index)}${book.commands[index].command}`.trim()
     doCopy(command)
-}
-
-function copyAllCommands() {
-    const commands = book.commands.map((command, index) => `${getBlockComment(index)}${command.command}`.trim())
-    doCopy(commands.join('\n\n'))
 }
 
 function doCopy(text) {

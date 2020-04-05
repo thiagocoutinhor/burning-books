@@ -4,6 +4,10 @@ body {
     overflow-x: hidden;
 }
 
+a {
+    cursor: pointer;
+}
+
 .pointer {
     cursor: pointer;
 }
