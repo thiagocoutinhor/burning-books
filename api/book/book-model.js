@@ -8,7 +8,12 @@ const schema = new mongoose.Schema({
         command: String
     }],
     owner: { type: String, required: true },
-    sharedWith: [String]
+    sharedWith: [String],
+    sparkConfig: {
+        executors: Number,
+        cores: Number,
+        memory: Number
+    }
 })
 
 schema.index({

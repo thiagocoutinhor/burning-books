@@ -49,19 +49,19 @@
                     <div class="input-group-prepend">
                         <div class="input-group-text">Executores</div>
                     </div>
-                    <input id="executores" type="number" min="1" class="form-control" value="2"/>
+                    <input id="executores" type="number" min="1" class="form-control" value="2" onchange="changeConfig()"/>
                 </div>
                 <div class="connect-config input-group input-group-sm ml-1">
                     <div class="input-group-prepend">
                         <div class="input-group-text">Núcleos</div>
                     </div>
-                    <input id="nucleos" type="number" min="1" class="form-control" value="2"/>
+                    <input id="nucleos" type="number" min="1" class="form-control" value="2" onchange="changeConfig()"/>
                 </div>
                 <div class="connect-config input-group input-group-sm ml-1">
                     <div class="input-group-prepend">
                         <div class="input-group-text">Memória</div>
                     </div>
-                    <input id="memoria" type="number" min="1" class="form-control" value="1"/>
+                    <input id="memoria" type="number" min="1" class="form-control" value="1" onchange="changeConfig()"/>
                 </div>
                 <button class="connect-config btn btn-primary btn-sm ml-1" onclick="connect()">
                     Conectar

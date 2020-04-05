@@ -13,6 +13,7 @@ before)
 - Execution tags on the chunks
 - Adds formatted tables to the result card
 - Naming chunks now is possible
+- Spark configuration is now saved in each book
 
 ### Internal
 - Protects the user password in the session store

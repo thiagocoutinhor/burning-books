@@ -38,6 +38,12 @@ function init() {
     bookSocket.on('book', book => {
         console.debug('Book recebido')
         this.book = book
+        if (book.sparkConfig) {
+            console.log(book)
+            $('#executores').val(book.sparkConfig.executors)
+            $('#nucleos').val(book.sparkConfig.cores)
+            $('#memoria').val(book.sparkConfig.memory)
+        }
         $('.navbar .titulo').text(book.name)
         $('#titulo').val(book.name)
         montaCards()
@@ -71,6 +77,13 @@ function voltar() {
 function mudarTitulo() {
     const titulo = $('#titulo').val()
     bookSocket.emit('name', titulo)
+}
+
+function changeConfig() {
+    const executors = $('#executores').val()
+    const cores = $('#nucleos').val()
+    const memory = $('#memoria').val()
+    bookSocket.emit('spark.config', executors, cores, memory)
 }
 
 function connect() {

@@ -96,6 +96,16 @@ module.exports = socket => {
             socket.broadcast.to(bookId).emit('chunk.move', source, destination)
         })
 
+        socket.on('spark.config', (executors, cores, memory) => {
+            book.sparkConfig = {
+                executors,
+                cores,
+                memory
+            }
+            book.save()
+            socket.broadcast.to(bookId).emit('spark.config', executors, cores, memory)
+        })
+
         socket.on('disconnect', () => {
             console.info(`[IO BOOK - ${usuario.login}] Desconectou`)
             books[bookId].count--
