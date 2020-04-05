@@ -3,7 +3,7 @@ const { PassThrough } = require('stream')
 
 // Configuração do mock para facil mudança
 const config = {
-    shellOpenTime: 5 * 1000,
+    shellOpenTime: 2 * 1000,
     mockRunCommand: (user, comando, stream) => {
         console.log(`[SPARK MOCK - ${user}] Run recieved\n${comando}`)
 
@@ -18,8 +18,9 @@ const config = {
 
         // Quantos contadores e em que intervalo enviar
         const stages = [
-            { step: 10, progresso: 0 },
-            { step: 15, progresso: 0 }
+            { step: 50, progresso: 0 },
+            { step: 30, progresso: 0 },
+            { step: 40, progresso: 0, incompleto: true }
         ]
 
         // Envia os contadores de progresso a cada segundo
@@ -28,7 +29,8 @@ const config = {
             const timer = setInterval(() => {
                 stage.progresso += stage.step
                 stream.emit('data', progress(stage.progresso, index))
-                if (stage.progresso >= 100) {
+                const parar = (stage.incompleto && stage.progresso >= 80) || (stage.progresso >= 100)
+                if (parar) {
                     finalizado++
                     clearInterval(timer)
                     if (finalizado == stages.length) {

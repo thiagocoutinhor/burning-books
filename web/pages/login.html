@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <form action="/login" method="POST">
+    <form action="/login" method="POST" enctype="multipart/form-data">
         <div class="card mx-auto mt-5" style="width: 500px">
             <div class="card-body">
                 <h3 class="card-title text-center">Burning Books</h3>
@@ -19,9 +19,7 @@
                 <div>
                     <label>Login:</label>
                     <input class="form-control" type="text" name="login"/>
-                    <br/>
-                    <label>Senha:</label>
-                    <input class="form-control" type="password" name="senha"/>
+                    ###LOGINTYPE###
                 </div>
 
                 <div>

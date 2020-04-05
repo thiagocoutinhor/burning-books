@@ -1,3 +1,27 @@
+v0.1.3-alpha
+===============================================================================
+
+### Bug Fixes
+- Corrects the progress bar calculation (was adding the numbers in parentesis
+before)
+- Progress bars are always marked as done when the chunk is done running
+- Fixes the "run all above" bug where once activatede always runs to the end
+- Fixes the progress bar bug when there where no "=" or ">" character
+- Fixes the receit not following the chunk on move up and down
+
+### Quality of Life
+- Execution tags on the chunks
+- Adds formatted tables to the result card
+- Naming chunks now is possible
+- Spark configuration is now saved in each book
+- Download of the code now is possible
+- When running all above the screen jumps to the receipt of the running chunk
+- Run all above now mark all the chunks above as running
+- Login using SSH Identity file
+
+### Internal
+- Protects the user password in the session store
+
 v0.1.2-alpha
 ===============================================================================
 

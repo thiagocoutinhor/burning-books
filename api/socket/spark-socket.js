@@ -1,8 +1,11 @@
 const SparkShell = require('../spark-shell/spark-shell').SparkSession
 const Stream = require('stream').PassThrough
+const passwordUtils = require('../crypt/password-utils')
 
 module.exports = socket => {
     const usuario = socket.handshake.session.usuario
+    usuario.senha = passwordUtils.uncrush(usuario.senha)
+
     const config = socket.handshake.query
     console.debug(`[IO SPARK - ${usuario.login}] Conectou`)
 

@@ -1,5 +1,7 @@
 const Book = require('../book/book-model').Book
-const books = {} // Controle para evitar dissincronia dos books entre sockets
+// Controle para evitar dissincronia dos books entre sockets
+// TODO impede o crescimento horizontal da aplicação. Rever talvez seja necessário
+const books = {}
 
 module.exports = socket => {
     const usuario = socket.handshake.session.usuario
@@ -26,7 +28,7 @@ module.exports = socket => {
             console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
             socket.emit('exit')
             socket.disconnect()
-            returns
+            return
         }
 
         if (!temAcesso(book)) {
@@ -76,6 +78,34 @@ module.exports = socket => {
             saveDelay = setTimeout(() => book.save(), 1 * 1000)
 
             socket.broadcast.to(bookId).emit('update', index, command)
+        })
+
+        socket.on('chunk.name', (index, name) => {
+            book.commands[index].name = name
+            book.save()
+            socket.broadcast.to(bookId).emit('chunk.name', index, name)
+        })
+
+        socket.on('chunk.move', (source, destination) => {
+            const comSource = book.commands[source]
+            const comDestination = book.commands[destination]
+            book.commands[source] = comDestination
+            book.commands[destination] = comSource
+            book.markModified('commands')
+            book.save()
+            console.log(comDestination, book.commands[source])
+            console.log(`move ${source} > ${destination}`)
+            socket.broadcast.to(bookId).emit('chunk.move', source, destination)
+        })
+
+        socket.on('spark.config', (executors, cores, memory) => {
+            book.sparkConfig = {
+                executors,
+                cores,
+                memory
+            }
+            book.save()
+            socket.broadcast.to(bookId).emit('spark.config', executors, cores, memory)
         })
 
         socket.on('disconnect', () => {

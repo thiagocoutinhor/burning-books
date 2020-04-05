@@ -73,30 +73,34 @@ function bookOptionsHtml(book) {
         <span class="text-secondary pl-3 pointer" data-toggle="dropdown">
             <i class="fa fa-ellipsis-v"></i>
         </span>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" href="/book/${book._id}/download" download="${book.name}.scala">
+                <i class="fa fa-file-download mr-1"></i>
+                Baixar .scala
+            </a>
     `
     if (book.mine) {
         retorno += `
-            <div class="dropdown-menu">
-                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#compartilhar" onclick="compartilharScreen('${book._id}', '${book.sharedWith.join(';')}')">
-                    <i class="fa fa-share-alt"></i>
-                    Compartilhar
-                </a>
-                <a class="dropdown-item" href="#" onclick="remover('${book._id}')">
-                    <i class="fa fa-trash"></i>
-                    Remover
-                </a>
-            </div>
+            <a class="dropdown-item" data-toggle="modal" data-target="#compartilhar" onclick="compartilharScreen('${book._id}', '${book.sharedWith.join(';')}')">
+                <i class="fa fa-share-alt mr-1"></i>
+                Compartilhar
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" onclick="remover('${book._id}')">
+                <i class="fa fa-trash mr-1"></i>
+                Remover
+            </a>
         `.trim()
     } else {
         retorno += `
-            <div class="dropdown-menu">
-                <a class="dropdown-item" href="#" onclick="meRemover('${book._id}')">
-                    <i class="fa fa-share-alt"></i>
-                    Parar de ver
-                </a>
-            </div>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" onclick="meRemover('${book._id}')">
+                <i class="fa fa-share-alt mr-1"></i>
+                Parar de ver
+            </a>
         `
     }
+    retorno += '</div>'
     return retorno
 }
 

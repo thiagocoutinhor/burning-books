@@ -39,7 +39,7 @@
                 <div class="pointer connection-icon dropdown">
                     <i class="fa fa-wifi"></i>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#" onclick="disconnect()">
+                        <a class="dropdown-item" onclick="disconnect()">
                             <i class="fa fa-power-off"></i>
                             Disconectar
                         </a>
@@ -49,28 +49,38 @@
                     <div class="input-group-prepend">
                         <div class="input-group-text">Executores</div>
                     </div>
-                    <input id="executores" type="number" min="1" class="form-control" value="2"/>
+                    <input id="executores" type="number" min="1" class="form-control" value="2" onchange="changeConfig()"/>
                 </div>
                 <div class="connect-config input-group input-group-sm ml-1">
                     <div class="input-group-prepend">
                         <div class="input-group-text">Núcleos</div>
                     </div>
-                    <input id="nucleos" type="number" min="1" class="form-control" value="2"/>
+                    <input id="nucleos" type="number" min="1" class="form-control" value="2" onchange="changeConfig()"/>
                 </div>
                 <div class="connect-config input-group input-group-sm ml-1">
                     <div class="input-group-prepend">
                         <div class="input-group-text">Memória</div>
                     </div>
-                    <input id="memoria" type="number" min="1" class="form-control" value="1"/>
+                    <input id="memoria" type="number" min="1" class="form-control" value="1" onchange="changeConfig()"/>
                 </div>
                 <button class="connect-config btn btn-primary btn-sm ml-1" onclick="connect()">
                     Conectar
                 </button>
             </div>
         </div>
-        <div class="d-flex">
-            <div onclick="copyAllCommands()" data-toggle="tooltip" data-placement="bottom" title="Copiar tudo">
-                <i class="fa fa-clone mr-2 pointer"></i>
+        <div class="pointer dropleft">
+            <div data-toggle="dropdown">
+                <i class="fa fa-ellipsis-v"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a onclick="copyAllCommands()" class="dropdown-item">
+                    <i class="fa fa-clone mr-2"></i>
+                    Copiar tudo
+                </a>
+                <a class="dropdown-item" id="downloadScala">
+                    <i class="fa fa-file-download mr-2"></i>
+                    Baixar .scala
+                </a>
             </div>
         </div>
     </div>
@@ -80,9 +90,9 @@
             <div class="card">
                 <div class="card-body">
                     <div class="card-title d-flex">
-                        <span class="bloco">[Bloco 0]</span>
+                        <span class="bloco pointer" data-toggle="modal" data-target="#nomeia-chunk" onclick="preparaNomeacao(0)">[Bloco 0]</span>
                         <span class="flex-grow-1"></span>
-                        <div class="d-flex flex-column">
+                        <div class="d-flex flex-column ordem">
                             <div class="pointer" onclick="moveUp(0)">
                                 <i class="fa fa-angle-up"></i>
                             </div>
@@ -90,16 +100,21 @@
                                 <i class="fa fa-angle-down"></i>
                             </div>
                         </div>
-                        <div class="btn-group dropleft">
-                            <button type="button" class="btn" data-toggle="dropdown">
+                        <div class="dropleft">
+                            <div class="pointer p-2" data-toggle="dropdown" style="font-size: 120%">
                                 <i class="fas fa-ellipsis-v"></i>
-                            </button>
+                            </div>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#" onclick="copyCommand(0)">
+                                <a class="dropdown-item" onclick="copyCommand(0)">
                                     <i class="fa fa-clone"></i>
                                     Copiar
                                 </a>
-                                <a class="dropdown-item" href="#" onclick="removeCommand(0)">
+                                <a class="dropdown-item rodar-ate" onclick="runAllTo(0)">
+                                    <i class="fa fa-play"></i>
+                                    Rodar todos acima
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" onclick="removeCommand(0)">
                                     <i class="fa fa-trash"></i>
                                     Remover
                                 </a>
@@ -151,6 +166,22 @@
         </div>
     </div>
 
+    <div class="modal fade" id="nomeia-chunk">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6>Nome do Bloco</h6>
+                </div>
+                <div class="modal-body text-left">
+                    <input type="hidden" id="cod-chunk"/>
+                    <input type="text" id="name" class="form-control w-100"/>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="mudarChunk()" data-dismiss="modal">Alterar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

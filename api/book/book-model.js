@@ -4,10 +4,16 @@ const newName = 'Novo Book'
 const schema = new mongoose.Schema({
     name: { type: String, required: true },
     commands: [{
+        name: String,
         command: String
     }],
     owner: { type: String, required: true },
-    sharedWith: [String]
+    sharedWith: [String],
+    sparkConfig: {
+        executors: Number,
+        cores: Number,
+        memory: Number
+    }
 })
 
 schema.index({

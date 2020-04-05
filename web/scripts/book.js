@@ -27,7 +27,7 @@ function init() {
     })
 
     bookSocket.on('name.error', err => {
-        console.debug('Erro durante renomeação', err)
+        console.error('Erro durante renomeação', err)
         var mensagem = err.errmsg
         if (err.code = 11000) {
             mensagem = `Você já tem um book com esse nome (${err.keyValue.name})`
@@ -38,14 +38,34 @@ function init() {
     bookSocket.on('book', book => {
         console.debug('Book recebido')
         this.book = book
+        $('#downloadScala')
+            .attr('href', `/book/${book._id}/download`)
+            .attr('download', `${book.name}.scala`)
+        if (book.sparkConfig) {
+            $('#executores').val(book.sparkConfig.executors)
+            $('#nucleos').val(book.sparkConfig.cores)
+            $('#memoria').val(book.sparkConfig.memory)
+        }
         $('.navbar .titulo').text(book.name)
         $('#titulo').val(book.name)
         montaCards()
     })
 
     bookSocket.on('update', (index, command) => {
-        book.commands[index] = command
+        book.commands[index].command = command
         $(`.block-${index} .command-text`).html(commandToHtml(command))
+    })
+
+    bookSocket.on('chunk.move', (source, destination) => {
+        const comSource = book.commands[source]
+        const comDestination = book.commands[destination]
+        book.commands[source] = comDestination
+        book.commands[destination] = comSource
+    })
+
+    bookSocket.on('chunk.name', (index, name) => {
+        book.commands[index].name = name
+        $(`.block-${index} bloco`).text(`[Bloco ${index}] ${name ? name : ''}`)
     })
 
     running(true)
@@ -58,7 +78,16 @@ function voltar() {
 
 function mudarTitulo() {
     const titulo = $('#titulo').val()
+    book.name = titulo
+    $('#downloadScala').attr('download', `${book.name}.scala`)
     bookSocket.emit('name', titulo)
+}
+
+function changeConfig() {
+    const executors = $('#executores').val()
+    const cores = $('#nucleos').val()
+    const memory = $('#memoria').val()
+    bookSocket.emit('spark.config', executors, cores, memory)
 }
 
 function connect() {
@@ -104,7 +133,7 @@ function connect() {
         book.commands[executing].return += retorno
         const html = returnToHtml(book.commands[executing].return)
         $(`.block-${executing} .recibo`).html(html)
-        $(`.block-${executing} .recibo`).show()
+        $(`.block-${executing} .recibo`).removeClass('d-none')
     })
 
     spark.on('return.error', (erro) => {
@@ -135,14 +164,22 @@ function disconnect() {
     $('.connection-status .connection-icon').dropdown('dispose')
 }
 
+function copyAllCommands() {
+    const commands = book.commands.map((command, index) => `${getBlockComment(index)}${command.command}`.trim())
+    doCopy(commands.join('\n\n'))
+}
+
 function montaCards() {
     const commandCards = d3.select('div.commands').selectAll('div.command-block')
         .data(book.commands)
 
     // Manutentção de cards já existentes
     commandCards
+        .attr('class', (d, i) => `m-3 command-block block-${i} ${d.status ? d.status : ''}`)
+
+    commandCards
         .select('div.card-title span.bloco')
-        .text((d, i) => `[Bloco ${i}]`)
+        .text((d, i) => `[Bloco ${i}] ${d.name ? d.name : ''}`)
 
     commandCards
         .select('div.card-text div.command-text')
@@ -150,7 +187,7 @@ function montaCards() {
 
     commandCards
         .select('div.recibo')
-        .style('display', d => d.return ? 'inherited' : 'none')
+        .attr('class', d => `mr-4 ml-4 recibo ${d.return ? '' : 'd-none'}`)
         .html(d => returnToHtml(d.return))
 
     // Remoção dos cards
@@ -159,7 +196,7 @@ function montaCards() {
     // Criação de novos cards
     const newCommand = commandCards.enter()
         .append('div')
-        .attr('class', (d, i) => `m-3 command-block block-${i}`)
+        .attr('class', (d, i) => `m-3 command-block block-${i} ${d.status ? d.status : ''}`)
 
     const newCard = newCommand.append('div')
         .attr('class', 'card')
@@ -170,13 +207,17 @@ function montaCards() {
         .attr('class', 'card-title d-flex')
 
     titulo.append('span')
-        .text((d, i) => `[Bloco ${i}]`)
+        .attr('class', 'bloco pointer')
+        .attr("data-toggle", "modal")
+        .attr("data-target", "#nomeia-chunk")
+        .attr("onclick", (d, i) => `preparaNomeacao(${i})`)
+        .text((d, i) => `[Bloco ${i}] ${d.name ? d.name : ''}`)
 
     titulo.append('span')
         .attr('class', 'flex-grow-1')
 
-    const order = titulo.append('div')
-        .attr('class', 'd-flex flex-column')
+    titulo.append('div')
+        .attr('class', 'd-flex flex-column ordem')
         .html((d, i) => `
             <div class="pointer" style="width: 15px;" onclick="moveUp(${i})">
                 <i class="fa fa-angle-up"></i>
@@ -187,22 +228,22 @@ function montaCards() {
         `)
 
     titulo.append('div')
-        .attr('class', 'btn-group dropleft')
+        .attr('class', 'dropleft')
         .html((d, i) => `
-            <button type="button" class="btn" data-toggle="dropdown">
+            <div class="pointer p-2" data-toggle="dropdown" style="font-size: 120%">
                 <i class="fas fa-ellipsis-v"></i>
-            </button>
+            </div>
             <div class="dropdown-menu">
-                <a class="dropdown-item" href="#" onclick="copyCommand(${i})">
+                <a class="dropdown-item" onclick="copyCommand(${i})">
                     <i class="fa fa-clone"></i>
                     Copiar
                 </a>
-                <a class="dropdown-item rodar-ate ${isRunning ? 'disabled' : ''}" href="#" onclick="runAllTo(${i})">
+                <a class="dropdown-item rodar-ate ${isRunning ? 'disabled' : ''}" onclick="runAllTo(${i})">
                     <i class="fa fa-play"></i>
                     Rodar todos acima
                 </a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#" onclick="removeCommand(${i})">
+                <a class="dropdown-item" onclick="removeCommand(${i})">
                     <i class="fa fa-trash"></i>
                     Remover
                 </a>
@@ -245,8 +286,7 @@ function montaCards() {
         .html('<i class="fa fa-play">')
 
     newCommand.append('div')
-        .attr('class', 'mr-4 ml-4 recibo')
-        .style('display', d => d.return ? 'inherited' : 'none')
+        .attr('class', d => `mr-4 ml-4 recibo ${d.return ? '' : 'd-none'}`)
         .html(d => returnToHtml(d.return))
 }
 
@@ -260,38 +300,48 @@ function running(running) {
     $('.run-button').attr('disabled', running)
 }
 
+function preparaNomeacao(index) {
+    $('#nomeia-chunk #cod-chunk').val(index)
+    $('#nomeia-chunk #name').val(book.commands[index].name)
+}
+
+function mudarChunk() {
+    const id = $('#nomeia-chunk #cod-chunk').val()
+    const name = $('#nomeia-chunk #name').val()
+    book.commands[id].name = name.trim().length > 0 ? name.trim() : undefined
+    bookSocket.emit('chunk.name', id, name)
+    montaCards()
+}
+
 function moveUp(index) {
     if (index > 0) {
-        const previousCommand = book.commands[index - 1].command
-        const command = book.commands[index].command
-        book.commands[index - 1].command = command
-        book.commands[index].command = previousCommand
+        const previousCommand = book.commands[index - 1]
+        const command = book.commands[index]
+        book.commands[index - 1] = command
+        book.commands[index] = previousCommand
         montaCards()
-        bookSocket.emit('update', index - 1, command)
-        bookSocket.emit('update', index, previousCommand)
+        bookSocket.emit('chunk.move', index, index - 1)
     }
 }
 
 function moveDown(index) {
     if (index < book.commands.length-1) {
-        const command = book.commands[index].command
-        const nextCommand = book.commands[index + 1].command
-        book.commands[index].command = nextCommand
-        book.commands[index + 1].command = command
+        const command = book.commands[index]
+        const nextCommand = book.commands[index + 1]
+        book.commands[index] = nextCommand
+        book.commands[index + 1] = command
         montaCards()
-        bookSocket.emit('update', index, nextCommand)
-        bookSocket.emit('update', index + 1, command)
+        bookSocket.emit('chunk.move', index, index + 1)
     }
 }
 
-function copyCommand(index) {
-    const command = `// BLOCK ${index}\n${book.commands[index].command}`.trim()
-    doCopy(command)
+function getBlockComment(index) {
+    return `${'/'.repeat(80)}\n// BLOCK ${index}${book.commands[index].name ? ' - ' + book.commands[index].name : ''}\n${'/'.repeat(80)}\n\n`
 }
 
-function copyAllCommands() {
-    const commands = book.commands.map((command, index) => `// BLOCK ${index}\n${book.commands[index].command}`.trim())
-    doCopy(commands.join('\n\n'))
+function copyCommand(index) {
+    const command = `${getBlockComment(index)}${book.commands[index].command}`.trim()
+    doCopy(command)
 }
 
 function doCopy(text) {
@@ -362,14 +412,27 @@ function runCommand(index) {
     running(true)
     executing = index
     book.commands[index].return = ''
-    $(`.block-${index}`).addClass('running')
+    book.commands[index].status = 'running'
     spark.emit('run', book.commands[index].command)
     montaCards()
+    $('.ordem').addClass('d-none').removeClass('d-flex')
+}
+
+function jumpToReceipt(index) {
+    $(`.block-${index} .recibo`).removeClass('d-none')
+    console.log('Recibo > ', $(`.block-${index} .recibo`).offset().top)
+    console.log('Navbar > ', $('.navbar').outerHeight())
+    $('body').scrollTop($(`.block-${index} .recibo`).offset().top - $('.navbar').outerHeight() - 20)
 }
 
 function runAllTo(index) {
     if (index > 0 && !isRunning) {
         executeTo = index - 1
+        book.commands.filter((c, index) => index <= executeTo).forEach(command => {
+            command.status = 'running'
+            command.return = ''
+        })
+        jumpToReceipt(0)
         runCommand(0)
     }
 }
@@ -379,15 +442,18 @@ function returnCommand(retorno, erro) {
         console.error(retorno)
     }
 
-    $(`.block-${executing}`).removeClass('running')
+    book.commands[executing].status = 'done'
+
+    $(`.block-${executing}`).removeClass('running').addClass('done')
 
     if (executing < executeTo) {
-        console.log('banana')
-        $('body').scrollTop($(`.block-${executing + 1}`).offset().top)
+        jumpToReceipt(executing + 1)
         runCommand(executing + 1)
     } else {
+        executeTo = null
         executing = null
         running(false)
+        $('.ordem').addClass('d-flex').removeClass('d-none')
     }
 }
 

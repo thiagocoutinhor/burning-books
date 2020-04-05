@@ -4,6 +4,10 @@ body {
     overflow-x: hidden;
 }
 
+a {
+    cursor: pointer;
+}
+
 .pointer {
     cursor: pointer;
 }
@@ -80,10 +84,6 @@ body {
     border-bottom: 1px solid rgb(216, 216, 216);
 }
 
-.command-block.running .card-title {
-    border-bottom: 1px solid rgb(170, 170, 170);
-}
-
 .command-block .card-title .dropdown-menu {
     font-size: 100%;
 }
@@ -110,6 +110,16 @@ body {
     background-color: silver;
 }
 
+.command-block.running .card-title {
+    border-bottom: 1px solid rgb(170, 170, 170);
+}
+
+.command-block.running .bloco::after {
+    content: 'Running...';
+    color: blue;
+    margin-left: 5px;
+}
+
 .command-block.running .button-remove {
     display: none;
 }
@@ -120,6 +130,17 @@ body {
 
 .command-block.running .run-button .run-text {
     display: none;
+}
+
+.command-block.done .bloco::after {
+    content: 'Done';
+    color: #0e8913;
+    margin-left: 5px;
+}
+
+.command-block.done .recibo .progress-bar {
+    background-color: #28a745;
+    width: 100%!important;
 }
 
 .recibo {
@@ -136,6 +157,11 @@ body {
     background-color: rgb(231, 201, 146);
     white-space: normal;
     color: white
+}
+
+.recibo .table td,
+.recibo .table th {
+    border: none
 }
 
 button.new-command {
