@@ -28,7 +28,7 @@ module.exports = socket => {
             console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
             socket.emit('exit')
             socket.disconnect()
-            returns
+            return
         }
 
         if (!temAcesso(book)) {
