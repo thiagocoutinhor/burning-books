@@ -418,9 +418,17 @@ function runCommand(index) {
     $('.ordem').addClass('d-none').removeClass('d-flex')
 }
 
+function jumpToReceipt(index) {
+    $(`.block-${index} .recibo`).removeClass('d-none')
+    console.log('Recibo > ', $(`.block-${index} .recibo`).offset().top)
+    console.log('Navbar > ', $('.navbar').outerHeight())
+    $('body').scrollTop($(`.block-${index} .recibo`).offset().top - $('.navbar').outerHeight() - 20)
+}
+
 function runAllTo(index) {
     if (index > 0 && !isRunning) {
         executeTo = index - 1
+        jumpToReceipt(0)
         runCommand(0)
     }
 }
@@ -435,7 +443,7 @@ function returnCommand(retorno, erro) {
     $(`.block-${executing}`).removeClass('running').addClass('done')
 
     if (executing < executeTo) {
-        $('body').scrollTop($(`.block-${executing + 1}`).offset().top)
+        jumpToReceipt(executing + 1)
         runCommand(executing + 1)
     } else {
         executeTo = null

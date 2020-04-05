@@ -15,6 +15,7 @@ before)
 - Naming chunks now is possible
 - Spark configuration is now saved in each book
 - Download of the code now is possible
+- When running all above the screen jumps to the receipt of the running chunk
 
 ### Internal
 - Protects the user password in the session store
