@@ -1,22 +1,22 @@
-require('dotenv').config() // Carrega as configurações de ambiente
-require('./log') // Substitui as funções base de console por outras mais robustas
+require('dotenv').config() // Loads development configurations
+require('./log') // Overrides log functions
 
-// Trata as promessas não tratadas com um print
+// Default promise error handler
 process.on('unhandledRejection', error => {
-    console.error(error);
+    console.error(error)
 })
 
 const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
-const sparkSocket = require('./api/socket/spark-socket')
-const listSocket = require('./api/socket/list-socket')
-const bookSocket = require('./api/socket/book-socket')
+const sparkSocket = require('./server/socket/spark-socket')
+const listSocket = require('./server/socket/list-socket')
+const bookSocket = require('./server/socket/book-socket')
 const expressSession = require('express-session')
 const ioSession = require('express-socket.io-session')
 const MongoStore = require('connect-mongo')(expressSession)
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const port = process.env.PORT ? process.env.PORT : 9085
 
@@ -26,7 +26,7 @@ mongoose.connect(process.env.MONGO, {
     useCreateIndex: true,
     dbName: 'sparkbook'
 }).then(() => {
-    console.info('Conectado ao mongo')
+    console.info('Connected to MongoDB')
 })
 
 const session = expressSession({
@@ -53,11 +53,15 @@ app.use((req, res, next) => {
 
 app.use('/', require('./web/router-web'))
 
+///////////////////////////////////////////////////////////////////////////////
+// Socket configuration
+///////////////////////////////////////////////////////////////////////////////
+
 io.use(ioSession(session))
 io.on('connect', socket => {
-    // Controle de acesso
+    // Login control
     if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.usuario) {
-        console.warn('Login sem usuário detectado. Enviando comando de reload.')
+        console.warn('No user detected. Sending reload command.')
         socket.emit('reload')
         socket.disconnect()
     }

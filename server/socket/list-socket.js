@@ -49,7 +49,7 @@ module.exports = socket => {
                     atualizarGrupo(new Set(inicial.concat(book.sharedWith)))
                 })
             } else {
-                console.warn(`[IO LIST - ${usuario.login}] Tentativa de remoção indevida do book ${id}`)
+                console.warn(`[IO LIST - ${usuario.login}] Tentativa de compartilhamento indevido do book ${info.book}`)
             }
         })
     })
@@ -89,7 +89,7 @@ module.exports = socket => {
         if (usuarios) {
             usuarios.forEach(usuario => {
                 socket.broadcast.to(usuario).emit('update')
-            });
+            })
         }
     }
 

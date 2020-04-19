@@ -22,8 +22,7 @@ module.exports = socket => {
                 reject(erro)
             })
         }
-    })
-    .then(book => {
+    }).then(book => {
         if (!book) {
             console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
             socket.emit('exit')
@@ -115,8 +114,7 @@ module.exports = socket => {
                 books[bookId] = undefined
             }
         })
-    })
-    .catch(erro => {
+    }).catch(() => {
         console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
         socket.emit('exit')
         socket.disconnect()

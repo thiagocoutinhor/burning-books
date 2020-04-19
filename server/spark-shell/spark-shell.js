@@ -46,7 +46,7 @@ class SparkSession {
                 .then(stream => {
                     return new Promise((resolve, reject) => {
                         const timeout = setTimeout(() => {
-                            reject("Connection timeout")
+                            reject('Connection timeout')
                         }, 5 * 60 * 1000)
 
                         const watcher = data => {
@@ -71,7 +71,7 @@ class SparkSession {
     command(command, outputStream) {
         return this.openShell().then(stream => {
             console.debug(`[SPARK - ${this.__user}] command> ${command}`)
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
                 var output = ''
                 // Verifica se o comando rodou
                 const watcher = data => {
@@ -105,7 +105,7 @@ class SparkSession {
                 setTimeout(() => {
                     stream.on('data', watcher)
                     stream.write('\x04')
-                }, 300);
+                }, 300)
             })
         })
     }

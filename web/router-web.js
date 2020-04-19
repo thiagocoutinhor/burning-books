@@ -3,10 +3,10 @@ const fileUpload = require('express-fileupload')
 const router = express.Router()
 const scriptRouter = express.Router()
 const cssRouter = express.Router()
-const SparkSession = require('../api/spark-shell/spark-shell').SparkSession
+const SparkSession = require('../server/spark-shell/spark-shell').SparkSession
 const moment = require('moment')
-const passwordUtils = require('../api/crypt/password-utils')
-const Book = require('../api/book/book-model').Book
+const passwordUtils = require('../server/crypt/password-utils')
+const Book = require('../server/book/book-model').Book
 const fs = require('fs')
 
 const LOGIN_TYPE = process.env.LOGIN_TYPE ? process.env.LOGIN_TYPE : 'PASSWORD'

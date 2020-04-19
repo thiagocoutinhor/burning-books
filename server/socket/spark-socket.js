@@ -33,8 +33,7 @@ module.exports = socket => {
 
             socket.shell.command(command, stream).then(retorno => {
                 socket.emit('return', retorno)
-            })
-            .catch(erro => {
+            }).catch(erro => {
                 socket.emit('return.error', erro)
             })
         }

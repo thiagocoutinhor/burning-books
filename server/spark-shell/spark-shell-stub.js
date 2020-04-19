@@ -39,7 +39,7 @@ const config = {
                         stream.executando = false
                     }
                 }
-            }, 1000);
+            }, 1000)
         })
     }
 }
@@ -54,7 +54,7 @@ SparkSession.prototype.connect = function() {
 SparkSession.prototype.openShell = function() {
     console.log(`[SPARK MOCK - ${this.__user}] Abrindo o shell spark`)
     if (!this.shell) {
-        this.shell = new Promise((resolve, reject) => {
+        this.shell = new Promise(resolve => {
             setTimeout(() => {
                 console.log(`[SPARK MOCK - ${this.__user}] Shell rodando`)
                 const stream = new PassThrough()
