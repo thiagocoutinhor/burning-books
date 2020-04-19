@@ -92,8 +92,6 @@ module.exports = socket => {
             book.commands[destination] = comSource
             book.markModified('commands')
             book.save()
-            console.log(comDestination, book.commands[source])
-            console.log(`move ${source} > ${destination}`)
             socket.broadcast.to(bookId).emit('chunk.move', source, destination)
         })
 
