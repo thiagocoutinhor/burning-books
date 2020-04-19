@@ -3,10 +3,10 @@ const fileUpload = require('express-fileupload')
 const router = express.Router()
 const scriptRouter = express.Router()
 const cssRouter = express.Router()
-const SparkSession = require('../server/spark-shell/spark-shell').SparkSession
+const SparkSession = require('./spark-shell/spark-shell').SparkSession
 const moment = require('moment')
-const passwordUtils = require('../server/crypt/password-utils')
-const Book = require('../server/book/book-model').Book
+const passwordUtils = require('./crypt/password-utils')
+const Book = require('./book/book-model').Book
 const fs = require('fs')
 
 const LOGIN_TYPE = process.env.LOGIN_TYPE ? process.env.LOGIN_TYPE : 'PASSWORD'
@@ -25,8 +25,8 @@ cssRouter.use('/bootstrap.css', express.static('./node_modules/bootstrap/dist/cs
 
 // Controle de acesso
 router.use((req, res, next) => {
-    const limiteChecagem = moment().subtract(2, "minutes")
-    const usuario = req.session.usuario
+    const limiteChecagem = moment().subtract(2, 'minutes')
+    const user = req.session.user
 
     const isResource = req.url.includes('/css')
         || req.url.includes('/script')
@@ -34,22 +34,22 @@ router.use((req, res, next) => {
 
     if (isResource) {
         next()
-    } else if (!req.session.usuario) {
+    } else if (!req.session.user) {
         if (['/login', '/'].includes(req.url)) {
             next()
         } else {
             res.redirect('/')
         }
-    } else if (moment(usuario.lastCheck).isBefore(limiteChecagem)) {
-        console.info(`[LOGIN - ${usuario.login}] Validando login`)
-        req.session.usuario.lastCheck = moment()
-        checkLogin(usuario.login, usuario.senha)
+    } else if (moment(user.lastCheck).isBefore(limiteChecagem)) {
+        console.info(`[LOGIN - ${user.login}] Validando login`)
+        req.session.user.lastCheck = moment()
+        checkLogin(user.login, user.senha)
             .then(() => {
                 next()
             })
             .catch(() => {
-                console.warn(`[LOGIN - ${usuario.login}] Validação de login mal sucedida`)
-                req.session.usuario = undefined
+                console.warn(`[LOGIN - ${user.login}] Validação de login mal sucedida`)
+                req.session.user = undefined
                 next()
             })
     } else {
@@ -67,48 +67,48 @@ router.use('/script', scriptRouter)
 router.use('/css', cssRouter)
 
 router.post('/login', (req, res) => {
-    const usuario = {
+    const user = {
         login: req.body.login.trim(),
         lastCheck: moment()
     }
 
     if (LOGIN_TYPE === 'PASSWORD') {
-        usuario.senha = passwordUtils.crush(req.body.senha.trim())
+        user.senha = passwordUtils.crush(req.body.senha.trim())
     } else if (LOGIN_TYPE === 'SSH') {
-        usuario.senha = passwordUtils.crush(req.files.token.data.toString())
+        user.senha = passwordUtils.crush(req.files.token.data.toString())
     }
 
-    if (process.env.USER_BLACKLIST.toLowerCase().split(',').includes(usuario.login.toLowerCase())) {
-        console.warn(`Usuário restrito tentou acessar o sistema: ${usuario.login}`)
+    if (process.env.USER_BLACKLIST.toLowerCase().split(',').includes(user.login.toLowerCase())) {
+        console.warn(`Usuário restrito tentou acessar o sistema: ${user.login}`)
         res.redirect('/')
         return
     }
 
     // Testa a conexão antes de seguir adiante
-    checkLogin(usuario.login, usuario.senha)
+    checkLogin(user.login, user.senha)
         .then(() => {
-            console.info(`[LOGIN - ${usuario.login}] Login bem sucedido`)
-            req.session.usuario = usuario
+            console.info(`[LOGIN - ${user.login}] Login bem sucedido`)
+            req.session.user = user
             res.redirect('/')
         })
         .catch(() => {
-            console.warn(`[LOGIN - ${usuario.login}] Login falhou`)
+            console.warn(`[LOGIN - ${user.login}] Login falhou`)
             res.redirect('/')
         })
 })
 
 router.post('/logoff', (req, res) => {
-    console.info(`[LOGIN - ${req.session.usuario.login}] Logoff`)
-    req.session.usuario = undefined
+    console.info(`[LOGIN - ${req.session.user.login}] Logoff`)
+    req.session.user = undefined
     res.redirect('/')
 })
 
 router.get('/book/:id/download', (req, res) => {
-    const usuario = req.session.usuario
+    const user = req.session.user
     Book.findById(req.params.id)
         .then(book => {
-            if (!temAcesso(book, usuario)) {
-                console.warn(`[DOWNLOAD - ${usuario.login}] Tentativa de acesso indevida ao book ${bookId}`)
+            if (!temAcesso(book, user)) {
+                console.warn(`[DOWNLOAD - ${user.login}] Tentativa de acesso indevida ao book ${bookId}`)
                 res.sendStatus(403)
             }
 
@@ -121,7 +121,7 @@ router.get('/book/:id/download', (req, res) => {
             res.end()
         })
         .catch(() => {
-            console.warn(`[DOWNLOAD - ${usuario.login}] Tentativa de acesso a um book que não existe ${req.params.id}`)
+            console.warn(`[DOWNLOAD - ${user.login}] Tentativa de acesso a um book que não existe ${req.params.id}`)
             res.sendStatus(404)
         })
 })
@@ -147,7 +147,7 @@ const loginSsh = `
 const loginType = LOGIN_TYPE === 'PASSWORD' ? loginPassword : loginSsh
 
 router.get('/', (req, res) => {
-    if (req.session.usuario) {
+    if (req.session.user) {
         res.sendFile('book-list.html', { root: 'web/pages/' })
     } else {
         const html = fs.readFileSync('web/pages/login.html')
@@ -162,9 +162,9 @@ function checkLogin(login, senha) {
     return sparkShell.connect()
 }
 
-function temAcesso(book, usuario) {
-    return book.owner.toLowerCase() === usuario.login.toLowerCase() ||
-        book.sharedWith.map(usr => usr.toLowerCase()).includes(usuario.login.toLowerCase())
+function temAcesso(book, user) {
+    return book.owner.toLowerCase() === user.login.toLowerCase() ||
+        book.sharedWith.map(usr => usr.toLowerCase()).includes(user.login.toLowerCase())
 }
 
 module.exports = router;
