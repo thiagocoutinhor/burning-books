@@ -60,7 +60,7 @@ app.use('/', require('./web/router-web'))
 io.use(ioSession(session))
 io.on('connect', socket => {
     // Login control
-    if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.usuario) {
+    if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.user) {
         console.warn('No user detected. Sending reload command.')
         socket.emit('reload')
         socket.disconnect()

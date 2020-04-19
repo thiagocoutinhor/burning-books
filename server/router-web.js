@@ -23,7 +23,7 @@ scriptRouter.use('/popper.js', express.static('./node_modules/popper.js/dist/umd
 cssRouter.use('/', express.static('./web/css'))
 cssRouter.use('/bootstrap.css', express.static('./node_modules/bootstrap/dist/css/bootstrap.min.css'))
 
-// Controle de acesso
+// Login control
 router.use((req, res, next) => {
     const limiteChecagem = moment().subtract(2, 'minutes')
     const user = req.session.user
@@ -41,14 +41,14 @@ router.use((req, res, next) => {
             res.redirect('/')
         }
     } else if (moment(user.lastCheck).isBefore(limiteChecagem)) {
-        console.info(`[LOGIN - ${user.login}] Validando login`)
+        console.info(`[LOGIN - ${user.login}] Verifying login`)
         req.session.user.lastCheck = moment()
-        checkLogin(user.login, user.senha)
+        checkLogin(user.login, user.password)
             .then(() => {
                 next()
             })
             .catch(() => {
-                console.warn(`[LOGIN - ${user.login}] Validação de login mal sucedida`)
+                console.warn(`[LOGIN - ${user.login}] Login unsuccessfull`)
                 req.session.user = undefined
                 next()
             })
@@ -57,7 +57,7 @@ router.use((req, res, next) => {
     }
 })
 
-// Controle de imagens
+// File uploads
 router.use(fileUpload())
 
 router.get('/favicon.ico', (req, res) => {
@@ -73,26 +73,26 @@ router.post('/login', (req, res) => {
     }
 
     if (LOGIN_TYPE === 'PASSWORD') {
-        user.senha = passwordUtils.crush(req.body.senha.trim())
+        user.password = passwordUtils.crush(req.body.password.trim())
     } else if (LOGIN_TYPE === 'SSH') {
-        user.senha = passwordUtils.crush(req.files.token.data.toString())
+        user.password = passwordUtils.crush(req.files.token.data.toString())
     }
 
     if (process.env.USER_BLACKLIST.toLowerCase().split(',').includes(user.login.toLowerCase())) {
-        console.warn(`Usuário restrito tentou acessar o sistema: ${user.login}`)
+        console.warn(`Blacklisted user access attempt: ${user.login}`)
         res.redirect('/')
         return
     }
 
-    // Testa a conexão antes de seguir adiante
-    checkLogin(user.login, user.senha)
+    // Test the user acess to the server
+    checkLogin(user.login, user.password)
         .then(() => {
-            console.info(`[LOGIN - ${user.login}] Login bem sucedido`)
+            console.info(`[LOGIN - ${user.login}] Login successfull`)
             req.session.user = user
             res.redirect('/')
         })
         .catch(() => {
-            console.warn(`[LOGIN - ${user.login}] Login falhou`)
+            console.warn(`[LOGIN - ${user.login}] Login unsuccessfull`)
             res.redirect('/')
         })
 })
@@ -108,7 +108,7 @@ router.get('/book/:id/download', (req, res) => {
     Book.findById(req.params.id)
         .then(book => {
             if (!temAcesso(book, user)) {
-                console.warn(`[DOWNLOAD - ${user.login}] Tentativa de acesso indevida ao book ${bookId}`)
+                console.warn(`[DOWNLOAD - ${user.login}] Unauthorized book access attempt ${req.params.id}`)
                 res.sendStatus(403)
             }
 
@@ -121,7 +121,7 @@ router.get('/book/:id/download', (req, res) => {
             res.end()
         })
         .catch(() => {
-            console.warn(`[DOWNLOAD - ${user.login}] Tentativa de acesso a um book que não existe ${req.params.id}`)
+            console.warn(`[DOWNLOAD - ${user.login}] Inexistent book access ${req.params.id}`)
             res.sendStatus(404)
         })
 })
@@ -134,7 +134,7 @@ const loginPassword = `
     <div class="password-login">
         <br/>
         <label>Senha:</label>
-        <input class="form-control" type="password" name="senha"/>
+        <input class="form-control" type="password" name="password"/>
     </div>
 `
 const loginSsh = `
@@ -157,8 +157,8 @@ router.get('/', (req, res) => {
     }
 })
 
-function checkLogin(login, senha) {
-    const sparkShell = new SparkSession(login, passwordUtils.uncrush(senha))
+function checkLogin(login, password) {
+    const sparkShell = new SparkSession(login, passwordUtils.uncrush(password))
     return sparkShell.connect()
 }
 
@@ -167,4 +167,4 @@ function temAcesso(book, user) {
         book.sharedWith.map(usr => usr.toLowerCase()).includes(user.login.toLowerCase())
 }
 
-module.exports = router;
+module.exports = router

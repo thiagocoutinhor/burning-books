@@ -3,18 +3,18 @@ const Stream = require('stream').PassThrough
 const passwordUtils = require('../crypt/password-utils')
 
 module.exports = socket => {
-    const usuario = socket.handshake.session.usuario
-    usuario.senha = passwordUtils.uncrush(usuario.senha)
+    const user = socket.handshake.session.user
+    user.password = passwordUtils.uncrush(user.password)
 
     const config = socket.handshake.query
-    console.debug(`[IO SPARK - ${usuario.login}] Conectou`)
+    console.debug(`[SPARK SOCKET - ${user.login}] Connected`)
 
     if (!socket.shell) {
         socket.emit('disconnected')
     }
 
-    console.info(`[IO SPARK - ${usuario.login}] Criando uma nova sessão`)
-    socket.shell = new SparkShell(usuario.login, usuario.senha, config)
+    console.info(`[SPARK SOCKET - ${user.login}] Starting a new session`)
+    socket.shell = new SparkShell(user.login, user.password, config)
     socket.shell.openShell().then(() => {
         socket.emit('ready')
     }).catch(error => {
@@ -31,8 +31,8 @@ module.exports = socket => {
                 socket.emit('return.stream', data)
             })
 
-            socket.shell.command(command, stream).then(retorno => {
-                socket.emit('return', retorno)
+            socket.shell.command(command, stream).then(result => {
+                socket.emit('return', result)
             }).catch(erro => {
                 socket.emit('return.error', erro)
             })
@@ -40,9 +40,9 @@ module.exports = socket => {
     })
 
     socket.on('disconnect', () => {
-        console.debug(`[IO SPARK- ${usuario.login}] Fechando a sessão`)
+        console.debug(`[SPARK SOCKET- ${user.login}] Closing the session`)
         socket.shell.closeShell()
         socket.shell = undefined
-        console.info(`[IO SPARK- ${usuario.login}] Desconectou`)
+        console.info(`[SPARK SOCKET- ${user.login}] Disconected`)
     })
 }

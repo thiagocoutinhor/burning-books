@@ -2,7 +2,6 @@ const Ssh = require('ssh2-promise')
 
 const LOGIN_TYPE = process.env.LOGIN_TYPE ? process.env.LOGIN_TYPE : 'PASSWORD'
 
-// Classe responsável pela conexão e criação de uma nova sessão do spark
 class SparkSession {
 
     constructor(user, password, configuration) {
@@ -32,16 +31,16 @@ class SparkSession {
     }
 
     connect() {
-        console.debug(`[SPARK - ${this.__user}] Iniciando a conexão`)
-        this.ssh.on('close', () => console.debug(`[SPARK - ${this.__user}] Desconectado`))
+        console.debug(`[SPARK - ${this.__user}] Starting connection`)
+        this.ssh.on('close', () => console.debug(`[SPARK - ${this.__user}] Disconnected`))
         return this.ssh.connect().then(() => {
-            console.debug(`[SPARK - ${this.__user}] Conectado`)
+            console.debug(`[SPARK - ${this.__user}] Connected`)
         })
     }
 
     openShell() {
         if (!this.shell) {
-            console.debug(`[SPARK - ${this.__user}] Abrindo o shell spark`)
+            console.debug(`[SPARK - ${this.__user}] Opening spark shell`)
             this.shell = this.ssh.shell()
                 .then(stream => {
                     return new Promise((resolve, reject) => {
@@ -53,7 +52,7 @@ class SparkSession {
                             if (data.includes('scala>')) {
                                 clearTimeout(timeout)
 
-                                console.debug(`[SPARK - ${this.__user}] Shell rodando`)
+                                console.debug(`[SPARK - ${this.__user}] Shell running`)
                                 stream.removeListener('data', watcher)
                                 resolve(stream)
                             }
@@ -73,23 +72,23 @@ class SparkSession {
             console.debug(`[SPARK - ${this.__user}] command> ${command}`)
             return new Promise(resolve => {
                 var output = ''
-                // Verifica se o comando rodou
+
                 const watcher = data => {
-                    const tratado = data.toString()
+                    const cleanData = data.toString()
                         .replace(':paste', '')
                         .replace('// Exiting paste mode, now interpreting.', '')
                         .replace('scala>', '')
                         .replace('\x04', '')
                         .trim()
 
-                    if (outputStream && tratado != '') {
-                        outputStream.emit('data', tratado)
+                    if (outputStream && cleanData != '') {
+                        outputStream.emit('data', cleanData)
                     }
 
                     if (output.length <= 1000000) {
-                        output += tratado
+                        output += cleanData
                     } else {
-                        console.warn('Output too large, stopped appending... Use the stream to circunvent that.')
+                        console.warn('Output too large, stopped appending... Use the utput stream to circunvent that.')
                     }
 
                     if (data.includes('scala>')) {
@@ -99,7 +98,6 @@ class SparkSession {
                     }
                 }
 
-                // Garantia de nao receber o comando inicial de volta
                 const cleanCommand = command.replace(/\t/g, '')
                 stream.write(`:paste\r\n${cleanCommand}\r\n`)
                 setTimeout(() => {
@@ -111,10 +109,10 @@ class SparkSession {
     }
 
     closeShell() {
-        console.debug(`[SPARK - ${this.__user}] Fechando a conexão`)
+        console.debug(`[SPARK - ${this.__user}] Closing connection`)
         if (this.shell) {
             this.shell.then(stream => {
-                console.debug(`[SPARK - ${this.__user}] Shell fechado`)
+                console.debug(`[SPARK - ${this.__user}] Shell closed`)
                 stream.end('exit\n')
                 stream.close()
             })
@@ -127,7 +125,6 @@ module.exports = {
     SparkSession
 }
 
-// Caso seja um ambiente de teste, moca a conexão com o servidor
 if (process.env.MODE === 'TEST') {
     require('./spark-shell-stub')
 }

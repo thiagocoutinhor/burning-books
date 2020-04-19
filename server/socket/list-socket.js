@@ -1,99 +1,102 @@
 const Book = require('../book/book-model').Book
 
 module.exports = socket => {
-    const usuario = socket.handshake.session.usuario
-    console.debug(`[IO LIST - ${usuario.login}] Conectou`)
+    const user = socket.handshake.session.user
+    console.debug(`[LIST SOCKET - ${user.login}] Connected`)
 
-    // Para receber os broadcasts
-    socket.join(usuario.login)
+    // Recieving user broadcasts
+    socket.join(user.login)
 
-    // Abre listando todos os books do usuario
+    // List all the user's books
     list()
 
     // Controle de eventos do socket
     socket.on('list', () => list())
 
     socket.on('create', () => {
-        console.debug(`[IO LIST - ${usuario.login}] Criando novo book`)
-        Book.defaultNewName(usuario.login).then(nomePadrao => {
+        console.debug(`[LIST SOCKET - ${user.login}] Creating a new book`)
+        Book.defaultNewName(user.login).then(defaultName => {
             const book = {
-                name: nomePadrao,
+                name: defaultName,
                 commands: [],
-                owner: usuario.login
+                owner: user.login
             }
             Book.create(book).then(newBook => {
                 socket.emit('created', newBook._id)
-                atualizarGrupo()
+                updateBroadcast()
             })
         })
     })
 
     socket.on('remove', id => {
-        console.debug(`[IO LIST - ${usuario.login}] Removendo book ${id}`)
+        console.debug(`[LIST SOCKET - ${user.login}] Removing book ${id}`)
         Book.findById(id).then(book => {
             if (isMyBook(book)) {
-                book.remove().then(() => atualizarGrupo(book.sharedWith))
+                book.remove().then(() => updateBroadcast(book.sharedWith))
             } else {
-                console.warn(`[IO LIST - ${usuario.login}] Tentativa de remoção indevida do book ${id}`)
+                console.warn(`[LIST SOCKET - ${user.login}] Unauthorized removal attempt ${id}`)
             }
         })
     })
 
     socket.on('share', info => {
-        console.debug(`[IO LIST - ${usuario.login}] Compartilhando book ${info.book}`)
+        console.debug(`[LIST SOCKET - ${user.login}] Sharing book ${info.book}`)
         Book.findById(info.book).then(book => {
             if (isMyBook(book)) {
-                const inicial = book.sharedWith
+                const start = book.sharedWith
                 book.sharedWith = info.with
                 book.save().then(() => {
-                    atualizarGrupo(new Set(inicial.concat(book.sharedWith)))
+                    updateBroadcast(new Set(start.concat(book.sharedWith)))
                 })
             } else {
-                console.warn(`[IO LIST - ${usuario.login}] Tentativa de compartilhamento indevido do book ${info.book}`)
+                console.warn(`[LIST SOCKET - ${user.login}] Unauthorized sharing attempt ${info.book}`)
             }
         })
     })
 
     socket.on('unshare-me', id => {
-        console.debug(`[IO LIST - ${usuario.login}] Removendo o usuário da lista de compartilhamento do book ${id}`)
+        console.debug(`[LIST SOCKET - ${user.login}] Removed self from the shared list ${id}`)
         Book.findById(id).then(book => {
             const sharedTreated = book.sharedWith.map(user => user.toLowerCase())
-            if (sharedTreated.includes(usuario.login.toLowerCase())) {
-                const index = sharedTreated.indexOf(usuario.login.toLowerCase())
+            if (sharedTreated.includes(user.login.toLowerCase())) {
+                const index = sharedTreated.indexOf(user.login.toLowerCase())
                 book.sharedWith.splice(index, 1)
-                book.save().then(() => atualizarGrupo(book.sharedWith.concat([book.owner])))
+                book.save().then(() => updateBroadcast(book.sharedWith.concat([book.owner])))
             }
         })
     })
 
     socket.on('disconnect', () => {
-        console.debug(`[IO LIST - ${usuario.login}] Disconectou`)
+        console.debug(`[LIST SOCKET - ${user.login}] disconnected`)
     })
 
-    // Funções auxiliares
+    ///////////////////////////////////////////////////////////////////////////
+    // Helper functions
+    ///////////////////////////////////////////////////////////////////////////
+
     function list() {
-        Book.find().byUser(usuario.login).then(books => {
-            const retorno = books.sort((a, b) => a.name.toUpperCase() > b.name.toUpperCase() ? 1 : -1)
+        Book.find().byUser(user.login).then(books => {
+            const result = books.sort((a, b) => a.name.toUpperCase() > b.name.toUpperCase() ? 1 : -1)
                 .map(book => book.toObject())
                 .map(book => {
                     book['mine'] = isMyBook(book)
                     return book
                 })
-            socket.emit('list', retorno)
+            socket.emit('list', result)
         })
     }
 
-    function atualizarGrupo(usuarios) {
+    function updateBroadcast(users) {
         list()
-        socket.broadcast.to(usuario.login).emit('update')
-        if (usuarios) {
-            usuarios.forEach(usuario => {
-                socket.broadcast.to(usuario).emit('update')
+        socket.broadcast.to(user.login).emit('update')
+        if (users) {
+            users.forEach(user => {
+                socket.broadcast.to(user).emit('update')
             })
         }
     }
 
     function isMyBook(book) {
-        return book.owner.toLowerCase() === usuario.login.toLowerCase()
+        return book.owner.toLowerCase() === user.login.toLowerCase()
     }
 }

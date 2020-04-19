@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const newName = 'Novo Book'
+const newName = 'New Book'
 
 const schema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -21,19 +21,19 @@ schema.index({
     owner: 1
 }, { unique: true })
 
-// Monta o nome padrão do novo book
+// Creates the default name for a new book
 schema.statics.defaultNewName = function(login) {
     return this.find()
         .byUser(login)
         .where({name: { $regex: new RegExp(newName) }})
         .exec()
         .then(books => {
-            const lista = books.map(book => book.name)
-            var numero = null
-            while (lista.includes(`${newName}${numero ? `(${numero})` : ''}`)) {
-                numero++
+            const list = books.map(book => book.name)
+            let number = null
+            while (list.includes(`${newName}${number ? `(${number})` : ''}`)) {
+                number++
             }
-            return `${newName}${numero ? `(${numero})` : ''}`
+            return `${newName}${number ? `(${number})` : ''}`
         })
 }
 

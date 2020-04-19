@@ -1,36 +1,36 @@
 const { SparkSession } = require('./spark-shell')
 const { PassThrough } = require('stream')
 
-// Configuração do mock para facil mudança
+// Mock config for easy changes
 const config = {
     shellOpenTime: 2 * 1000,
     mockRunCommand: (user, comando, stream) => {
         console.log(`[SPARK MOCK - ${user}] Run recieved\n${comando}`)
 
-        // Monta o contador de progresso
+        // Progress bars
         const progress = (porcentagem, stage) => {
             const maxCaracters = 14
             const caracteres = maxCaracters * porcentagem / 100
-            const valores = `(${2000 * porcentagem / 100 } + 0) / 2000`
+            const values = `(${2000 * porcentagem / 100 } + 0) / 2000`
             const currentStage = `Stage ${stage ? stage : '0'}`
-            return `[${currentStage}:${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}${valores}]`
+            return `[${currentStage}:${'>'.padStart(caracteres, '=').padEnd(maxCaracters, ' ')}${values}]`
         }
 
-        // Quantos contadores e em que intervalo enviar
+        // Number of bars and how much they fill after every second
         const stages = [
-            { step: 50, progresso: 0 },
-            { step: 30, progresso: 0 },
-            { step: 40, progresso: 0, incompleto: true }
+            { step: 50, progress: 0 }, // full
+            { step: 30, progress: 0 }, // overflow
+            { step: 40, progress: 0, incomplete: true } // underflow
         ]
 
-        // Envia os contadores de progresso a cada segundo
+        // Each second tick the bars
         var finalizado = 0
         stages.forEach((stage, index) => {
             const timer = setInterval(() => {
-                stage.progresso += stage.step
-                stream.emit('data', progress(stage.progresso, index))
-                const parar = (stage.incompleto && stage.progresso >= 80) || (stage.progresso >= 100)
-                if (parar) {
+                stage.progress += stage.step
+                stream.emit('data', progress(stage.progress, index))
+                const stop = (stage.incomplete && stage.progress >= 80) || (stage.progress >= 100)
+                if (stop) {
                     finalizado++
                     clearInterval(timer)
                     if (finalizado == stages.length) {
@@ -44,46 +44,46 @@ const config = {
     }
 }
 
-// Moca a conexão ssh
+// Mocks the ssh connection
 SparkSession.prototype.connect = function() {
-    console.log(`[SPARK MOCK - ${this.__user}] Iniciando a conexão`)
+    console.log(`[SPARK MOCK - ${this.__user}] Starting connection`)
     return Promise.resolve()
 }
 
-// Moca a abertura do shell
+// Mocks the shell opening
 SparkSession.prototype.openShell = function() {
-    console.log(`[SPARK MOCK - ${this.__user}] Abrindo o shell spark`)
+    console.log(`[SPARK MOCK - ${this.__user}] Opening spark shell`)
     if (!this.shell) {
         this.shell = new Promise(resolve => {
             setTimeout(() => {
-                console.log(`[SPARK MOCK - ${this.__user}] Shell rodando`)
+                console.log(`[SPARK MOCK - ${this.__user}] Shell running`)
                 const stream = new PassThrough()
                 stream.close = () => {}
 
-                // Monta a chamada para cada usuario
-                var comando = ''
+                // Creates the command
+                var command = ''
                 stream.on('data', data => {
-                    if (!stream.executando) {
-                        comando += data.toString()
+                    if (!stream.running) {
+                        command += data.toString()
                             .replace(':paste', '')
                             .replace('\x04', '')
 
-                        // Control+D marca o envio do comando
+                        // Control+D marks the event end
                         if (data.toString() === '\x04') {
-                            stream.executando = true
-                            config.mockRunCommand(this.__user, comando.trim(), stream)
-                            comando = ''
+                            stream.running = true
+                            config.mockRunCommand(this.__user, command.trim(), stream)
+                            command = ''
                         }
                     }
                 })
 
-                // Retorna o stream
+                // returns the stream
                 resolve(stream)
-            }, config.shellOpenTime) // Abre o shell após cinco segundos
+            }, config.shellOpenTime) // Opens the shell after the thime specified in the config
         })
     }
     return this.shell
 }
 
-// Moca o fechamento do shell
+// Mocks the shell closing
 SparkSession.prototype.closeShell = () => {}

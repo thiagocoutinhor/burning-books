@@ -112,9 +112,9 @@ function edit(id) {
     location.href = `/book/${id}`
 }
 
-function compartilharScreen(id, usuarios) {
+function compartilharScreen(id, users) {
     $('#share-id').val(id)
-    $('#share-list').val(usuarios)
+    $('#share-list').val(users)
 }
 
 function compartilhar() {

@@ -1,10 +1,10 @@
 const Book = require('../book/book-model').Book
-// Controle para evitar dissincronia dos books entre sockets
-// TODO impede o crescimento horizontal da aplicação. Rever talvez seja necessário
+// Assures syncrony between sockets due to the save delay
+// TODO Blocks horizontal growth. Must reassess
 const books = {}
 
 module.exports = socket => {
-    const usuario = socket.handshake.session.usuario
+    const user = socket.handshake.session.user
     const bookId = socket.handshake.query.id
 
     new Promise((resolve, reject) => {
@@ -24,20 +24,20 @@ module.exports = socket => {
         }
     }).then(book => {
         if (!book) {
-            console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
+            console.warn(`[BOOK SOCKET - ${user.login}] Nonexistent book access attempt ${bookId}`)
             socket.emit('exit')
             socket.disconnect()
             return
         }
 
         if (!temAcesso(book)) {
-            console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso indevida ao book ${bookId}`)
+            console.warn(`[BOOK SOCKET - ${user.login}] Unauthorized book access attempt ${bookId}`)
             socket.emit('exit')
             socket.disconnect()
             return
         }
 
-        console.info(`[IO BOOK - ${usuario.login}] Conectou no book ${bookId}`)
+        console.info(`[BOOK SOCKET - ${user.login}] Connected to book ${bookId}`)
         socket.emit('book', book.toJSON())
         socket.join(bookId)
 
@@ -46,9 +46,9 @@ module.exports = socket => {
             book.save().then(book => {
                 socket.emit('name', book.name)
                 socket.broadcast.to(bookId).emit('name', book.name)
-            }).catch(erro => {
-                console.info(`[IO BOOK - ${usuario.login}] Erro ao renomear o book ${bookId}`, erro)
-                socket.emit('name.error', erro)
+            }).catch(error => {
+                console.info(`[BOOK SOCKET - ${user.login}] Error during book rename ${bookId}`, error)
+                socket.emit('name.error', error)
             })
         })
 
@@ -70,7 +70,7 @@ module.exports = socket => {
         socket.on('update', (index, command) => {
             book.commands[index].command = command
 
-            // Delay sem atividade para salvar
+            // Delay without actions
             if (saveDelay) {
                 clearTimeout(saveDelay)
             }
@@ -108,21 +108,20 @@ module.exports = socket => {
         })
 
         socket.on('disconnect', () => {
-            console.info(`[IO BOOK - ${usuario.login}] Desconectou`)
+            console.info(`[BOOK SOCKET - ${user.login}] Disconnected`)
             books[bookId].count--
             if (books[bookId].count === 0) {
                 books[bookId] = undefined
             }
         })
     }).catch(() => {
-        console.warn(`[IO BOOK - ${usuario.login}] Tentativa de acesso a um book que não existe ${bookId}`)
+        console.warn(`[BOOK SOCKET - ${user.login}] Nonexistent book access attempt ${bookId}`)
         socket.emit('exit')
         socket.disconnect()
     })
 
-    // Funcoes auxiliares
     function temAcesso(book) {
-        return book.owner.toLowerCase() === usuario.login.toLowerCase() ||
-            book.sharedWith.map(usr => usr.toLowerCase()).includes(usuario.login.toLowerCase())
+        return book.owner.toLowerCase() === user.login.toLowerCase() ||
+            book.sharedWith.map(usr => usr.toLowerCase()).includes(user.login.toLowerCase())
     }
 }
