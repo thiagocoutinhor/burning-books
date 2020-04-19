@@ -1,4 +1,4 @@
-const Book = require('../book/book-model').Book
+const Book = require('../models/book-model').Book
 // Assures syncrony between sockets due to the save delay
 // TODO Blocks horizontal growth. Must reassess
 const books = {}

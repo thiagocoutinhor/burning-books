@@ -6,7 +6,7 @@ const cssRouter = express.Router()
 const SparkSession = require('./spark-shell/spark-shell').SparkSession
 const moment = require('moment')
 const passwordUtils = require('./crypt/password-utils')
-const Book = require('./book/book-model').Book
+const Book = require('./models/book-model').Book
 const fs = require('fs')
 
 const LOGIN_TYPE = process.env.LOGIN_TYPE ? process.env.LOGIN_TYPE : 'PASSWORD'

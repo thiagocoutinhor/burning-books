@@ -1,4 +1,4 @@
-const Book = require('../book/book-model').Book
+const Book = require('../models/book-model').Book
 
 module.exports = socket => {
     const user = socket.handshake.session.user

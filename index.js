@@ -51,7 +51,7 @@ app.use((req, res, next) => {
     next()
 })
 
-app.use('/', require('./web/router-web'))
+app.use('/', require('./server/router-api'))
 
 ///////////////////////////////////////////////////////////////////////////////
 // Socket configuration
