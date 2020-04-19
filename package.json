@@ -7,9 +7,8 @@
     "url": "git@github.com:thiagocoutinhor/burning-books.git"
   },
   "scripts": {
-    "production": "docker-compose -f docker-compose-production build && docker-compose -f docker-compose-production up -d",
     "prestart": "docker-compose up -d",
-    "start": "nodemon",
+    "start": "nodemon & (cd client && npm start)",
     "stop": "docker-compose stop"
   },
   "nodemonConfig": {
@@ -41,5 +40,9 @@
     "popper.js": "^1.16.1",
     "socket.io": "^2.3.0",
     "ssh2-promise": "^0.1.6"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-plugin-react": "^7.19.0"
   }
 }
