@@ -51,7 +51,16 @@ app.use((req, res, next) => {
     next()
 })
 
-app.use('/', require('./server/router-api'))
+// API routes
+app.use('/api', require('./server/router-api'))
+
+// Web serve
+if (process.env.NODE_ENV === 'production') {
+    app.get('/', (req, res) => res.redirect('index.html'))
+    app.get('*', express.static(`${__dirname}/../client/build`, {
+        index: false
+    }))
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Socket configuration
