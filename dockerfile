@@ -4,6 +4,7 @@ COPY / /app
 WORKDIR /app
 RUN rm /app/.env
 RUN npm i --production
+RUN export NODE_ENV=production
 ENV LOG_LEVEL=INFO
 ENV LOGIN_TYPE=PASSWORD
 ENV SPARK_HOST=localhost
