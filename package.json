@@ -7,13 +7,11 @@
     "url": "git@github.com:thiagocoutinhor/burning-books.git"
   },
   "scripts": {
-    "prestart": "docker-compose up -d",
-    "start": "nodemon & (cd client && npm start)",
-    "stop": "docker-compose stop"
+    "start": "concurrently --kill-others -n server,client -c green,blue \"nodemon\" \"npm start --prefix client\""
   },
   "nodemonConfig": {
     "ignore": [
-      "web/scripts/*"
+      "client/*"
     ]
   },
   "keywords": [
@@ -42,6 +40,7 @@
     "ssh2-promise": "^0.1.6"
   },
   "devDependencies": {
+    "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
     "eslint-plugin-react": "^7.19.0"
   }
