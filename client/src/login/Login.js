@@ -1,8 +1,15 @@
 import React from 'react'
 
 export class Login extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {}
+    }
+
     componentDidMount() {
-        console.log(process.env)
+        fetch('/api/login/type')
+            .then(response => response.text())
+            .then(type => this.setState({ type: type }))
     }
 
     render() {
@@ -15,7 +22,7 @@ export class Login extends React.Component {
                         <div>
                             <label>Login:</label>
                             <input className="form-control" type="text" name="login"/>
-                            ###LOGINTYPE###
+                            <LoginType type={this.state.type}/>
                         </div>
 
                         <div>
@@ -24,6 +31,32 @@ export class Login extends React.Component {
                     </div>
                 </div>
             </form>
+        )
+    }
+}
+
+function LoginType(props) {
+    if (props.type === 'PASSWORD') {
+        return (
+            <div className="password-login">
+                <br/>
+                <label>Senha:</label>
+                <input className="form-control" type="password" name="password"/>
+            </div>
+        )
+    } else if (props.type === 'SSH') {
+        return(
+            <div className="token-login">
+                <br/>
+                <label>SSH Key:</label>
+                <input className="form-control-file" type="file" name="token"/>
+            </div>
+        )
+    } else {
+        return (
+            <div>
+                Unkown login type... Please, check the LOGIN_TYPE enviroment variable.
+            </div>
         )
     }
 }

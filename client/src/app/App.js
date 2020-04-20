@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import { Login } from '../login/Login'
 
-class App extends React.Component {
+export class App extends React.Component {
   render() {
     return (
       <div className="App-container">
@@ -11,5 +11,3 @@ class App extends React.Component {
     )
   }
 }
-
-export default App;
