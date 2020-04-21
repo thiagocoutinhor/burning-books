@@ -13,6 +13,14 @@ router.get('/type', (req, res) => {
     res.send(loginType)
 })
 
+router.get('/', (req, res) => {
+    if (req.session && req.session.user) {
+        res.send(req.session.user.login)
+    } else {
+        res.sendStatus(404)
+    }
+})
+
 router.post('/', (req, res) => {
     const user = {
         login: req.body.login.trim(),

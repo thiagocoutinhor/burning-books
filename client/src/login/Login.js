@@ -1,37 +1,47 @@
 import React from 'react'
+import { LoadingHome } from '../app/App'
 
 export class Login extends React.Component {
     constructor(props) {
         super(props)
-        this.state = {}
+        this.state = {
+            loading: true
+        }
     }
 
     componentDidMount() {
         fetch('/api/login/type')
             .then(response => response.text())
-            .then(type => this.setState({ type: type }))
+            .then(type => this.setState({
+                type,
+                loading: false
+            }))
     }
 
     render() {
-        return (
-            <form action="/api/login" method="POST" encType="multipart/form-data" className="d-flex flex-column justify-content-center" style={{height: '100vh'}}>
-                <div className="card mx-auto shadow" style={{width: "500px"}}>
-                    <div className="card-body">
-                        <h3 className="card-title text-center">Burning Books</h3>
+        if (this.state.loading) {
+            return <LoadingHome />
+        } else {
+            return (
+                <form action="/api/login" method="POST" encType="multipart/form-data" className="d-flex flex-column justify-content-center" style={{height: '100vh'}}>
+                    <div className="card mx-auto shadow" style={{width: "500px"}}>
+                        <div className="card-body">
+                            <h3 className="card-title text-center">Burning Books</h3>
 
-                        <div>
-                            <label>Login:</label>
-                            <input className="form-control" type="text" name="login"/>
-                            <LoginType type={this.state.type}/>
-                        </div>
+                            <div>
+                                <label>Login:</label>
+                                <input className="form-control" type="text" name="login"/>
+                                <LoginType type={this.state.type}/>
+                            </div>
 
-                        <div>
-                            <input type="submit" className="btn btn-primary w-100 mt-3" value="Entrar"/>
+                            <div>
+                                <input type="submit" className="btn btn-primary w-100 mt-3" value="Entrar"/>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        )
+                </form>
+            )
+        }
     }
 }
 
