@@ -10,8 +10,8 @@ module.exports = (server, session) => {
     io.on('connect', socket => {
         // Login control
         if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.user) {
-            console.warn('No user detected. Sending reload command.')
-            socket.emit('login')
+            console.warn('No user detected. Sending logoff command.')
+            socket.emit('logoff')
             socket.disconnect()
         }
     })
