@@ -1,0 +1,16 @@
+body {
+    background-color: darkslategray
+}
+
+a {
+    cursor: pointer;
+}
+
+.navbar {
+    background-color: rgb(88, 131, 131);
+    color: white;
+}
+
+.pointer {
+    cursor: pointer;
+}
