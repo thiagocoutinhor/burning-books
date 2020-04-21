@@ -14,7 +14,7 @@ export class Login extends React.Component {
 
     render() {
         return (
-            <form action="/login" method="POST" encType="multipart/form-data" className="d-flex flex-column justify-content-center" style={{height: '100vh'}}>
+            <form action="/api/login" method="POST" encType="multipart/form-data" className="d-flex flex-column justify-content-center" style={{height: '100vh'}}>
                 <div className="card mx-auto shadow" style={{width: "500px"}}>
                     <div className="card-body">
                         <h3 className="card-title text-center">Burning Books</h3>
