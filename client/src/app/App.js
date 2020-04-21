@@ -14,7 +14,7 @@ export class App extends React.Component {
 
   componentDidMount() {
     fetch('/api/login')
-      .then(response => response.text())
+      .then(response => response.status === 200 ? response.text() : null)
       .then(user => {
         this.setState({
           user,
