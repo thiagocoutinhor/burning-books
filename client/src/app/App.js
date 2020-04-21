@@ -3,6 +3,8 @@ import './App.css';
 import { Login } from '../login/Login'
 import { BookList } from '../book-list/BookList'
 
+// TODO control socket logoff command
+
 export class App extends React.Component {
   constructor(props) {
     super(props)
