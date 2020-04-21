@@ -10,6 +10,7 @@ export class App extends React.Component {
       loading: true,
       user: null
     }
+    this.logoff = this.logoff.bind(this)
   }
 
   componentDidMount() {
@@ -26,10 +27,16 @@ export class App extends React.Component {
   render() {
     return (
       <div className="App-container">
-        <Home user={ this.state.user } loading={ this.state.loading } />
+        <Home user={ this.state.user } loading={ this.state.loading } logoff={ this.logoff } />
       </div>
     )
   }
+
+  logoff() {
+    fetch('/api/login', { method: 'DELETE' })
+    this.setState({ user: null })
+  }
+
 }
 
 export function LoadingHome() {
@@ -47,7 +54,7 @@ function Home(props) {
   if (props.loading) {
     return <LoadingHome />
   } else if (props.user) {
-    return <BookList />
+    return <BookList logoff={ props.logoff } />
   } else {
     return <Login />
   }
