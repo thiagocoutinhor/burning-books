@@ -9,12 +9,8 @@ process.on('unhandledRejection', error => {
 const express = require('express')
 const app = express()
 const http = require('http').Server(app)
-const io = require('socket.io')(http)
-const sparkSocket = require('./server/socket/spark-socket')
-const listSocket = require('./server/socket/list-socket')
-const bookSocket = require('./server/socket/book-socket')
+const sockets = require('./server/router-sockets')
 const expressSession = require('express-session')
-const ioSession = require('express-socket.io-session')
 const MongoStore = require('connect-mongo')(expressSession)
 const mongoose = require('mongoose')
 
@@ -46,10 +42,6 @@ const session = expressSession({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(session)
-app.use((req, res, next) => {
-    req.io = io
-    next()
-})
 
 // API routes
 app.use('/api', require('./server/router-api'))
@@ -62,31 +54,7 @@ if (process.env.NODE_ENV === 'production') {
     }))
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Socket configuration
-///////////////////////////////////////////////////////////////////////////////
-
-io.use(ioSession(session))
-io.on('connect', socket => {
-    // Login control
-    if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.user) {
-        console.warn('No user detected. Sending reload command.')
-        socket.emit('reload')
-        socket.disconnect()
-    }
-})
-
-io.of('/spark')
-    .use(ioSession(session))
-    .on('connect', socket => sparkSocket(socket))
-
-io.of('/list')
-    .use(ioSession(session))
-    .on('connect', socket => listSocket(socket))
-
-io.of('/book')
-    .use(ioSession(session))
-    .on('connect', socket => bookSocket(socket))
+sockets(http, session)
 
 http.listen(port, () => {
     console.info(`Listening on port ${port}`)
