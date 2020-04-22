@@ -23,7 +23,7 @@ function BookListNavbar(props) {
                     <Dropdown.Menu>
                         <Dropdown.Item onClick={props.logoff}>
                             <i className="fa fa-sign-out-alt"></i>
-                            Sair
+                            Logoff
                         </Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
@@ -41,19 +41,57 @@ function BookListNavbar(props) {
 }
 
 function BookOptions(props) {
+    var items = null
+    if (props.book.mine) {
+    } else {
+        items = (
+            <>
+                <Dropdown.Divider/>
+                <Dropdown.Item onClick={ props.removeMe }>
+                    <i className="fa fa-share-alt mr-1"></i>
+                    Leave shared book
+                </Dropdown.Item>
+            </>
+        )
+    }
+
+
     return (
-        <>
-        Banan
-        </>
+        <Dropdown drop="left">
+            <Dropdown.Toggle as={SimpleDropdown}>
+                <i className="fa fa-ellipsis-v"></i>
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+                <Dropdown.Item href={`/api/book/${props.book._id}/download`} download={`${props.book.name}.scala`}>
+                    <i className="fa fa-file-download mr-1"></i>
+                    Download
+                </Dropdown.Item>
+                { items }
+            </Dropdown.Menu>
+        </Dropdown>
     )
 }
 
 function BookLink(props) {
     return (
-        <>
-            <i class="fa fa-edit pr-1"></i>
+        <span>
+            <i className="fa fa-edit pr-1"></i>
             { props.book.name }
-        </>
+        </span>
+    )
+}
+
+function Book(props) {
+    return (
+        <tr key={props.book._id}>
+            <td>
+                <BookLink book={props.book}/>
+            </td>
+            <td>{props.book.owner}</td>
+            <td className="text-right">
+                <BookOptions book={props.book} removeMe={props.removeMe}/>
+            </td>
+        </tr>
     )
 }
 
@@ -68,19 +106,9 @@ function List(props) {
                         <th></th>
                     </tr>
                 </thead>
-                <tbody> {
-                    props.books ? props.books.map(book => (
-                        <tr>
-                            <td>
-                                <BookLink book={book}/>
-                            </td>
-                            <td>{book.owner}</td>
-                            <td>
-                                <BookOptions book={book}/>
-                            </td>
-                        </tr>
-                    )) : null
-                }</tbody>
+                <tbody>
+                    {props.books ? props.books.map(book => <Book key={book._id} book={book} removeMe={props.removeMe}/>) : null}
+                </tbody>
             </Table>
         </div>
     )
@@ -93,6 +121,7 @@ export class BookList extends React.Component {
             books: null
         }
         this.createNewBook = this.createNewBook.bind(this)
+        this.removeMe = this.removeMe(this)
     }
 
     componentDidMount() {
@@ -101,7 +130,6 @@ export class BookList extends React.Component {
         // Handles the book arrival of the book list
         this.socket.on('list', list => {
             this.setState({ books: list })
-            console.log(this.state.books)
         })
 
         // When someone shares a book with the user the user's list must be
@@ -113,15 +141,19 @@ export class BookList extends React.Component {
 
     render() {
         return (
-            <>
+            <div>
                 <BookListNavbar logoff={this.props.logoff} createNewBook={this.createNewBook} />
-                <List books={this.state.books}/>
-            </>
+                <List books={this.state.books} removeMe={this.removeMe}/>
+            </div>
         )
     }
 
     createNewBook() {
-        // TODO implementar
+        // TODO something
+    }
+
+    removeMe() {
+        // TODO something
     }
 
 }
