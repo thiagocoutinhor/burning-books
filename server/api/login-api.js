@@ -53,9 +53,14 @@ router.post('/', (req, res) => {
 })
 
 router.delete('/', (req, res) => {
-    console.info(`[LOGIN - ${req.session.user.login}] Logoff`)
-    req.session.user = undefined
-    res.redirect('/') // TODO o que fazer aqui??
+    if (req.session && req.session.user) {
+        console.info(`[LOGIN - ${req.session.user.login}] Logoff`)
+        req.session.user = undefined
+        res.redirect('/') // TODO o que fazer aqui??
+    } else {
+        console.warn('[LOGIN] Unisgned user trying to logoff')
+        res.sendStatus(404)
+    }
 })
 
 function checkLogin(login, password) {
