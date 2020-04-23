@@ -1,44 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { Login } from '../login/Login'
 import { BookList } from '../book-list/BookList'
 
 // TODO control socket logoff command
 
-export class App extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      loading: true,
-      user: null
-    }
-    this.logoff = this.logoff.bind(this)
-  }
+export function App(props) {
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
 
-  componentDidMount() {
+  useEffect(() => {
+    console.log('Verifying login')
     fetch('/api/login')
       .then(response => response.status === 200 ? response.text() : null)
       .then(user => {
-        this.setState({
-          user,
-          loading: false
-        })
+        setUser(user)
+        setLoading(false)
       })
-  }
+  }, [])
 
-  render() {
-    return (
-      <div className="App-container">
-        <Home user={ this.state.user } loading={ this.state.loading } logoff={ this.logoff } />
-      </div>
-    )
-  }
-
-  logoff() {
+  const logoff = () => {
     fetch('/api/login', { method: 'DELETE' })
-    this.setState({ user: null })
+    setUser(null)
   }
 
+  return (
+    <div className="App-container">
+      <Home user={ user } loading={ loading } logoff={ logoff } />
+    </div>
+  )
 }
 
 export function LoadingHome() {

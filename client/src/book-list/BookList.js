@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import './BookList.css'
 import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
@@ -41,20 +41,29 @@ function BookListNavbar(props) {
 }
 
 function BookOptions(props) {
-    var items = null
-    if (props.book.mine) {
-    } else {
-        items = (
-            <>
-                <Dropdown.Divider/>
-                <Dropdown.Item onClick={ props.removeMe }>
-                    <i className="fa fa-share-alt mr-1"></i>
-                    Leave shared book
-                </Dropdown.Item>
-            </>
-        )
-    }
+    const myBookItems = (
+        <>
+            <Dropdown.Item onClick={props.share}>
+                <i class="fa fa-share-alt mr-1"></i>
+                Share
+            </Dropdown.Item>
+            <Dropdown.Divider/>
+            <Dropdown.Item onClick={props.removeBook}>
+                <i className="fa fa-trash mr-1"></i>
+                Delete
+            </Dropdown.Item>
+        </>
+    )
 
+    const sharedBookItems = (
+        <>
+            <Dropdown.Divider/>
+            <Dropdown.Item onClick={props.removeMe}>
+                <i className="fa fa-share-alt mr-1"></i>
+                Leave shared book
+            </Dropdown.Item>
+        </>
+    )
 
     return (
         <Dropdown drop="left">
@@ -66,94 +75,84 @@ function BookOptions(props) {
                     <i className="fa fa-file-download mr-1"></i>
                     Download
                 </Dropdown.Item>
-                { items }
+                { props.book.mine ? myBookItems : sharedBookItems }
             </Dropdown.Menu>
         </Dropdown>
     )
 }
 
-function BookLink(props) {
-    return (
-        <span>
-            <i className="fa fa-edit pr-1"></i>
-            { props.book.name }
-        </span>
-    )
-}
-
 function Book(props) {
+    const removeMe = () => {
+        // TODO something
+    }
+
+    const removeBook = () => {
+        // TODO something
+    }
+
+    const share = () => {
+        // TODO something
+    }
+
     return (
         <tr key={props.book._id}>
             <td>
-                <BookLink book={props.book}/>
+                <i className="fa fa-edit pr-1"></i>
+                { props.book.name }
             </td>
             <td>{props.book.owner}</td>
             <td className="text-right">
-                <BookOptions book={props.book} removeMe={props.removeMe}/>
+                <BookOptions book={props.book} removeMe={removeMe} share={share} remove={removeBook}/>
             </td>
         </tr>
     )
 }
 
-function List(props) {
-    return (
-        <div className="p-3">
-            <Table striped  hover size="sm" className="bg-white">
-                <thead>
-                    <tr>
-                        <th style={{ paddingLeft: '24px', width: '70%' }}>Name</th>
-                        <th style={{ width: '25%' }}>Owner</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {props.books ? props.books.map(book => <Book key={book._id} book={book} removeMe={props.removeMe}/>) : null}
-                </tbody>
-            </Table>
-        </div>
-    )
-}
+export function BookList(props) {
+    const [books, setBooks] = useState(null)
 
-export class BookList extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            books: null
-        }
-        this.createNewBook = this.createNewBook.bind(this)
-        this.removeMe = this.removeMe(this)
-    }
-
-    componentDidMount() {
-        this.socket = io('/list')
+    useEffect(() => {
+        console.debug('Subscribing to the list')
+        const socket = io('/list')
 
         // Handles the book arrival of the book list
-        this.socket.on('list', list => {
-            this.setState({ books: list })
+        socket.on('list', list => {
+            setBooks(list)
         })
 
         // When someone shares a book with the user the user's list must be
         // reloaded if they are logged on
-        this.socket.on('update', () => {
-            this.socket.emit('list')
+        socket.on('update', () => {
+            socket.emit('list')
         })
+
+        return () => {
+            console.log('Ubsubscribing to the list')
+            socket.disconnect()
+        }
+    }, [])
+
+    const createNewBook = () => {
+        // TODO something
     }
 
-    render() {
-        return (
-            <div>
-                <BookListNavbar logoff={this.props.logoff} createNewBook={this.createNewBook} />
-                <List books={this.state.books} removeMe={this.removeMe}/>
+    return (
+        <div>
+            <BookListNavbar logoff={props.logoff} createNewBook={createNewBook} />
+            <div className="p-3">
+                <Table striped  hover size="sm" className="bg-white">
+                    <thead>
+                        <tr>
+                            <th style={{ paddingLeft: '24px', width: '70%' }}>Name</th>
+                            <th style={{ width: '25%' }}>Owner</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        { books ? books.map(book => <Book key={book._id} book={book} />) : null }
+                    </tbody>
+                </Table>
             </div>
-        )
-    }
-
-    createNewBook() {
-        // TODO something
-    }
-
-    removeMe() {
-        // TODO something
-    }
-
+        </div>
+    )
 }
