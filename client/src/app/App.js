@@ -10,7 +10,6 @@ export function App(props) {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    console.log('Verifying login')
     fetch('/api/login')
       .then(response => response.status === 200 ? response.text() : null)
       .then(user => {
