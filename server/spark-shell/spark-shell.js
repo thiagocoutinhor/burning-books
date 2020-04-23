@@ -13,7 +13,6 @@ class SparkSession {
 
         this.__startCommand = `spark-shell ${queue} ${executors} ${cores} ${memory} ${libraries}`
         this.__user = user
-        console.debug(`[SPARK - ${this.__user}] Command:\n\t${this.__startCommand}`)
 
         const parameters = {
             host: process.env.SPARK_HOST,
@@ -40,7 +39,8 @@ class SparkSession {
 
     openShell() {
         if (!this.shell) {
-            console.debug(`[SPARK - ${this.__user}] Opening spark shell`)
+            console.info(`[SPARK - ${this.__user}] Opening spark shell`)
+            console.debug(`[SPARK - ${this.__user}] Command:\n\t${this.__startCommand}`)
             this.shell = this.ssh.shell()
                 .then(stream => {
                     return new Promise((resolve, reject) => {
@@ -112,7 +112,7 @@ class SparkSession {
         console.debug(`[SPARK - ${this.__user}] Closing connection`)
         if (this.shell) {
             this.shell.then(stream => {
-                console.debug(`[SPARK - ${this.__user}] Shell closed`)
+                console.info(`[SPARK - ${this.__user}] Shell closed`)
                 stream.end('exit\n')
                 stream.close()
             })
