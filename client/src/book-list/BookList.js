@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import './BookList.css'
 import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
@@ -44,7 +44,7 @@ function BookOptions(props) {
     const myBookItems = (
         <>
             <Dropdown.Item onClick={props.share}>
-                <i class="fa fa-share-alt mr-1"></i>
+                <i className="fa fa-share-alt mr-1"></i>
                 Share
             </Dropdown.Item>
             <Dropdown.Divider/>
@@ -87,6 +87,8 @@ function Book(props) {
     }
 
     const removeBook = () => {
+        console.log('teste')
+        props.socket.emit('remove', props.book._id)
         // TODO something
     }
 
@@ -102,7 +104,7 @@ function Book(props) {
             </td>
             <td>{props.book.owner}</td>
             <td className="text-right">
-                <BookOptions book={props.book} removeMe={removeMe} share={share} remove={removeBook}/>
+                <BookOptions book={props.book} removeMe={removeMe} share={share} removeBook={removeBook}/>
             </td>
         </tr>
     )
@@ -110,30 +112,31 @@ function Book(props) {
 
 export function BookList(props) {
     const [books, setBooks] = useState(null)
+    const socket = useRef(null)
 
     useEffect(() => {
         console.debug('Subscribing to the list')
-        const socket = io('/list')
+        socket.current = io('/list')
 
         // Handles the book arrival of the book list
-        socket.on('list', list => {
+        socket.current.on('list', list => {
             setBooks(list)
         })
 
         // When someone shares a book with the user the user's list must be
         // reloaded if they are logged on
-        socket.on('update', () => {
+        socket.current.on('update', () => {
             socket.emit('list')
         })
 
         return () => {
-            console.log('Ubsubscribing to the list')
-            socket.disconnect()
+            console.debug('Ubsubscribing to the list')
+            socket.current.disconnect()
         }
     }, [])
 
     const createNewBook = () => {
-        // TODO something
+        socket.current.emit('create')
     }
 
     return (
@@ -149,7 +152,7 @@ export function BookList(props) {
                         </tr>
                     </thead>
                     <tbody>
-                        { books ? books.map(book => <Book key={book._id} book={book} />) : null }
+                        { books ? books.map(book => <Book key={book._id} book={book} socket={socket.current} />) : null }
                     </tbody>
                 </Table>
             </div>
