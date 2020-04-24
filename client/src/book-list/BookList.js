@@ -3,6 +3,7 @@ import './BookList.css'
 import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table, Modal, Button, FormControl } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
+import { LoadingHome } from '../app/App'
 
 // Tooltip for the new book icon
 function newBookTooltip(props) {
@@ -140,6 +141,7 @@ function Book(props) {
 // Primary view
 export function BookList(props) {
     const [books, setBooks] = useState(null)
+    const [loading, setLoading] = useState(true)
     const socket = useRef(null)
 
     useEffect(() => {
@@ -149,6 +151,7 @@ export function BookList(props) {
         // Handles the book arrival of the book list
         socket.current.on('list', list => {
             setBooks(list)
+            setLoading(false)
         })
 
         // When someone shares a book with the user the user's list must be
@@ -170,21 +173,23 @@ export function BookList(props) {
 
     return (
         <div>
-            <BookListNavbar logoff={props.logoff} createNewBook={createNewBook} />
-            <div className="p-3">
-                <Table striped  hover size="sm" className="bg-white">
-                    <thead>
-                        <tr>
-                            <th style={{ paddingLeft: '24px', width: '70%' }}>Name</th>
-                            <th style={{ width: '25%' }}>Owner</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { books ? books.map(book => <Book key={book._id} book={book} socket={socket.current} />) : null }
-                    </tbody>
-                </Table>
-            </div>
+            <LoadingHome loading={loading}>
+                <BookListNavbar logoff={props.logoff} createNewBook={createNewBook} />
+                <div className="p-3">
+                    <Table striped  hover size="sm" className="bg-white">
+                        <thead>
+                            <tr>
+                                <th style={{ paddingLeft: '24px', width: '70%' }}>Name</th>
+                                <th style={{ width: '25%' }}>Owner</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            { books ? books.map(book => <Book key={book._id} book={book} socket={socket.current} />) : null }
+                        </tbody>
+                    </Table>
+                </div>
+            </LoadingHome>
         </div>
     )
 }
