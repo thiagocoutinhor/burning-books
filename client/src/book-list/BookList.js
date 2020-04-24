@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './BookList.css'
-import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table } from 'react-bootstrap'
+import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table, Modal, Button, FormControl } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 
+// Tooltip for the new book icon
 function newBookTooltip(props) {
     return (
         <Tooltip id="newBookTooltip" {...props}>
@@ -12,6 +13,7 @@ function newBookTooltip(props) {
     )
 }
 
+// View navbar
 function BookListNavbar(props) {
     return (
         <>
@@ -40,6 +42,7 @@ function BookListNavbar(props) {
     )
 }
 
+// Menu with options
 function BookOptions(props) {
     const myBookItems = (
         <>
@@ -81,19 +84,26 @@ function BookOptions(props) {
     )
 }
 
+// Book row in the list
 function Book(props) {
+    const [modalOpen, setModalOpen] = useState(false)
+    const shareRef = useRef()
+
     const removeMe = () => {
-        // TODO something
+        props.socket.emit('unshare-me', props.book._id)
     }
 
     const removeBook = () => {
-        console.log('teste')
         props.socket.emit('remove', props.book._id)
-        // TODO something
+    }
+
+    const toggleShareModal = () => {
+        setModalOpen(!modalOpen)
     }
 
     const share = () => {
-        // TODO something
+        props.socket.emit('share', props.book._id, shareRef.current.value.split(';'))
+        toggleShareModal()
     }
 
     return (
@@ -104,12 +114,30 @@ function Book(props) {
             </td>
             <td>{props.book.owner}</td>
             <td className="text-right">
-                <BookOptions book={props.book} removeMe={removeMe} share={share} removeBook={removeBook}/>
+                <BookOptions book={props.book} removeMe={removeMe} share={toggleShareModal} removeBook={removeBook}/>
+
+                <Modal show={modalOpen} onHide={toggleShareModal} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>
+                            Share with
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        List the users to share with, separated with ";" or leave empty to share with nobody.
+                        <FormControl ref={shareRef} type="input" placeholder="Share me with..." defaultValue={props.book.sharedWith}/>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={share}>
+                            Share
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </td>
         </tr>
     )
 }
 
+// Primary view
 export function BookList(props) {
     const [books, setBooks] = useState(null)
     const socket = useRef(null)
@@ -129,6 +157,7 @@ export function BookList(props) {
             socket.emit('list')
         })
 
+        // Unsubscribe to the socket when leaving the component
         return () => {
             console.debug('Ubsubscribing to the list')
             socket.current.disconnect()
