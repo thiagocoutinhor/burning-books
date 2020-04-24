@@ -3,7 +3,7 @@ import './App.css';
 import { Login } from '../login/Login'
 import { BookList } from '../book-list/BookList'
 
-// TODO control socket logoff command
+// TODO recieve socket logoff command
 
 export function App(props) {
   const [loading, setLoading] = useState(true)
@@ -25,26 +25,32 @@ export function App(props) {
 
   return (
     <div className="App-container">
-      <Home user={ user } loading={ loading } logoff={ logoff } />
+      <LoadingHome loading={loading}>
+        <Home user={ user } logoff={ logoff } />
+      </LoadingHome>
     </div>
   )
 }
 
-export function LoadingHome() {
+export function LoadingHome(props) {
   return (
-    <div style={{ color: 'white', height: '100vh' }} className="d-flex flex-column justify-content-center">
-      <div className="mx-auto text-center" style={{ width: '500px'}}>
-        <div className="spinner-border" style={{ width: '10vh', height: '10vh' }}/>
-        <div className="">Loading...</div>
-      </div>
-    </div>
+    <>
+      { props.loading ? (
+        <div style={{ color: 'white', height: '100vh' }} className="d-flex flex-column justify-content-center">
+          <div className="mx-auto text-center" style={{ width: '500px'}}>
+            <div className="spinner-border" style={{ width: '10vh', height: '10vh' }}/>
+            <div className="">Loading...</div>
+          </div>
+        </div>
+      ) : (
+        props.children
+      )}
+    </>
   )
 }
 
 function Home(props) {
-  if (props.loading) {
-    return <LoadingHome />
-  } else if (props.user) {
+ if (props.user) {
     return <BookList logoff={ props.logoff } />
   } else {
     return <Login />
