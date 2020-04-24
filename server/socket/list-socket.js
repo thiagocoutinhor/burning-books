@@ -39,23 +39,23 @@ module.exports = socket => {
         })
     })
 
-    socket.on('share', info => {
-        console.debug(`[LIST SOCKET - ${user.login}] Sharing book ${info.book}`)
-        Book.findById(info.book).then(book => {
+    socket.on('share', (id, sharedWith) => {
+        console.debug(`[LIST SOCKET - ${user.login}] Sharing book ${id}`)
+        Book.findById(id).then(book => {
             if (isMyBook(book)) {
                 const start = book.sharedWith
-                book.sharedWith = info.with
+                book.sharedWith = sharedWith
                 book.save().then(() => {
                     updateBroadcast(new Set(start.concat(book.sharedWith)))
                 })
             } else {
-                console.warn(`[LIST SOCKET - ${user.login}] Unauthorized sharing attempt ${info.book}`)
+                console.warn(`[LIST SOCKET - ${user.login}] Unauthorized sharing attempt ${id}`)
             }
         })
     })
 
     socket.on('unshare-me', id => {
-        console.debug(`[LIST SOCKET - ${user.login}] Removed self from the shared list ${id}`)
+        console.debug(`[LIST SOCKET - ${user.login}] Removed self from the shared book ${id}`)
         Book.findById(id).then(book => {
             const sharedTreated = book.sharedWith.map(user => user.toLowerCase())
             if (sharedTreated.includes(user.login.toLowerCase())) {
