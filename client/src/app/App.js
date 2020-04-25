@@ -26,20 +26,18 @@ export function App(props) {
   }
 
   return (
-    <div className="App-container">
-      <BrowserRouter>
-        <Switch>
-          <Route path="/book/:bookId">
-            <BookEditor />
-          </Route>
-          <Route path="/">
-            <LoadingHome loading={loading}>
-              <Home user={ user } logoff={ logoff } />
-            </LoadingHome>
-          </Route>
-        </Switch>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <Switch>
+        <Route path="/book/:bookId">
+          <BookEditor />
+        </Route>
+        <Route path="/">
+          <LoadingHome loading={loading}>
+            <Home user={ user } logoff={ logoff } />
+          </LoadingHome>
+        </Route>
+      </Switch>
+    </BrowserRouter>
   )
 }
 

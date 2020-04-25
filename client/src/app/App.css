@@ -1,6 +1,5 @@
-.App-container {
-  background-color: darkslategray;
-  min-height: 100vh;
+body {
+  background-color: darkslategray
 }
 
 a {
@@ -13,6 +12,7 @@ a:hover {
 }
 
 .navbar {
+  font-weight: bold;
   background-color: rgb(88, 131, 131);
   color: white;
 }
