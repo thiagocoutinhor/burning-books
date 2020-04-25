@@ -125,7 +125,7 @@ function Book(props) {
                     </Modal.Header>
                     <Modal.Body>
                         List the users to share with, separated with ";" or leave empty to share with nobody.
-                        <FormControl ref={shareRef} type="input" placeholder="Share me with..." defaultValue={props.book.sharedWith}/>
+                        <FormControl ref={shareRef} type="input" placeholder="Share me with..." defaultValue={props.book.sharedWith.join(';')}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={share}>
