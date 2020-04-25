@@ -46,12 +46,12 @@ function BookOptions(props) {
     const myBookItems = (
         <>
             <Dropdown.Item onClick={props.share}>
-                <i className="fa fa-share-alt mr-1"></i>
+                <i className="fa fa-share-alt mr-2"></i>
                 Share
             </Dropdown.Item>
             <Dropdown.Divider/>
             <Dropdown.Item onClick={props.removeBook}>
-                <i className="fa fa-trash mr-1"></i>
+                <i className="fa fa-trash mr-2"></i>
                 Delete
             </Dropdown.Item>
         </>
@@ -61,7 +61,7 @@ function BookOptions(props) {
         <>
             <Dropdown.Divider/>
             <Dropdown.Item onClick={props.removeMe}>
-                <i className="fa fa-share-alt mr-1"></i>
+                <i className="fa fa-share-alt mr-2"></i>
                 Leave shared book
             </Dropdown.Item>
         </>
@@ -74,7 +74,7 @@ function BookOptions(props) {
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 <Dropdown.Item href={`/api/book/${props.book._id}/download`} download={`${props.book.name}.scala`}>
-                    <i className="fa fa-file-download mr-1"></i>
+                    <i className="fa fa-file-download mr-2"></i>
                     Download
                 </Dropdown.Item>
                 { props.book.mine ? myBookItems : sharedBookItems }
