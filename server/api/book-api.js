@@ -2,7 +2,7 @@ const express = require('express')
 const Book = require('../models/book-model').Book
 const router = express.Router()
 
-router.get('/book/:id/download', (req, res) => {
+router.get('/:id/download', (req, res) => {
     const user = req.session.user
     Book.findById(req.params.id).then(book => {
         if (!temAcesso(book, user)) {
