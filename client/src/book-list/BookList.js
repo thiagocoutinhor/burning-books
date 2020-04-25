@@ -72,7 +72,7 @@ function BookOptions(props) {
     return (
         <Dropdown drop="left">
             <Dropdown.Toggle as={SimpleDropdown}>
-                <i className="fa fa-ellipsis-v"></i>
+                <i className="fa fa-cog"></i>
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 <Dropdown.Item href={`/api/book/${props.book._id}/download`} download={`${props.book.name}.scala`}>
@@ -172,24 +172,22 @@ export function BookList(props) {
     }
 
     return (
-        <div>
-            <LoadingHome loading={loading}>
-                <BookListNavbar logoff={props.logoff} createNewBook={createNewBook} />
-                <div className="p-3">
-                    <Table striped  hover size="sm" className="bg-white">
-                        <thead>
-                            <tr>
-                                <th style={{ paddingLeft: '24px', width: '70%' }}>Name</th>
-                                <th style={{ width: '25%' }}>Owner</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            { books ? books.map(book => <Book key={book._id} book={book} socket={socket.current} />) : null }
-                        </tbody>
-                    </Table>
-                </div>
-            </LoadingHome>
-        </div>
+        <LoadingHome loading={loading}>
+            <BookListNavbar logoff={props.logoff} createNewBook={createNewBook} />
+            <div className="p-3">
+                <Table striped  hover size="sm" className="bg-white">
+                    <thead>
+                        <tr>
+                            <th style={{ paddingLeft: '24px'}}>Name</th>
+                            <th style={{ width: '150px' }}>Owner</th>
+                            <th style={{ width: '2px' }}></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        { books ? books.map(book => <Book key={book._id} book={book} socket={socket.current} />) : null }
+                    </tbody>
+                </Table>
+            </div>
+        </LoadingHome>
     )
 }
