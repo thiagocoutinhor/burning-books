@@ -4,6 +4,7 @@ import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table, Modal, Button, FormCo
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
+import { Link } from 'react-router-dom'
 
 // Tooltip for the new book icon
 function newBookTooltip(props) {
@@ -110,8 +111,10 @@ function Book(props) {
     return (
         <tr key={props.book._id}>
             <td>
-                <i className="fa fa-edit pr-1"></i>
-                { props.book.name }
+                <Link to={`/book/${props.book._id}`}>
+                    <i className="fa fa-edit pr-1"></i>
+                    { props.book.name }
+                </Link>
             </td>
             <td>{props.book.owner}</td>
             <td className="text-right">

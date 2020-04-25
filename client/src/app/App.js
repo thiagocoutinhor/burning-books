@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { Login } from '../login/Login'
 import { BookList } from '../book-list/BookList'
+import { BookEditor } from '../book-editor/BookEditor'
+import { BrowserRouter, Switch, Route } from 'react-router-dom'
 
 // TODO recieve socket logoff command
 
@@ -25,9 +27,18 @@ export function App(props) {
 
   return (
     <div className="App-container">
-      <LoadingHome loading={loading}>
-        <Home user={ user } logoff={ logoff } />
-      </LoadingHome>
+      <BrowserRouter>
+        <Switch>
+          <Route path="/book">
+            <BookEditor />
+          </Route>
+          <Route path="/">
+            <LoadingHome loading={loading}>
+              <Home user={ user } logoff={ logoff } />
+            </LoadingHome>
+          </Route>
+        </Switch>
+      </BrowserRouter>
     </div>
   )
 }

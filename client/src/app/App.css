@@ -2,3 +2,11 @@
   background-color: darkslategray;
   min-height: 100vh;
 }
+
+a {
+  color: inherit!important
+}
+
+a:hover {
+  text-decoration: inherit!important;
+}
