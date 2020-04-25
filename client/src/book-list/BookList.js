@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import './BookList.css'
 import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table, Modal, Button, FormControl } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
@@ -18,29 +17,27 @@ function newBookTooltip(props) {
 // View navbar
 function BookListNavbar(props) {
     return (
-        <>
-            <Navbar className="sticky-top d-flex shadow">
-                <Dropdown as={Navbar.Brand} style={{ color: 'white' }}>
-                    <Dropdown.Toggle as={SimpleDropdown}>
-                        Burning Books
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <Dropdown.Item onClick={props.logoff}>
-                            <i className="fa fa-sign-out-alt"></i>
-                            Logoff
-                        </Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
-                <div className="flex-grow-1"/>
-                <div>
-                    <OverlayTrigger placement="left" overlay={newBookTooltip} delay={{show: 400 }}>
-                        <div className="pointer p-1" onClick={props.createNewBook}>
-                            <i className="fa fa-plus"></i>
-                        </div>
-                    </OverlayTrigger>
-                </div>
-            </Navbar>
-        </>
+        <Navbar variant="dark" className="sticky-top d-flex shadow">
+            <Dropdown as={Navbar.Brand}>
+                <Dropdown.Toggle as={SimpleDropdown}>
+                    Burning Books
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                    <Dropdown.Item onClick={props.logoff}>
+                        <i className="fa fa-sign-out-alt"></i>
+                        Logoff
+                    </Dropdown.Item>
+                </Dropdown.Menu>
+            </Dropdown>
+            <div className="flex-grow-1"/>
+            <div>
+                <OverlayTrigger placement="left" overlay={newBookTooltip} delay={{show: 400 }}>
+                    <div className="pointer p-1" onClick={props.createNewBook}>
+                        <i className="fa fa-plus"></i>
+                    </div>
+                </OverlayTrigger>
+            </div>
+        </Navbar>
     )
 }
 

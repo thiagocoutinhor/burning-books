@@ -29,7 +29,7 @@ export function App(props) {
     <div className="App-container">
       <BrowserRouter>
         <Switch>
-          <Route path="/book">
+          <Route path="/book/:bookId">
             <BookEditor />
           </Route>
           <Route path="/">
