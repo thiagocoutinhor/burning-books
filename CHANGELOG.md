@@ -1,7 +1,11 @@
 v0.2-alpha
 ===============================================================================
 
+### Quality of Life
+- Added Ace editor with scala code highlights and many other improvements
+
 ### Internal
+- Added React to the mix, making the code simpler and the app more responsive
 - Translated everything to english
 
 v0.1.3-alpha

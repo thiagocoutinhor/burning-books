@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto+Mono&display=swap');
+
+.command-block .card-header {
+    font-family: 'Open Sans', sans-serif;
+}
+
+.command-block .card-body {
+    font-size: 80%;
+    font-family: 'Roboto Mono', monospace;
+    white-space: pre;
+    tab-size: 2;
+}
