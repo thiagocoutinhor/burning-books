@@ -14,10 +14,13 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/snippets/scala";
 
+// Navbar
 function EditorNavbar(props) {
     const copyAll = () => {
         // TODO something
     }
+
+    // TODO add connection components
 
     return (
         <Navbar variant="dark" className="sticky-top d-flex shadow">
@@ -49,39 +52,47 @@ function EditorNavbar(props) {
     )
 }
 
+// List of possible status that the chunk can have
+// - Order of the status on the statemachine
+// - Label of the state
+// - Style to be applied to the status text
 const chunkStatusList = {
     waiting: {
+        order: 0,
         label: 'Waiting connection...',
-        style: {
-            color: 'gray'
-        }
+        style: { color: 'gray' }
     },
-    untouched: {
-        label: '',
-        style: {
-            color: 'transparent'
-        }
+    ready: {
+        order: 1,
+        label: 'Ready',
+        style: {}
     },
     running: {
+        order: 2,
         label: 'Running...',
-        style: {
-            color: 'blue'
-        }
+        style: { color: 'blue' }
     },
     done: {
+        order: 3,
         label: 'Done',
-        style: {
-            color: 'green',
-            fontWeight: 'bold'
-        }
+        style: { color: 'green', fontWeight: 'bold' }
+    },
+    changed: {
+        order: 4,
+        label: 'Changed',
+        style: { color: 'green' }
     }
 }
 
+// Each code chunk
 function CommandChunk(props) {
-    const [status, changeStatus] = useState(chunkStatusList.waiting)
+    const [status, setStatus] = useState(chunkStatusList.waiting)
 
     const codeChange = value => {
         // TODO something
+        if (status.order >= chunkStatusList.done.order) {
+            setStatus(chunkStatusList.changed)
+        }
         console.log(value)
     }
 
@@ -156,6 +167,7 @@ function CommandChunk(props) {
     )
 }
 
+// Main editor view component
 export function BookEditor(props) {
     const { bookId } = useParams()
     const [loading, setLoading] = useState(true)
