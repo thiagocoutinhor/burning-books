@@ -49,14 +49,36 @@ function EditorNavbar(props) {
     )
 }
 
-function CommandChunk(props) {
-    const statusList = {
-        waiting: { labal: 'Waiting connection...' },
-        untouched: { label: '' },
-        running: { label: 'Running...' },
-        done: { label: 'Done' }
+const chunkStatusList = {
+    waiting: {
+        label: 'Waiting connection...',
+        style: {
+            color: 'gray'
+        }
+    },
+    untouched: {
+        label: '',
+        style: {
+            color: 'transparent'
+        }
+    },
+    running: {
+        label: 'Running...',
+        style: {
+            color: 'blue'
+        }
+    },
+    done: {
+        label: 'Done',
+        style: {
+            color: 'green',
+            fontWeight: 'bold'
+        }
     }
-    const [status, changeStatus] = useState(null)
+}
+
+function CommandChunk(props) {
+    const [status, changeStatus] = useState(chunkStatusList.waiting)
 
     const codeChange = value => {
         // TODO something
@@ -123,8 +145,8 @@ function CommandChunk(props) {
                     width: '100%'
                 }}
             ></Card.Body>
-            <Card.Footer className="d-flex">
-                <span>{status ? status.label : null}</span>
+            <Card.Footer className="d-flex align-items-end">
+                <span className="chunk-status" style={status.style}>{status.label}</span>
                 <span className="flex-grow-1"></span>
                 <Button disabled onClick={run}>
                     <i className="fa fa-play"></i>

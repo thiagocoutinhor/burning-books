@@ -10,3 +10,7 @@
     white-space: pre;
     tab-size: 2;
 }
+
+.command-block .chunk-status {
+    font-size: 80%;
+}
