@@ -3,7 +3,7 @@ import { Navbar, Tooltip, OverlayTrigger, Dropdown, Table, Modal, Button, FormCo
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 
 // Tooltip for the new book icon
 function newBookTooltip(props) {
@@ -143,6 +143,7 @@ export function BookList(props) {
     const [books, setBooks] = useState(null)
     const [loading, setLoading] = useState(true)
     const socket = useRef(null)
+    const history = useHistory()
 
     useEffect(() => {
         console.debug('Subscribing to the list')
@@ -158,6 +159,10 @@ export function BookList(props) {
         // reloaded if they are logged on
         socket.current.on('update', () => {
             socket.emit('list')
+        })
+
+        socket.current.on('created', bookId => {
+            history.push(`/book/${bookId}`)
         })
 
         // Unsubscribe to the socket when leaving the component
