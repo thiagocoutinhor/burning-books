@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useHistory, Link } from 'react-router-dom'
-import { Navbar, Dropdown, Card, Button, FormControl} from 'react-bootstrap'
+import { Navbar, Dropdown, Card, Button } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
@@ -54,26 +54,6 @@ function EditorNavbar(props) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Chunk name with editor
-///////////////////////////////////////////////////////////////////////////////
-function ChunkName(props) {
-    const [editing, setEditing] = useState(false)
-    const nameInputRef = useRef()
-
-    const startNameEdit = () => {
-        setEditing(true)
-    }
-
-    return (
-        <div onClick={startNameEdit}>
-            [Chunk {props.index}] { editing ? (
-                <FormControl type="input" ref={nameInputRef} value={nameInputRef.value}/>
-            ) : props.name}
-        </div>
-    )
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Chunk
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -111,29 +91,60 @@ const chunkStatusList = {
 
 // Each code chunk
 function CommandChunk(props) {
-    const [command, setCommand] = useState(props.command.command)
+    const [command, setCommand] = useState(props.chunk.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
+    // TODO todos marcados como changed... :/
+    const saveTimer = useRef(null)
+    const nameRef = useRef(null)
 
+    // Name change
     useEffect(() => {
-        props.bookSocket.on('chunk.update', newCommand => {
-            setCommand(newCommand)
-            if (status.order >= chunkStatusList.done.order) {
-                setStatus(chunkStatusList.changed)
-            }
-        })
-        // TODO remove this
-        console.log(`Rodou ${props.index} = ${props.command._id}`)
-        setTimeout(() => setStatus(chunkStatusList.done), 2000)
-        setTimeout(() => setStatus(chunkStatusList.running), 8000)
-        ////
-    }, [props.bookSocket])
+        nameRef.current.innerText = props.chunk.name || 'Unamed'
+    }, [props.chunk.name])
 
-    const codeChange = value => {
-        setCommand(value)
-        props.bookSocket.emit('chunk.update', props.index, value)
+    // Command status validation
+    // Changes after the chunk was run mark it as changed
+    useEffect(() => {
         if (status.order >= chunkStatusList.done.order) {
             setStatus(chunkStatusList.changed)
         }
+    }, [command])
+
+    // Command change
+    useEffect(() => {
+        setCommand(props.chunk.command)
+    }, [props.chunk.command])
+
+    const startNameEdit = () => {
+        nameRef.current.innerText = props.chunk.name || ''
+        nameRef.current.focus()
+    }
+
+    const editName = () => {
+        const name = nameRef.current.innerText.replace(/\n/g, ' ').trim()
+        if (name === '') {
+            nameRef.current.innerText = 'Unamed'
+        }
+        props.bookSocket.emit('chunk.name', props.index, name === '' ? undefined : name)
+    }
+
+    const treatName = event => {
+        const shouldIgnore = event.key === 'Enter'
+            || (event.ctrlKey && ['B', 'b', 'I', 'i', 'u', 'U'].includes(event.key))
+        if (shouldIgnore) {
+            event.preventDefault()
+        }
+    }
+
+    // Changes made during user edition
+    const codeChange = value => {
+        setCommand(value)
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current)
+        }
+        saveTimer.current = setTimeout(() => {
+            props.bookSocket.emit('chunk.update', props.index, value)
+        }, 1000) // Saves after a second without changes
     }
 
     const run = () => {
@@ -147,11 +158,25 @@ function CommandChunk(props) {
     }
 
     return (
-        <div className=" command-block">
+        <div className="command-block">
             <ChunkAddButton at={props.index} bookSocket={props.bookSocket} />
             <Card className="ml-3 mr-3 shadow">
-                <Card.Header className="d-flex">
-                    <ChunkName index={props.index} name={props.command.name} socket={props.bookSocket} />
+                <Card.Header className="d-flex align-items-start">
+                    <span onClick={startNameEdit} className="pointer">
+                        [Chunk {props.index}]
+                        <span
+                            ref={nameRef}
+                            contentEditable
+                            spellCheck={false}
+                            className="chunk-name ml-1 pr-1 pl-1"
+                            onBlur={editName}
+                            onKeyDown={treatName}
+                            style={{
+                                color: props.chunk.name ? 'gray' : 'rgba(128, 128, 128, 0.4)'
+                            }}
+                        >
+                        </span>
+                    </span>
                     <span className="flex-grow-1"></span>
                     <span>
                         <i className="fa fa-ellipsis-v"></i>
@@ -195,7 +220,7 @@ function CommandChunk(props) {
                     }}
                 ></Card.Body>
                 <Card.Footer className="d-flex align-items-end">
-                    <span className="chunk-status" style={status.style}>{status.label}</span>
+                    <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                     <span className="flex-grow-1"></span>
                     <Button disabled onClick={run}>
                         <i className="fa fa-play"></i>
@@ -254,7 +279,7 @@ export function BookEditor(props) {
     return (
         <LoadingHome loading={loading}>
             <EditorNavbar book={book}/>
-            { ((book && book.commands) || []).map((command, index) => <CommandChunk command={command} key={command._id} index={index} bookSocket={bookSocketRef.current} />)}
+            { ((book && book.commands) || []).map((chunk, index) => <CommandChunk chunk={chunk} key={chunk._id} index={index} bookSocket={bookSocketRef.current} />)}
             <ChunkAddButton bookSocket={bookSocketRef.current} />
         </LoadingHome>
     )

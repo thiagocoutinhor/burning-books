@@ -1,20 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto+Mono&display=swap');
 
-.command-block .card-header {
-    font-family: 'Open Sans', sans-serif;
-}
-
-.command-block .card-body {
-    font-size: 80%;
-    font-family: 'Roboto Mono', monospace;
-    white-space: pre;
-    tab-size: 2;
-}
-
-.command-block .chunk-status {
-    font-size: 80%;
-}
-
 .chunk-add-button {
     text-align: center;
     background-color: rgba(0, 0, 0, 0.3);
@@ -27,4 +12,24 @@
 
 .chunk-add-button:hover {
     background-color: rgba(0, 0, 0, 0.4);
+}
+
+.command-block .card-header {
+    font-family: 'Open Sans', sans-serif;
+}
+
+.command-block .chunk-name {
+    font-size: 0.8rem;
+}
+
+.command-block .chunk-name:focus {
+    background-color: white;
+    color: black
+}
+
+.command-block .card-body {
+    font-size: 80%;
+    font-family: 'Roboto Mono', monospace;
+    white-space: pre;
+    tab-size: 2;
 }
