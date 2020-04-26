@@ -189,7 +189,7 @@ export function BookList(props) {
                         </tr>
                     </thead>
                     <tbody>
-                        { books ? books.map(book => <Book key={book._id} book={book} socket={socket.current} />) : null }
+                        { (books || []).map(book => <Book key={book._id} book={book} socket={socket.current} />) }
                     </tbody>
                 </Table>
             </div>
