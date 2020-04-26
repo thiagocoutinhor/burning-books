@@ -56,7 +56,6 @@ module.exports = socket => {
             const blankCommand = { command: '' }
             if (position != undefined) {
                 book.commands.splice(position, 0, blankCommand)
-                console.log(book.commands)
             } else {
                 book.commands.push(blankCommand)
             }
@@ -75,26 +74,22 @@ module.exports = socket => {
             })
         })
 
-        // Delay without any change before saving
-        var saveDelay = null
         socket.on('chunk.update', (index, command) => {
             book.commands[index].command = command
 
-            if (saveDelay) {
-                clearTimeout(saveDelay)
-            }
-            saveDelay = setTimeout(() => {
-                console.debug(`[BOOK SOCKET - ${user.login}] Saving book ${book._id}`)
-                book.save()
-            }, 1 * 1000)
-
-            socket.broadcast.to(bookId).emit('chunk.update', index, command)
+            console.debug(`[BOOK SOCKET - ${user.login}] Saving book ${book._id}`)
+            book.save().then(() => {
+                socket.broadcast.to(bookId).emit('book', index, command)
+            })
         })
 
         socket.on('chunk.name', (index, name) => {
-            book.commands[index].name = name
-            book.save()
-            socket.broadcast.to(bookId).emit('chunk.name', index, name)
+            book.commands[index].name = name ? name : undefined
+            console.log(name)
+            book.save().then(book => {
+                socket.emit('book', book)
+                socket.broadcast.to(bookId).emit('book', book)
+            })
         })
 
         socket.on('chunk.move', (source, destination) => {
