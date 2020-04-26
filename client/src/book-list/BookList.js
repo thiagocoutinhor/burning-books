@@ -170,7 +170,7 @@ export function BookList(props) {
             console.debug('Ubsubscribing to the list')
             socket.current.disconnect()
         }
-    }, [])
+    }, [history])
 
     const createNewBook = () => {
         socket.current.emit('create')
