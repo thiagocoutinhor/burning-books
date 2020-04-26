@@ -41,42 +41,54 @@ module.exports = socket => {
         socket.emit('book', book.toJSON())
         socket.join(bookId)
 
-        socket.on('name', title => {
+        socket.on('book.name', title => {
             book.name = title
             book.save().then(book => {
                 socket.emit('name', book.name)
                 socket.broadcast.to(bookId).emit('name', book.name)
             }).catch(error => {
                 console.info(`[BOOK SOCKET - ${user.login}] Error during book rename ${bookId}`, error)
-                socket.emit('name.error', error)
+                socket.emit('book.name.error', error)
             })
         })
 
-        socket.on('new', () => {
-            book.commands.push({ command: '' })
-            book.save()
+        socket.on('chunk.new', position => {
+            const blankCommand = { command: '' }
+            if (position != undefined) {
+                book.commands.splice(position, 0, blankCommand)
+                console.log(book.commands)
+            } else {
+                book.commands.push(blankCommand)
+            }
 
-            socket.broadcast.to(bookId).emit('book', book.toJSON())
+            book.save().then(book => {
+                socket.emit('book', book)
+                socket.broadcast.to(bookId).emit('book', book)
+            })
         })
 
-        socket.on('remove', index => {
+        socket.on('chunk.remove', index => {
             book.commands.splice(index, 1)
-            book.save()
-
-            socket.broadcast.to(bookId).emit('book', book)
+            book.save().then(book => {
+                socket.emit('book', book)
+                socket.broadcast.to(bookId).emit('book', book)
+            })
         })
 
+        // Delay without any change before saving
         var saveDelay = null
-        socket.on('update', (index, command) => {
+        socket.on('chunk.update', (index, command) => {
             book.commands[index].command = command
 
-            // Delay without actions
             if (saveDelay) {
                 clearTimeout(saveDelay)
             }
-            saveDelay = setTimeout(() => book.save(), 1 * 1000)
+            saveDelay = setTimeout(() => {
+                console.debug(`[BOOK SOCKET - ${user.login}] Saving book ${book._id}`)
+                book.save()
+            }, 1 * 1000)
 
-            socket.broadcast.to(bookId).emit('update', index, command)
+            socket.broadcast.to(bookId).emit('chunk.update', index, command)
         })
 
         socket.on('chunk.name', (index, name) => {
@@ -91,8 +103,10 @@ module.exports = socket => {
             book.commands[source] = comDestination
             book.commands[destination] = comSource
             book.markModified('commands')
-            book.save()
-            socket.broadcast.to(bookId).emit('chunk.move', source, destination)
+            book.save().then(book => {
+                socket.emit('book', book)
+                socket.broadcast.to(bookId).emit('book', book)
+            })
         })
 
         socket.on('spark.config', (executors, cores, memory) => {
@@ -101,8 +115,10 @@ module.exports = socket => {
                 cores,
                 memory
             }
-            book.save()
-            socket.broadcast.to(bookId).emit('spark.config', executors, cores, memory)
+            book.save().then(book => {
+                socket.emit('book', book)
+                socket.broadcast.to(bookId).emit('book', book)
+            })
         })
 
         socket.on('disconnect', () => {

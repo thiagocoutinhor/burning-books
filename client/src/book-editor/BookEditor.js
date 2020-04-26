@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { Navbar, Dropdown, Card, Button } from 'react-bootstrap'
+import { useParams, useHistory, Link } from 'react-router-dom'
+import { Navbar, Dropdown, Card, Button, FormControl} from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
@@ -12,9 +12,10 @@ import "ace-builds/src-noconflict/mode-scala"
 import "ace-builds/src-noconflict/theme-textmate"
 import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
-import "ace-builds/src-noconflict/snippets/scala";
 
+///////////////////////////////////////////////////////////////////////////////
 // Navbar
+///////////////////////////////////////////////////////////////////////////////
 function EditorNavbar(props) {
     const copyAll = () => {
         // TODO something
@@ -52,6 +53,30 @@ function EditorNavbar(props) {
     )
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Chunk name with editor
+///////////////////////////////////////////////////////////////////////////////
+function ChunkName(props) {
+    const [editing, setEditing] = useState(false)
+    const nameInputRef = useRef()
+
+    const startNameEdit = () => {
+        setEditing(true)
+    }
+
+    return (
+        <div onClick={startNameEdit}>
+            [Chunk {props.index}] { editing ? (
+                <FormControl type="input" ref={nameInputRef} value={nameInputRef.value}/>
+            ) : props.name}
+        </div>
+    )
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Chunk
+///////////////////////////////////////////////////////////////////////////////
+
 // List of possible status that the chunk can have
 // - Order of the status on the statemachine
 // - Label of the state
@@ -86,14 +111,29 @@ const chunkStatusList = {
 
 // Each code chunk
 function CommandChunk(props) {
+    const [command, setCommand] = useState(props.command.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
 
+    useEffect(() => {
+        props.bookSocket.on('chunk.update', newCommand => {
+            setCommand(newCommand)
+            if (status.order >= chunkStatusList.done.order) {
+                setStatus(chunkStatusList.changed)
+            }
+        })
+        // TODO remove this
+        console.log(`Rodou ${props.index} = ${props.command._id}`)
+        setTimeout(() => setStatus(chunkStatusList.done), 2000)
+        setTimeout(() => setStatus(chunkStatusList.running), 8000)
+        ////
+    }, [props.bookSocket])
+
     const codeChange = value => {
-        // TODO something
+        setCommand(value)
+        props.bookSocket.emit('chunk.update', props.index, value)
         if (status.order >= chunkStatusList.done.order) {
             setStatus(chunkStatusList.changed)
         }
-        console.log(value)
     }
 
     const run = () => {
@@ -107,94 +147,115 @@ function CommandChunk(props) {
     }
 
     return (
-        <Card className="m-3 shadow command-block">
-            <Card.Header className="d-flex">
-                <div>
-                    [Chunk {props.index}] {props.command.name}
-                </div>
-                <span className="flex-grow-1"></span>
-                <span>
-                    <i className="fa fa-ellipsis-v"></i>
-                </span>
-            </Card.Header>
-            <Card.Body as={AceEditor}
-                name={`Chunk-${props.index}`}
-                value={props.command.command}
-                onChange={codeChange}
-                mode="scala"
-                theme="textmate"
-                setOptions={{
-                    maxLines: Infinity,
-                    minLines: 5,
-                    showPrintMargin: false,
-                    enableBasicAutocompletion: true,
-                    enableLiveAutocompletion: false,
-                    enableSnippets: true,
-                    showLineNumbers: false,
-                    useSoftTabs: true,
-                    tabSize: 2
-                }}
-                commands={[
-                    {
-                        name: 'run',
-                        bindKey: {
-                            win: 'Ctrl-Enter',
-                            mac: 'Command-Enter',
+        <div className=" command-block">
+            <ChunkAddButton at={props.index} bookSocket={props.bookSocket} />
+            <Card className="ml-3 mr-3 shadow">
+                <Card.Header className="d-flex">
+                    <ChunkName index={props.index} name={props.command.name} socket={props.bookSocket} />
+                    <span className="flex-grow-1"></span>
+                    <span>
+                        <i className="fa fa-ellipsis-v"></i>
+                    </span>
+                </Card.Header>
+                <Card.Body as={AceEditor}
+                    name={`Chunk-${props.index}`}
+                    value={command}
+                    onChange={codeChange}
+                    mode="scala"
+                    theme="textmate"
+                    setOptions={{
+                        maxLines: Infinity,
+                        minLines: 5,
+                        showPrintMargin: false,
+                        enableBasicAutocompletion: true,
+                        showLineNumbers: false,
+                        useSoftTabs: true,
+                        tabSize: 2
+                    }}
+                    commands={[
+                        {
+                            name: 'run',
+                            bindKey: {
+                                win: 'Ctrl-Enter',
+                                mac: 'Command-Enter',
+                            },
+                            exec: run
                         },
-                        exec: run
-                    },
-                    {
-                        name: 'run-all',
-                        bindKey: {
-                            win: 'Control-Shift-Enter',
-                            mac: 'Command-shift-enter'
-                        },
-                        exec: runAllAbove
-                    }
-                ]}
-                style={{
-                    width: '100%'
-                }}
-            ></Card.Body>
-            <Card.Footer className="d-flex align-items-end">
-                <span className="chunk-status" style={status.style}>{status.label}</span>
-                <span className="flex-grow-1"></span>
-                <Button disabled onClick={run}>
-                    <i className="fa fa-play"></i>
-                </Button>
-            </Card.Footer>
-        </Card>
+                        {
+                            name: 'run-all',
+                            bindKey: {
+                                win: 'Control-Shift-Enter',
+                                mac: 'Command-shift-enter'
+                            },
+                            exec: runAllAbove
+                        }
+                    ]}
+                    style={{
+                        width: '100%'
+                    }}
+                ></Card.Body>
+                <Card.Footer className="d-flex align-items-end">
+                    <span className="chunk-status" style={status.style}>{status.label}</span>
+                    <span className="flex-grow-1"></span>
+                    <Button disabled onClick={run}>
+                        <i className="fa fa-play"></i>
+                    </Button>
+                </Card.Footer>
+            </Card>
+        </div>
     )
 }
 
-// Main editor view component
+///////////////////////////////////////////////////////////////////////////////
+// Button to add new chunk at a position
+///////////////////////////////////////////////////////////////////////////////
+function ChunkAddButton(props) {
+    const add = () => {
+        props.bookSocket.emit('chunk.new', props.at)
+    }
+
+    return (
+        <div className="chunk-add-button mr-3 ml-3 mt-2 mb-2" onClick={add}>
+            <i className="fa fa-plus"></i>
+        </div>
+    )
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Book Editor
+///////////////////////////////////////////////////////////////////////////////
 export function BookEditor(props) {
     const { bookId } = useParams()
     const [loading, setLoading] = useState(true)
+    const [book, setBook] = useState(null)
     const bookSocketRef = useRef(null)
     const sparkSocketRef = useRef(null)
-    const [book, setBook] = useState(null)
+    const history = useHistory()
 
     useEffect(() => {
         console.debug('Connecting to book socket')
         bookSocketRef.current = io(`/book?id=${bookId}`)
-        const bookSocket = bookSocketRef.current
 
-        bookSocket.on('book', book => {
+        // Recieves the book
+        bookSocketRef.current.on('book', book => {
             setBook(book)
             setLoading(false)
         })
 
+        // Leave teh current book as ordered
+        bookSocketRef.current.on('exit', () => history.push('/'))
+
         return () => {
             console.debug('Disconnecting from book socket')
-            bookSocket.disconnect()
+            bookSocketRef.current.disconnect()
         }
-    }, [bookId])
+    }, [bookId, history])
 
     return (
         <LoadingHome loading={loading}>
             <EditorNavbar book={book}/>
-            { book ? book.commands.map((command, index) => <CommandChunk command={command} key={index} index={index} bookSocket={bookSocketRef.current} />) : null }
+            { ((book && book.commands) || []).map((command, index) => <CommandChunk command={command} key={command._id} index={index} bookSocket={bookSocketRef.current} />)}
+            <ChunkAddButton bookSocket={bookSocketRef.current} />
         </LoadingHome>
     )
 }
