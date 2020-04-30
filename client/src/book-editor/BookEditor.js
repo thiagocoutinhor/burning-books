@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import { useParams, useHistory, Link } from 'react-router-dom'
-import { Navbar, Dropdown, Card, Button } from 'react-bootstrap'
+import { Navbar, Dropdown, Card, Button, Form, InputGroup } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
@@ -14,14 +14,78 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 
 ///////////////////////////////////////////////////////////////////////////////
+// Connection Context
+///////////////////////////////////////////////////////////////////////////////
+
+const connectionStatusList = {
+    disconnected: {
+        class: 'disconnected',
+        showControls: true
+    },
+    connecting: {
+        class: 'connecting',
+        showControls: false
+    },
+    connected: {
+        class: 'connected',
+        showControls: false
+    }
+}
+
+const SparkContext = React.createContext(null)
+
+///////////////////////////////////////////////////////////////////////////////
+// Connection widget
+///////////////////////////////////////////////////////////////////////////////
+
+function ConnectionControl(props) {
+    const spark = useContext(SparkContext)
+    const executors = useRef()
+    const cores = useRef()
+    const memory = useRef()
+
+    const connect = () => {
+        spark.connect(executors.current.value, cores.current.value, memory.current.value)
+    }
+
+    return (
+        <Form inline {...props} className={`${props.className} p-2 connection-control ${spark.status.class}`}>
+            { spark.status.showControls ? [executors, cores, memory].map((control, index) => (
+                <InputGroup size="sm" className="mr-2" key={index}>
+                    <InputGroup.Prepend>
+                        <InputGroup.Text>Executors</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <Form.Control ref={control} type="number" defaultValue="2" className="text-center" min="1" style={{ width: '4em' }}></Form.Control>
+                </InputGroup>
+            )).concat((
+                <Button size="sm" className="mr-2" onClick={connect} key="connectButton">Connect</Button>
+            )) : null }
+            <Dropdown drop="left">
+                <Dropdown.Toggle as={SimpleDropdown} disabled={spark.status != connectionStatusList.connected}>
+                    <div className="connection-icon">
+                        <i className="fa fa-wifi"></i>
+                    </div>
+                </Dropdown.Toggle>
+                { spark.status == connectionStatusList.connected ? (
+                    <Dropdown.Menu>
+                        <Dropdown.Item onClick={spark.disconnect}>
+                            <i className="fa fa-power-off mr-2"></i>
+                            Disconnect
+                        </Dropdown.Item>
+                    </Dropdown.Menu>
+                ) : null }
+            </Dropdown>
+        </Form>
+    )
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Navbar
 ///////////////////////////////////////////////////////////////////////////////
 function EditorNavbar(props) {
     const copyAll = () => {
         // TODO something
     }
-
-    // TODO add connection components
 
     return (
         <Navbar variant="dark" className="sticky-top d-flex shadow">
@@ -34,6 +98,7 @@ function EditorNavbar(props) {
                 </span>
             </Navbar.Brand>
             <div className="flex-grow-1"/>
+            <ConnectionControl socket={props.socket} className="mr-2"/>
             <Dropdown drop="left">
                 <Dropdown.Toggle as={SimpleDropdown}>
                     <i className="fa fa-ellipsis-v"></i>
@@ -65,27 +130,32 @@ const chunkStatusList = {
     waiting: {
         order: 0,
         label: 'Waiting connection...',
-        style: { color: 'gray' }
+        style: { color: 'gray' },
+        ready: false
     },
     ready: {
         order: 1,
         label: 'Ready',
-        style: {}
+        style: {},
+        ready: true
     },
     running: {
         order: 2,
         label: 'Running...',
-        style: { color: 'blue' }
+        style: { color: 'blue' },
+        ready: false
     },
     done: {
         order: 3,
         label: 'Done',
-        style: { color: 'green', fontWeight: 'bold' }
+        style: { color: 'green', fontWeight: 'bold' },
+        ready: true
     },
     changed: {
         order: 4,
         label: 'Changed',
-        style: { color: 'green' }
+        style: { color: 'green' },
+        ready: true
     }
 }
 
@@ -93,6 +163,7 @@ const chunkStatusList = {
 function CommandChunk(props) {
     const [command, setCommand] = useState(props.chunk.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
+    const spark = useContext(SparkContext)
     // TODO todos marcados como changed... :/
     const saveTimer = useRef(null)
     const nameRef = useRef(null)
@@ -114,6 +185,18 @@ function CommandChunk(props) {
     useEffect(() => {
         setCommand(props.chunk.command)
     }, [props.chunk.command])
+
+    // Capture connected status change
+    useEffect(() => {
+        const isReady = spark.status === connectionStatusList.connected
+        if (isReady) {
+            if (status.order < chunkStatusList.ready.order) {
+                setStatus(chunkStatusList.ready)
+            }
+        } else {
+            setStatus(chunkStatusList.waiting)
+        }
+    }, [spark.status])
 
     const startNameEdit = () => {
         nameRef.current.innerText = props.chunk.name || ''
@@ -160,7 +243,7 @@ function CommandChunk(props) {
     return (
         <div className="command-block">
             <ChunkAddButton at={props.index} bookSocket={props.bookSocket} />
-            <Card className="ml-3 mr-3 shadow">
+            <Card className="ml-3 mr-3">
                 <Card.Header className="d-flex align-items-start">
                     <span onClick={startNameEdit} className="pointer">
                         [Chunk {props.index}]
@@ -222,7 +305,7 @@ function CommandChunk(props) {
                 <Card.Footer className="d-flex align-items-end">
                     <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                     <span className="flex-grow-1"></span>
-                    <Button disabled onClick={run}>
+                    <Button disabled={!status.ready} variant={status.ready ? "primary" : "secondary"} onClick={run}>
                         <i className="fa fa-play"></i>
                     </Button>
                 </Card.Footer>
@@ -232,7 +315,7 @@ function CommandChunk(props) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Button to add new chunk at a position
+// Button to add new chunk at a given position
 ///////////////////////////////////////////////////////////////////////////////
 function ChunkAddButton(props) {
     const add = () => {
@@ -253,8 +336,25 @@ export function BookEditor(props) {
     const { bookId } = useParams()
     const [loading, setLoading] = useState(true)
     const [book, setBook] = useState(null)
+    const [spark, setSpark] = useState({
+        status: connectionStatusList.disconnected,
+        socket: null,
+        connect: (executors, cores, memory) => {
+            spark.socket = io(`/spark?executors=${executors}&cores=${cores}&memory=${memory}`)
+            setSpark({ status: connectionStatusList.connecting })
+
+            spark.socket.on('ready', () => {
+                setSpark({ ...spark, status: connectionStatusList.connected })
+            })
+            // TODO something
+        },
+        disconnect: () => {
+            console.log("Banana")
+            spark.socket.disconnect()
+            setSpark({ ...spark, status: connectionStatusList.disconnected })
+        }
+    })
     const bookSocketRef = useRef(null)
-    const sparkSocketRef = useRef(null)
     const history = useHistory()
 
     useEffect(() => {
@@ -277,10 +377,12 @@ export function BookEditor(props) {
     }, [bookId, history])
 
     return (
-        <LoadingHome loading={loading}>
-            <EditorNavbar book={book}/>
-            { ((book && book.commands) || []).map((chunk, index) => <CommandChunk chunk={chunk} key={chunk._id} index={index} bookSocket={bookSocketRef.current} />)}
-            <ChunkAddButton bookSocket={bookSocketRef.current} />
-        </LoadingHome>
+        <SparkContext.Provider value={spark}>
+            <LoadingHome loading={loading}>
+                <EditorNavbar book={book} />
+                { ((book && book.commands) || []).map((chunk, index) => <CommandChunk chunk={chunk} key={chunk._id} index={index} bookSocket={bookSocketRef.current} />)}
+                <ChunkAddButton bookSocket={bookSocketRef.current} />
+            </LoadingHome>
+        </SparkContext.Provider>
     )
 }
