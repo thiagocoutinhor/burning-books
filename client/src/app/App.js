@@ -4,6 +4,7 @@ import { Login } from '../login/Login'
 import { BookList } from '../book-list/BookList'
 import { BookEditor } from '../book-editor/BookEditor'
 import { BrowserRouter, Switch, Route } from 'react-router-dom'
+import { Spinner } from 'react-bootstrap';
 
 // TODO recieve socket logoff command
 
@@ -47,7 +48,7 @@ export function LoadingHome(props) {
       { props.loading ? (
         <div style={{ color: 'white', height: '100vh' }} className="d-flex flex-column justify-content-center">
           <div className="mx-auto text-center" style={{ width: '500px'}}>
-            <div className="spinner-border" style={{ width: '10vh', height: '10vh' }}/>
+            <Spinner animation="border" style={{ width: '10vh', height: '10vh' }}/>
             <div className="">Loading...</div>
           </div>
         </div>
