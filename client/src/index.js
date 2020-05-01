@@ -2,8 +2,11 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import * as serviceWorker from './serviceWorker'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import '@fortawesome/fontawesome-free/js/all'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { fas } from '@fortawesome/free-solid-svg-icons'
 import { App } from './app/App'
+
+library.add(fas)
 
 ReactDOM.render(
   <React.StrictMode>

@@ -4,6 +4,7 @@ import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
 import { Link, useHistory } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 // Tooltip for the new book icon
 function newBookTooltip(props) {
@@ -24,7 +25,7 @@ function BookListNavbar(props) {
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                     <Dropdown.Item onClick={props.logoff}>
-                        <i className="fa fa-sign-out-alt"></i>
+                        <FontAwesomeIcon icon="sign-out-alt" className="mr-2"/>
                         Logoff
                     </Dropdown.Item>
                 </Dropdown.Menu>
@@ -33,7 +34,7 @@ function BookListNavbar(props) {
             <div>
                 <OverlayTrigger placement="left" overlay={newBookTooltip} delay={{show: 400 }}>
                     <div className="pointer p-1" onClick={props.createNewBook}>
-                        <i className="fa fa-plus"></i>
+                        <FontAwesomeIcon icon="plus" />
                     </div>
                 </OverlayTrigger>
             </div>
@@ -46,12 +47,12 @@ function BookOptions(props) {
     const myBookItems = (
         <>
             <Dropdown.Item onClick={props.share}>
-                <i className="fa fa-share-alt mr-2"></i>
+                <FontAwesomeIcon icon="share-alt" className="mr-2" />
                 Share
             </Dropdown.Item>
             <Dropdown.Divider/>
             <Dropdown.Item onClick={props.removeBook}>
-                <i className="fa fa-trash mr-2"></i>
+                <FontAwesomeIcon icon="trash" className="mr-2" style={{ color: 'red' }} />
                 Delete
             </Dropdown.Item>
         </>
@@ -61,7 +62,7 @@ function BookOptions(props) {
         <>
             <Dropdown.Divider/>
             <Dropdown.Item onClick={props.removeMe}>
-                <i className="fa fa-share-alt mr-2"></i>
+                <FontAwesomeIcon icon="share-alt" className="mr-2" style={{ color: 'red' }} />
                 Leave shared book
             </Dropdown.Item>
         </>
@@ -70,11 +71,11 @@ function BookOptions(props) {
     return (
         <Dropdown drop="left">
             <Dropdown.Toggle as={SimpleDropdown}>
-                <i className="fa fa-cog"></i>
+                <FontAwesomeIcon icon="cog" />
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 <Dropdown.Item href={`/api/book/${props.book._id}/download`} download={`${props.book.name}.scala`}>
-                    <i className="fa fa-file-download mr-2"></i>
+                    <FontAwesomeIcon icon="file-download" className="mr-2"/>
                     Download
                 </Dropdown.Item>
                 { props.book.mine ? myBookItems : sharedBookItems }
@@ -109,7 +110,7 @@ function Book(props) {
         <tr key={props.book._id}>
             <td>
                 <Link to={`/book/${props.book._id}`}>
-                    <i className="fa fa-edit pr-1"></i>
+                    <FontAwesomeIcon icon="edit" className="pr-1" />
                     { props.book.name }
                 </Link>
             </td>
