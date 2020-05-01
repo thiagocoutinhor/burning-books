@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^7.2.1",
     "ace-builds": "^1.4.11",
     "bootstrap": "^4.4.1",
+    "moo": "^0.5.1",
     "react": "^16.13.1",
     "react-ace": "^8.1.0",
     "react-bootstrap": "^1.0.0",
