@@ -36,7 +36,7 @@ const config = {
                     if (finalizado == stages.length) {
                         stream.emit('data', comando)
                         stream.emit('data', 'scala>')
-                        stream.executando = false
+                        stream.running = false
                     }
                 }
             }, 1000)
@@ -52,8 +52,8 @@ SparkSession.prototype.connect = function() {
 
 // Mocks the shell opening
 SparkSession.prototype.openShell = function() {
-    console.log(`[SPARK MOCK - ${this.__user}] Opening spark shell`)
     if (!this.shell) {
+        console.log(`[SPARK MOCK - ${this.__user}] Opening spark shell`)
         this.shell = new Promise(resolve => {
             setTimeout(() => {
                 console.log(`[SPARK MOCK - ${this.__user}] Shell running`)
