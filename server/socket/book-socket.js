@@ -85,7 +85,6 @@ module.exports = socket => {
 
         socket.on('chunk.name', (index, name) => {
             book.commands[index].name = name ? name : undefined
-            console.log(name)
             book.save().then(book => {
                 socket.emit('book', book)
                 socket.broadcast.to(bookId).emit('book', book)

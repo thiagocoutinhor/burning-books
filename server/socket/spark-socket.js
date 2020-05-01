@@ -15,6 +15,7 @@ module.exports = socket => {
 
     console.info(`[SPARK SOCKET - ${user.login}] Starting a new session`)
     socket.shell = new SparkShell(user.login, user.password, config)
+
     socket.shell.openShell().then(() => {
         socket.emit('ready')
     }).catch(error => {
@@ -23,8 +24,10 @@ module.exports = socket => {
         socket.disconnect()
     })
 
+    let isRunning = false
     socket.on('run', command => {
-        if (socket.shell) {
+        if (socket.shell && !isRunning) {
+            isRunning = true
             const stream = new Stream()
 
             stream.on('data', data => {
@@ -35,7 +38,9 @@ module.exports = socket => {
                 socket.emit('return', result)
             }).catch(erro => {
                 socket.emit('return.error', erro)
-            })
+            }).finally(() => isRunning = false)
+        } else {
+            console.warn(`[SPARK SOCKET - ${user.login}] Trying to run a command the shell open`)
         }
     })
 

@@ -14,7 +14,8 @@
     animation-iteration-count: infinite;
 }
 
-.connection-control.connected .connection-icon {
+.connection-control.connected .connection-icon,
+.connection-control.running .connection-icon {
     color: rgba(0, 255, 0, 0.8);
 }
 

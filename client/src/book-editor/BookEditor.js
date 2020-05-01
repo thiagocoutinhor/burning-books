@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import { useParams, useHistory, Link } from 'react-router-dom'
-import { Navbar, Dropdown, Card, Button, Form, InputGroup } from 'react-bootstrap'
+import { Navbar, Dropdown, Card, Button, Form, InputGroup, Spinner } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
@@ -12,6 +12,7 @@ import "ace-builds/src-noconflict/mode-scala"
 import "ace-builds/src-noconflict/theme-textmate"
 import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Connection Context
@@ -20,16 +21,24 @@ import "ace-builds/src-min-noconflict/ext-language_tools";
 const connectionStatusList = {
     disconnected: {
         class: 'disconnected',
-        showControls: true
+        showControls: true,
+        ready: false
     },
     connecting: {
         class: 'connecting',
-        showControls: false
+        showControls: false,
+        ready: false
     },
     connected: {
         class: 'connected',
-        showControls: false
-    }
+        showControls: false,
+        ready: true
+    },
+    running: {
+        class: 'running',
+        showControls: false,
+        ready: false
+    },
 }
 
 const SparkContext = React.createContext(null)
@@ -61,15 +70,15 @@ function ConnectionControl(props) {
                 <Button size="sm" className="mr-2" onClick={connect} key="connectButton">Connect</Button>
             )) : null }
             <Dropdown drop="left">
-                <Dropdown.Toggle as={SimpleDropdown} disabled={spark.status != connectionStatusList.connected}>
+                <Dropdown.Toggle as={SimpleDropdown} disabled={spark.status !== connectionStatusList.connected}>
                     <div className="connection-icon">
-                        <i className="fa fa-wifi"></i>
+                        <FontAwesomeIcon icon="wifi" />
                     </div>
                 </Dropdown.Toggle>
-                { spark.status == connectionStatusList.connected ? (
+                { spark.status === connectionStatusList.connected ? (
                     <Dropdown.Menu>
                         <Dropdown.Item onClick={spark.disconnect}>
-                            <i className="fa fa-power-off mr-2"></i>
+                            <FontAwesomeIcon icon="power-off" className="mr-2" />
                             Disconnect
                         </Dropdown.Item>
                     </Dropdown.Menu>
@@ -91,7 +100,7 @@ function EditorNavbar(props) {
         <Navbar variant="dark" className="sticky-top d-flex shadow">
             <Navbar.Brand>
                 <Link to="/">
-                    <i className="fa fa-chevron-left"></i>
+                    <FontAwesomeIcon icon="chevron-left"/>
                 </Link>
                 <span className="ml-1">
                     { props.book.name }
@@ -101,20 +110,65 @@ function EditorNavbar(props) {
             <ConnectionControl socket={props.socket} className="mr-2"/>
             <Dropdown drop="left">
                 <Dropdown.Toggle as={SimpleDropdown}>
-                    <i className="fa fa-ellipsis-v"></i>
+                    <FontAwesomeIcon icon="ellipsis-v"/>
                 </Dropdown.Toggle>
                 <Dropdown.Menu >
                     <Dropdown.Item onClick={copyAll}>
-                        <i class="fa fa-clone mr-2"></i>
+                        <FontAwesomeIcon icon="clone" className="mr-2"/>
                         Copy all blocks
                     </Dropdown.Item>
                     <Dropdown.Item href={`/api/book/${props.book._id}/download`} download={`${props.book.name}.scala`}>
-                        <i className="fa fa-file-download mr-2"></i>
+                        <FontAwesomeIcon icon="file-download" className="mr-2" />
                         Download
                     </Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
         </Navbar>
+    )
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Chunk editor
+///////////////////////////////////////////////////////////////////////////////
+function ChunkEditor(props) {
+    return (
+        <Card.Body as={AceEditor}
+            name={`Chunk-${props.index}`}
+            value={props.command}
+            onChange={props.codeChange}
+            mode="scala"
+            theme="textmate"
+            setOptions={{
+                maxLines: Infinity,
+                minLines: 5,
+                showPrintMargin: false,
+                enableBasicAutocompletion: true,
+                showLineNumbers: false,
+                useSoftTabs: true,
+                tabSize: 2
+            }}
+            commands={[
+                {
+                    name: 'run',
+                    bindKey: {
+                        win: 'Ctrl-Enter',
+                        mac: 'Command-Enter',
+                    },
+                    exec: props.run
+                },
+                {
+                    name: 'run-all',
+                    bindKey: {
+                        win: 'Control-Shift-Enter',
+                        mac: 'Command-shift-enter'
+                    },
+                    exec: props.runAllAbove
+                }
+            ]}
+            style={{
+                width: '100%'
+            }}
+        ></Card.Body>
     )
 }
 
@@ -126,36 +180,52 @@ function EditorNavbar(props) {
 // - Order of the status on the statemachine
 // - Label of the state
 // - Style to be applied to the status text
+// - If this status recieves commands (can be run)
 const chunkStatusList = {
     waiting: {
+        name: 'waiting',
         order: 0,
         label: 'Waiting connection...',
         style: { color: 'gray' },
-        ready: false
+        ready: false,
+        buttonVariant: "secondary",
+        buttonIcon: "play"
     },
     ready: {
+        name: 'ready',
         order: 1,
         label: 'Ready',
         style: {},
-        ready: true
+        ready: true,
+        buttonVariant: "primary",
+        buttonIcon: "play"
     },
     running: {
+        name: 'running',
         order: 2,
         label: 'Running...',
         style: { color: 'blue' },
-        ready: false
+        ready: false,
+        buttonVariant: "secondary",
+        buttonIcon: "hourglass"
     },
     done: {
+        name: 'done',
         order: 3,
         label: 'Done',
         style: { color: 'green', fontWeight: 'bold' },
-        ready: true
+        ready: true,
+        buttonVariant: "success",
+        buttonIcon: "play"
     },
     changed: {
+        name: 'changed',
         order: 4,
         label: 'Changed',
         style: { color: 'green' },
-        ready: true
+        ready: true,
+        buttonVariant: "success",
+        buttonIcon: "play"
     }
 }
 
@@ -163,6 +233,9 @@ const chunkStatusList = {
 function CommandChunk(props) {
     const [command, setCommand] = useState(props.chunk.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
+    const [ready, setReady] = useState(false)
+    const [buttonVariant, setButtonVariant] = useState("secondary")
+    const [result, setResult] = useState('')
     const spark = useContext(SparkContext)
     // TODO todos marcados como changed... :/
     const saveTimer = useRef(null)
@@ -188,15 +261,25 @@ function CommandChunk(props) {
 
     // Capture connected status change
     useEffect(() => {
-        const isReady = spark.status === connectionStatusList.connected
-        if (isReady) {
+        if (spark.status === connectionStatusList.connected) {
             if (status.order < chunkStatusList.ready.order) {
                 setStatus(chunkStatusList.ready)
             }
-        } else {
+        } else if (spark.status === connectionStatusList.disconnected) {
             setStatus(chunkStatusList.waiting)
         }
     }, [spark.status])
+
+    // Checks the chunk readiness and the overall readiness
+    useEffect(() => {
+        const isReady = spark.status.ready && status.ready
+        setReady(isReady)
+        if (isReady) {
+            setButtonVariant(status.buttonVariant)
+        } else {
+            setButtonVariant("secondary")
+        }
+    }, [spark.status, status])
 
     const startNameEdit = () => {
         nameRef.current.innerText = props.chunk.name || ''
@@ -204,7 +287,10 @@ function CommandChunk(props) {
     }
 
     const editName = () => {
-        const name = nameRef.current.innerText.replace(/\n/g, ' ').trim()
+        const name = nameRef.current.innerText
+            .replace(/\n/g, ' ')
+            .replace('Unamed', '')
+            .trim()
         if (name === '') {
             nameRef.current.innerText = 'Unamed'
         }
@@ -231,87 +317,80 @@ function CommandChunk(props) {
     }
 
     const run = () => {
-        // TODO something
-        console.log('executou esse...')
+        if (ready) {
+            setStatus(chunkStatusList.running)
+
+            let tmpResult = ''
+            const doReturn = data => {
+                tmpResult += data
+                setResult(tmpResult)
+            }
+
+            const doFinish = (data, isError) => {
+                setStatus(chunkStatusList.done)
+                spark.socket.off('return.stream', doReturn)
+            }
+
+            spark.socket.on('return.stream', doReturn)
+            spark.socket.once('return', data => doFinish(data, false))
+            spark.socket.once('return.error', data => doFinish(data, true))
+
+            spark.run(command)
+            setStatus(chunkStatusList.running)
+        }
     }
 
     const runAllAbove = () => {
         // TODO something
-        console.log('executou todos acima...')
+        // TODO how???
     }
 
     return (
-        <div className="command-block">
+        <div>
             <ChunkAddButton at={props.index} bookSocket={props.bookSocket} />
-            <Card className="ml-3 mr-3">
-                <Card.Header className="d-flex align-items-start">
-                    <span onClick={startNameEdit} className="pointer">
-                        [Chunk {props.index}]
-                        <span
-                            ref={nameRef}
-                            contentEditable
-                            spellCheck={false}
-                            className="chunk-name ml-1 pr-1 pl-1"
-                            onBlur={editName}
-                            onKeyDown={treatName}
-                            style={{
-                                color: props.chunk.name ? 'gray' : 'rgba(128, 128, 128, 0.4)'
-                            }}
-                        >
+            <div className={`command-block ${status.name} ml-3 mr-3`}>
+                <Card>
+                    <Card.Header className="d-flex align-items-start">
+                        <span onClick={startNameEdit} className="pointer">
+                            [Chunk {props.index}]
+                            <span
+                                ref={nameRef}
+                                contentEditable
+                                spellCheck={false}
+                                className="chunk-name ml-1 pr-1 pl-1"
+                                onBlur={editName}
+                                onKeyDown={treatName}
+                                style={{
+                                    color: props.chunk.name ? 'gray' : 'rgba(128, 128, 128, 0.4)'
+                                }}
+                            >
+                            </span>
                         </span>
-                    </span>
-                    <span className="flex-grow-1"></span>
-                    <span>
-                        <i className="fa fa-ellipsis-v"></i>
-                    </span>
-                </Card.Header>
-                <Card.Body as={AceEditor}
-                    name={`Chunk-${props.index}`}
-                    value={command}
-                    onChange={codeChange}
-                    mode="scala"
-                    theme="textmate"
-                    setOptions={{
-                        maxLines: Infinity,
-                        minLines: 5,
-                        showPrintMargin: false,
-                        enableBasicAutocompletion: true,
-                        showLineNumbers: false,
-                        useSoftTabs: true,
-                        tabSize: 2
-                    }}
-                    commands={[
-                        {
-                            name: 'run',
-                            bindKey: {
-                                win: 'Ctrl-Enter',
-                                mac: 'Command-Enter',
-                            },
-                            exec: run
-                        },
-                        {
-                            name: 'run-all',
-                            bindKey: {
-                                win: 'Control-Shift-Enter',
-                                mac: 'Command-shift-enter'
-                            },
-                            exec: runAllAbove
-                        }
-                    ]}
-                    style={{
-                        width: '100%'
-                    }}
-                ></Card.Body>
-                <Card.Footer className="d-flex align-items-end">
-                    <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
-                    <span className="flex-grow-1"></span>
-                    <Button disabled={!status.ready} variant={status.ready ? "primary" : "secondary"} onClick={run}>
-                        <i className="fa fa-play"></i>
-                    </Button>
-                </Card.Footer>
-            </Card>
+                        <span className="flex-grow-1"></span>
+                        <span>
+                            <FontAwesomeIcon icon="ellipsis-v" />
+                        </span>
+                    </Card.Header>
+                    <ChunkEditor index={props.index} command={command} codeChange={codeChange} run={run} runAllAbove={runAllAbove} />
+                    <Card.Footer className="d-flex align-items-end">
+                        <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
+                        <span className="flex-grow-1"></span>
+                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={run} style={{ verticalAlign: "middle" }}>
+                            <FontAwesomeIcon icon={status.buttonIcon} />
+                        </Button>
+                    </Card.Footer>
+                </Card>
+                <CommandResult result={result}/>
+            </div>
         </div>
     )
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Chunk result
+///////////////////////////////////////////////////////////////////////////////
+function CommandResult(props) {
+    return props.result
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -324,7 +403,7 @@ function ChunkAddButton(props) {
 
     return (
         <div className="chunk-add-button mr-3 ml-3 mt-2 mb-2" onClick={add}>
-            <i className="fa fa-plus"></i>
+            <FontAwesomeIcon icon="plus" />
         </div>
     )
 }
@@ -349,9 +428,13 @@ export function BookEditor(props) {
             // TODO something
         },
         disconnect: () => {
-            console.log("Banana")
             spark.socket.disconnect()
             setSpark({ ...spark, status: connectionStatusList.disconnected })
+        },
+        run: command => {
+            spark.socket.once('return', () => setSpark({ ...spark, status: connectionStatusList.connected }))
+            spark.socket.emit('run', command)
+            setSpark({ ...spark, status: connectionStatusList.running })
         }
     })
     const bookSocketRef = useRef(null)
