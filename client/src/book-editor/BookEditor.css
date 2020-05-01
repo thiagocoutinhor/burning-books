@@ -52,8 +52,23 @@
 }
 
 .command-block .card-body {
-    font-size: 80%;
     font-family: 'Roboto Mono', monospace;
+    font-size: 80%;
     white-space: pre;
     tab-size: 2;
+}
+
+.result-card {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 80%;
+    background-color: antiquewhite;
+    padding: 10px;
+    white-space: pre;
+    overflow-x: auto;
+    max-height: calc(100vh - 65px);
+}
+
+.result-card .progress-bar {
+    text-align: left!important;
+    padding-left: 3px;
 }

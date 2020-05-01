@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import { useParams, useHistory, Link } from 'react-router-dom'
-import { Navbar, Dropdown, Card, Button, Form, InputGroup, Spinner } from 'react-bootstrap'
+import { Navbar, Dropdown, Card, Button, Form, InputGroup, Spinner, ProgressBar } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
 import AceEditor from 'react-ace'
+import moo from 'moo'
 import './BookEditor.css'
 
 // Ace editor imports
@@ -143,7 +144,7 @@ function ChunkEditor(props) {
                 minLines: 5,
                 showPrintMargin: false,
                 enableBasicAutocompletion: true,
-                showLineNumbers: false,
+                // showLineNumbers: false,
                 useSoftTabs: true,
                 tabSize: 2
             }}
@@ -188,6 +189,7 @@ const chunkStatusList = {
         label: 'Waiting connection...',
         style: { color: 'gray' },
         ready: false,
+        executed: false,
         buttonVariant: "secondary",
         buttonIcon: "play"
     },
@@ -197,6 +199,7 @@ const chunkStatusList = {
         label: 'Ready',
         style: {},
         ready: true,
+        executed: false,
         buttonVariant: "primary",
         buttonIcon: "play"
     },
@@ -206,6 +209,7 @@ const chunkStatusList = {
         label: 'Running...',
         style: { color: 'blue' },
         ready: false,
+        executed: false,
         buttonVariant: "secondary",
         buttonIcon: "hourglass"
     },
@@ -215,6 +219,7 @@ const chunkStatusList = {
         label: 'Done',
         style: { color: 'green', fontWeight: 'bold' },
         ready: true,
+        executed: true,
         buttonVariant: "success",
         buttonIcon: "play"
     },
@@ -224,6 +229,7 @@ const chunkStatusList = {
         label: 'Changed',
         style: { color: 'green' },
         ready: true,
+        executed: true,
         buttonVariant: "success",
         buttonIcon: "play"
     }
@@ -318,6 +324,7 @@ function CommandChunk(props) {
 
     const run = () => {
         if (ready) {
+            setResult(null)
             setStatus(chunkStatusList.running)
 
             let tmpResult = ''
@@ -348,8 +355,8 @@ function CommandChunk(props) {
     return (
         <div>
             <ChunkAddButton at={props.index} bookSocket={props.bookSocket} />
-            <div className={`command-block ${status.name} ml-3 mr-3`}>
-                <Card>
+            <div className={`ml-3 mr-3`}>
+                <Card className={`command-block ${status.name} shadow`}>
                     <Card.Header className="d-flex align-items-start">
                         <span onClick={startNameEdit} className="pointer">
                             [Chunk {props.index}]
@@ -380,7 +387,7 @@ function CommandChunk(props) {
                         </Button>
                     </Card.Footer>
                 </Card>
-                <CommandResult result={result}/>
+                { result ? <CommandResult result={result} status={status}/> : null }
             </div>
         </div>
     )
@@ -389,8 +396,67 @@ function CommandChunk(props) {
 ///////////////////////////////////////////////////////////////////////////////
 // Chunk result
 ///////////////////////////////////////////////////////////////////////////////
+const resultGrammar = {
+    // Extracts the progress bar
+    progress: {
+        match: /\[Stage \d+:?=*>?\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
+        value: text => {
+            const numbers = /\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(text)[0]
+            const actual = numbers.split('+')[0].replace('(', '').trim()
+            const total = numbers.split('/')[1].trim()
+            return {
+                id: /Stage \d+/.exec(text)[0],
+                numbers: numbers,
+                progress: parseInt(actual) / parseInt(total) * 100
+            }
+        }
+    },
+    error: moo.error
+}
+
 function CommandResult(props) {
-    return props.result
+    const [bars, setBars] = useState({})
+    const [text, setText] = useState('')
+
+    // Tokenizing the result
+    // Looking for progress bars and tables
+    useEffect(() => {
+        const lexer = moo.compile(resultGrammar)
+
+        let extractedText = ''
+        lexer.reset(props.result)
+
+        const newBars = { ...bars }
+        Array.from(lexer).forEach(token => {
+            if (token.type === 'progress') {
+                newBars[token.value.id] = token.value
+            } else {
+                extractedText += token.text
+            }
+        })
+
+        setBars(newBars)
+        setText(extractedText)
+    }, [props.result])
+
+    useEffect(() => console.log(Object.values(bars)), [bars])
+
+    return (
+        <div className="result-card mr-3 ml-3">
+            { Object.values(bars).map(bar => (
+                <ProgressBar
+                    key={bar.id}
+                    striped={!props.status.executed}
+                    animated={!props.status.executed}
+                    variant={props.status.executed ? 'success' : 'primary'}
+                    style={{ backgroundColor: 'rgb(231, 201, 146)' }}
+                    className="mb-1"
+                    label={`${bar.id}: ${bar.numbers}`} now={props.status.executed ? 100 : bar.progress}
+                />
+            )) }
+            { text }
+        </div>
+    )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
