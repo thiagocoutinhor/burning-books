@@ -7,7 +7,7 @@ import { Form, Card, Button } from 'react-bootstrap'
 // Login form password / file depending on the login type defined
 ////////////////////////////////////////////////////////////////////////////////
 LoginTypeGroup.propTypes = {
-    type: PropTypes.string.isRequired
+    type: PropTypes.string
 }
 function LoginTypeGroup({ type }) {
     if (type === 'PASSWORD') {

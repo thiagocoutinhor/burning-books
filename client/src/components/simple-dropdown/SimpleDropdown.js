@@ -12,6 +12,9 @@ export const SimpleDropdown = React.forwardRef(function SimpleDropdown({children
     )
 })
 SimpleDropdown.propTypes = {
-    children: PropTypes.arrayOf(PropTypes.element),
+    children: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.object
+    ]),
     onClick: PropTypes.func
 }

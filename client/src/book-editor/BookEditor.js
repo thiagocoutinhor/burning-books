@@ -120,11 +120,11 @@ function ConnectionControl(props) {
 ///////////////////////////////////////////////////////////////////////////////
 EditorNavbar.propTypes = {
     book: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired
+        _id: PropTypes.string,
+        name: PropTypes.string
     }),
-    socket: PropTypes.object.isRequired,
-    copyAll: PropTypes.func.isRequired
+    socket: PropTypes.object,
+    copyAll: PropTypes.func
 }
 function EditorNavbar({ book, socket, copyAll }) {
     return (
@@ -162,9 +162,9 @@ function EditorNavbar({ book, socket, copyAll }) {
 // Chunk options
 ///////////////////////////////////////////////////////////////////////////////
 ChunkOptions.propTypes = {
-    copy: PropTypes.func.isRequired,
-    runAllAbove: PropTypes.func.isRequired,
-    remove: PropTypes.func.isRequired,
+    copy: PropTypes.func,
+    runAllAbove: PropTypes.func,
+    remove: PropTypes.func,
 }
 function ChunkOptions({ copy, runAllAbove, remove}) {
     const spark = useContext(SparkContext)
@@ -198,11 +198,11 @@ function ChunkOptions({ copy, runAllAbove, remove}) {
 ///////////////////////////////////////////////////////////////////////////////
 
 ChunkEditor.propTypes = {
-    index: PropTypes.number.isRequired,
-    command: PropTypes.string.isRequired,
-    codeChange: PropTypes.func.isRequired,
-    run: PropTypes.func.isRequired,
-    runAllAbove: PropTypes.func.isRequired
+    index: PropTypes.number,
+    command: PropTypes.string,
+    codeChange: PropTypes.func,
+    run: PropTypes.func,
+    runAllAbove: PropTypes.func
 }
 function ChunkEditor({ index, command, codeChange, run, runAllAbove }) {
     return (
@@ -310,11 +310,11 @@ const chunkStatusList = {
 
 // Each code chunk
 CommandChunk.propTypes = {
-    index: PropTypes.number.isRequired,
+    index: PropTypes.number,
     chunk: PropTypes.shape({
         name: PropTypes.string,
         command: PropTypes.string
-    }).isRequired,
+    }),
     showRunning: PropTypes.bool,
     bookSocket: PropTypes.object
 }
@@ -512,7 +512,7 @@ const resultGrammar = {
 }
 
 CommandResult.propTypes = {
-    result: PropTypes.string.isRequired,
+    result: PropTypes.string,
     status: PropTypes.object
 }
 function CommandResult({ result, status }) {
@@ -565,8 +565,8 @@ function CommandResult({ result, status }) {
 ///////////////////////////////////////////////////////////////////////////////
 
 ChunkAddButton.propTypes = {
-    at: PropTypes.number.isRequired,
-    bookSocket: PropTypes.object.isRequired
+    at: PropTypes.number,
+    bookSocket: PropTypes.object
 }
 function ChunkAddButton({ at, bookSocket}) {
     const add = () => {

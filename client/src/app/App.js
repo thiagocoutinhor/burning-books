@@ -51,7 +51,7 @@ export function App() {
 ///////////////////////////////////////////////////////////////////////////////
 LoadingHome.propTypes = {
     loading: PropTypes.bool.isRequired,
-    children: PropTypes.arrayOf(PropTypes.element)
+    children: PropTypes.any
 }
 export function LoadingHome({ loading, children }) {
     return (
@@ -74,7 +74,7 @@ export function LoadingHome({ loading, children }) {
 // Show the book list or the login page, depending on the login status
 ///////////////////////////////////////////////////////////////////////////////
 Home.propTypes = {
-    user: PropTypes.object,
+    user: PropTypes.string,
     logoff: PropTypes.func.isRequired
 }
 function Home({ user, logoff }) {

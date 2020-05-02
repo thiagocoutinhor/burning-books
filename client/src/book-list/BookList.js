@@ -117,7 +117,7 @@ BookRow.propTypes = {
         _id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         owner: PropTypes.string.isRequired,
-        sharedWith: PropTypes.arrayOf(PropTypes.String)
+        sharedWith: PropTypes.arrayOf(PropTypes.string)
     }).isRequired,
     socket: PropTypes.object.isRequired,
 }
