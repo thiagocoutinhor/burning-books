@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import { useParams, useHistory, Link } from 'react-router-dom'
-import { Navbar, Dropdown, Card, Button, Form, InputGroup, Spinner, ProgressBar } from 'react-bootstrap'
+import { Navbar, Dropdown, Card, Button, Form, InputGroup, ProgressBar } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
@@ -14,6 +14,25 @@ import "ace-builds/src-noconflict/theme-textmate"
 import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import DropdownToggle from 'react-bootstrap/DropdownToggle'
+
+///////////////////////////////////////////////////////////////////////////////
+// General use, helper functions
+///////////////////////////////////////////////////////////////////////////////
+
+function doCopy(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text)
+    } else {
+        const helper = document.createElement('textarea')
+        helper.value = text
+        document.body.appendChild(helper)
+        helper.select()
+        document.execCommand('copy')
+        document.body.removeChild(helper)
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Connection Context
@@ -93,10 +112,6 @@ function ConnectionControl(props) {
 // Navbar
 ///////////////////////////////////////////////////////////////////////////////
 function EditorNavbar(props) {
-    const copyAll = () => {
-        // TODO something
-    }
-
     return (
         <Navbar variant="dark" className="sticky-top d-flex shadow">
             <Navbar.Brand>
@@ -114,7 +129,7 @@ function EditorNavbar(props) {
                     <FontAwesomeIcon icon="ellipsis-v"/>
                 </Dropdown.Toggle>
                 <Dropdown.Menu >
-                    <Dropdown.Item onClick={copyAll}>
+                    <Dropdown.Item onClick={props.copyAll}>
                         <FontAwesomeIcon icon="clone" className="mr-2"/>
                         Copy all blocks
                     </Dropdown.Item>
@@ -125,6 +140,35 @@ function EditorNavbar(props) {
                 </Dropdown.Menu>
             </Dropdown>
         </Navbar>
+    )
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Chunk options
+///////////////////////////////////////////////////////////////////////////////
+
+function ChunkOptions(props) {
+    return (
+        <Dropdown drop="left">
+            <Dropdown.Toggle as={SimpleDropdown}>
+                <FontAwesomeIcon icon="ellipsis-v" />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+                <Dropdown.Item onClick={props.copy}>
+                    <FontAwesomeIcon icon="clone" className="mr-2"/>
+                    Copy
+                </Dropdown.Item>
+                <Dropdown.Item onClick={props.runAllAbove}>
+                    <FontAwesomeIcon icon="play" className="mr-2"/>
+                    Run all above
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={props.remove}>
+                    <FontAwesomeIcon icon="trash" className="mr-2" style={{ color: 'red' }}/>
+                    Remove
+                </Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
     )
 }
 
@@ -243,7 +287,6 @@ function CommandChunk(props) {
     const [buttonVariant, setButtonVariant] = useState("secondary")
     const [result, setResult] = useState('')
     const spark = useContext(SparkContext)
-    // TODO todos marcados como changed... :/
     const saveTimer = useRef(null)
     const nameRef = useRef(null)
 
@@ -347,9 +390,15 @@ function CommandChunk(props) {
         }
     }
 
-    const runAllAbove = () => {
-        // TODO something
-        // TODO how???
+    const copy = () => {
+        const comment = `${'/'.repeat(80)}\n// BLOCK ${props.index}${props.chunk.name ? ' - ' + props.chunk.name : ''}\n${'/'.repeat(80)}\n\n`
+        const copyText = `${comment}${command}`
+        doCopy(copyText)
+    }
+
+    const remove = () => {
+        console.log('Teste')
+        props.bookSocket.emit('chunk.remove', props.index)
     }
 
     return (
@@ -375,10 +424,10 @@ function CommandChunk(props) {
                         </span>
                         <span className="flex-grow-1"></span>
                         <span>
-                            <FontAwesomeIcon icon="ellipsis-v" />
+                            <ChunkOptions runAllAbove={props.runAllAbove} copy={copy} remove={remove} />
                         </span>
                     </Card.Header>
-                    <ChunkEditor index={props.index} command={command} codeChange={codeChange} run={run} runAllAbove={runAllAbove} />
+                    <ChunkEditor index={props.index} command={command} codeChange={codeChange} run={run} runAllAbove={props.runAllAbove} />
                     <Card.Footer className="d-flex align-items-end">
                         <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                         <span className="flex-grow-1"></span>
@@ -491,7 +540,6 @@ export function BookEditor(props) {
             spark.socket.on('ready', () => {
                 setSpark({ ...spark, status: connectionStatusList.connected })
             })
-            // TODO something
         },
         disconnect: () => {
             spark.socket.disconnect()
@@ -525,11 +573,27 @@ export function BookEditor(props) {
         }
     }, [bookId, history])
 
+    const copyAll = () => {
+        // TODO something
+    }
+
+    const runAllAbove = index => {
+        // TODO something
+    }
+
     return (
         <SparkContext.Provider value={spark}>
             <LoadingHome loading={loading}>
-                <EditorNavbar book={book} />
-                { ((book && book.commands) || []).map((chunk, index) => <CommandChunk chunk={chunk} key={chunk._id} index={index} bookSocket={bookSocketRef.current} />)}
+                <EditorNavbar book={book} copyAll={copyAll}/>
+                {((book && book.commands) || []).map((chunk, index) => (
+                    <CommandChunk
+                        chunk={chunk}
+                        key={chunk._id}
+                        index={index}
+                        bookSocket={bookSocketRef.current}
+                        runAllAbove={runAllAbove}
+                    />
+                ))}
                 <ChunkAddButton bookSocket={bookSocketRef.current} />
             </LoadingHome>
         </SparkContext.Provider>
