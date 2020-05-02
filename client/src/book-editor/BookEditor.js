@@ -20,6 +20,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // General use, helper functions
 ///////////////////////////////////////////////////////////////////////////////
 
+function chunkCopytext(index, chunk) {
+    const comment = `${'/'.repeat(80)}\n// BLOCK ${index}${chunk.name ? ' - ' + chunk.name : ''}\n${'/'.repeat(80)}\n\n`
+    return `${comment}${chunk.command}`
+}
+
 function doCopy(text) {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(text)
@@ -311,10 +316,9 @@ CommandChunk.propTypes = {
         command: PropTypes.string
     }).isRequired,
     showRunning: PropTypes.bool,
-    bookSocket: PropTypes.object,
-    runAllAbove: PropTypes.func
+    bookSocket: PropTypes.object
 }
-function CommandChunk({ index, chunk, showRunning = false, bookSocket, runAllAbove }) {
+function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
     const [command, setCommand] = useState(chunk.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
     const [ready, setReady] = useState(false)
@@ -406,7 +410,7 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket, runAllAbo
         }, 1000) // Saves after a second without changes
     }
 
-    const doRun = () => {
+    const run = () => {
         if (ready) {
             setResult(null)
             setStatus(chunkStatusList.running)
@@ -432,18 +436,18 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket, runAllAbo
         }
     }
 
+    const runAllAboveMe = () => {
+        // TODO something
+    }
+
     const copy = () => {
-        const comment = `${'/'.repeat(80)}\n// BLOCK ${index}${chunk.name ? ' - ' + chunk.name : ''}\n${'/'.repeat(80)}\n\n`
-        const copyText = `${comment}${command}`
-        doCopy(copyText)
+        doCopy(chunkCopytext(index, chunk))
     }
 
     const remove = () => {
         console.log('Teste')
         bookSocket.emit('chunk.remove', index)
     }
-
-    const runAllAboveMe = () => runAllAbove(index)
 
     return (
         <div>
@@ -471,11 +475,11 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket, runAllAbo
                             <ChunkOptions runAllAbove={runAllAboveMe} copy={copy} remove={remove} />
                         </span>
                     </Card.Header>
-                    <ChunkEditor index={index} command={command} codeChange={codeChange} run={doRun} runAllAbove={runAllAboveMe} />
+                    <ChunkEditor index={index} command={command} codeChange={codeChange} run={run} runAllAbove={runAllAboveMe} />
                     <Card.Footer className="d-flex align-items-end">
                         <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                         <span className="flex-grow-1"></span>
-                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={doRun} style={{ verticalAlign: 'middle' }}>
+                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={run} style={{ verticalAlign: 'middle' }}>
                             <FontAwesomeIcon icon={status.buttonIcon} />
                         </Button>
                     </Card.Footer>
@@ -629,7 +633,10 @@ export function BookEditor() {
     }, [bookId, history])
 
     const copyAll = () => {
-        // TODO something
+        const text = book.commands
+            .map((chunk, index) => chunkCopytext(index, chunk))
+            .join('\n\n')
+        doCopy(text)
     }
 
     const runAllAbove = index => {
@@ -649,7 +656,6 @@ export function BookEditor() {
                         key={chunk._id}
                         index={index}
                         bookSocket={bookSocketRef.current}
-                        runAllAbove={runAllAbove}
                         runing={runningAllUntil != null && index <= runningAllUntil}
                     />
                 ))}
