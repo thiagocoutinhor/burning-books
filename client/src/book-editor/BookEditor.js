@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
+import PropTypes from 'prop-types'
 import { useParams, useHistory, Link } from 'react-router-dom'
 import { Navbar, Dropdown, Card, Button, Form, InputGroup, ProgressBar } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
@@ -9,12 +10,11 @@ import moo from 'moo'
 import './BookEditor.css'
 
 // Ace editor imports
-import "ace-builds/src-noconflict/mode-scala"
-import "ace-builds/src-noconflict/theme-textmate"
-import "ace-builds/src-min-noconflict/ext-searchbox";
-import "ace-builds/src-min-noconflict/ext-language_tools";
+import 'ace-builds/src-noconflict/mode-scala'
+import 'ace-builds/src-noconflict/theme-textmate'
+import 'ace-builds/src-min-noconflict/ext-searchbox'
+import 'ace-builds/src-min-noconflict/ext-language_tools'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import DropdownToggle from 'react-bootstrap/DropdownToggle'
 
 ///////////////////////////////////////////////////////////////////////////////
 // General use, helper functions
@@ -66,7 +66,9 @@ const SparkContext = React.createContext(null)
 ///////////////////////////////////////////////////////////////////////////////
 // Connection widget
 ///////////////////////////////////////////////////////////////////////////////
-
+ConnectionControl.propTypes = {
+    className: PropTypes.string
+}
 function ConnectionControl(props) {
     const spark = useContext(SparkContext)
     const executors = useRef()
@@ -111,7 +113,15 @@ function ConnectionControl(props) {
 ///////////////////////////////////////////////////////////////////////////////
 // Navbar
 ///////////////////////////////////////////////////////////////////////////////
-function EditorNavbar(props) {
+EditorNavbar.propTypes = {
+    book: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired
+    }),
+    socket: PropTypes.object.isRequired,
+    copyAll: PropTypes.func.isRequired
+}
+function EditorNavbar({ book, socket, copyAll }) {
     return (
         <Navbar variant="dark" className="sticky-top d-flex shadow">
             <Navbar.Brand>
@@ -119,21 +129,21 @@ function EditorNavbar(props) {
                     <FontAwesomeIcon icon="chevron-left"/>
                 </Link>
                 <span className="ml-1">
-                    { props.book.name }
+                    { book.name }
                 </span>
             </Navbar.Brand>
             <div className="flex-grow-1"/>
-            <ConnectionControl socket={props.socket} className="mr-2"/>
+            <ConnectionControl socket={socket} className="mr-2"/>
             <Dropdown drop="left">
                 <Dropdown.Toggle as={SimpleDropdown}>
                     <FontAwesomeIcon icon="ellipsis-v"/>
                 </Dropdown.Toggle>
                 <Dropdown.Menu >
-                    <Dropdown.Item onClick={props.copyAll}>
+                    <Dropdown.Item onClick={copyAll}>
                         <FontAwesomeIcon icon="clone" className="mr-2"/>
                         Copy all blocks
                     </Dropdown.Item>
-                    <Dropdown.Item href={`/api/book/${props.book._id}/download`} download={`${props.book.name}.scala`}>
+                    <Dropdown.Item href={`/api/book/${book._id}/download`} download={`${book.name}.scala`}>
                         <FontAwesomeIcon icon="file-download" className="mr-2" />
                         Download
                     </Dropdown.Item>
@@ -146,24 +156,30 @@ function EditorNavbar(props) {
 ///////////////////////////////////////////////////////////////////////////////
 // Chunk options
 ///////////////////////////////////////////////////////////////////////////////
+ChunkOptions.propTypes = {
+    copy: PropTypes.func.isRequired,
+    runAllAbove: PropTypes.func.isRequired,
+    remove: PropTypes.func.isRequired,
+}
+function ChunkOptions({ copy, runAllAbove, remove}) {
+    const spark = useContext(SparkContext)
 
-function ChunkOptions(props) {
     return (
         <Dropdown drop="left">
             <Dropdown.Toggle as={SimpleDropdown}>
                 <FontAwesomeIcon icon="ellipsis-v" />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-                <Dropdown.Item onClick={props.copy}>
+                <Dropdown.Item onClick={copy}>
                     <FontAwesomeIcon icon="clone" className="mr-2"/>
                     Copy
                 </Dropdown.Item>
-                <Dropdown.Item onClick={props.runAllAbove}>
+                <Dropdown.Item as="button" onClick={runAllAbove} disabled={!spark.status.ready}>
                     <FontAwesomeIcon icon="play" className="mr-2"/>
                     Run all above
                 </Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item onClick={props.remove}>
+                <Dropdown.Item onClick={remove}>
                     <FontAwesomeIcon icon="trash" className="mr-2" style={{ color: 'red' }}/>
                     Remove
                 </Dropdown.Item>
@@ -175,12 +191,20 @@ function ChunkOptions(props) {
 ///////////////////////////////////////////////////////////////////////////////
 // Chunk editor
 ///////////////////////////////////////////////////////////////////////////////
-function ChunkEditor(props) {
+
+ChunkEditor.propTypes = {
+    index: PropTypes.number.isRequired,
+    command: PropTypes.string.isRequired,
+    codeChange: PropTypes.func.isRequired,
+    run: PropTypes.func.isRequired,
+    runAllAbove: PropTypes.func.isRequired
+}
+function ChunkEditor({ index, command, codeChange, run, runAllAbove }) {
     return (
         <Card.Body as={AceEditor}
-            name={`Chunk-${props.index}`}
-            value={props.command}
-            onChange={props.codeChange}
+            name={`Chunk-${index}`}
+            value={command}
+            onChange={codeChange}
             mode="scala"
             theme="textmate"
             setOptions={{
@@ -199,7 +223,7 @@ function ChunkEditor(props) {
                         win: 'Ctrl-Enter',
                         mac: 'Command-Enter',
                     },
-                    exec: props.run
+                    exec: run
                 },
                 {
                     name: 'run-all',
@@ -207,7 +231,7 @@ function ChunkEditor(props) {
                         win: 'Control-Shift-Enter',
                         mac: 'Command-shift-enter'
                     },
-                    exec: props.runAllAbove
+                    exec: runAllAbove
                 }
             ]}
             style={{
@@ -234,8 +258,8 @@ const chunkStatusList = {
         style: { color: 'gray' },
         ready: false,
         executed: false,
-        buttonVariant: "secondary",
-        buttonIcon: "play"
+        buttonVariant: 'secondary',
+        buttonIcon: 'play'
     },
     ready: {
         name: 'ready',
@@ -244,8 +268,8 @@ const chunkStatusList = {
         style: {},
         ready: true,
         executed: false,
-        buttonVariant: "primary",
-        buttonIcon: "play"
+        buttonVariant: 'primary',
+        buttonIcon: 'play'
     },
     running: {
         name: 'running',
@@ -254,8 +278,8 @@ const chunkStatusList = {
         style: { color: 'blue' },
         ready: false,
         executed: false,
-        buttonVariant: "secondary",
-        buttonIcon: "hourglass"
+        buttonVariant: 'secondary',
+        buttonIcon: 'hourglass'
     },
     done: {
         name: 'done',
@@ -264,8 +288,8 @@ const chunkStatusList = {
         style: { color: 'green', fontWeight: 'bold' },
         ready: true,
         executed: true,
-        buttonVariant: "success",
-        buttonIcon: "play"
+        buttonVariant: 'success',
+        buttonIcon: 'play'
     },
     changed: {
         name: 'changed',
@@ -274,17 +298,27 @@ const chunkStatusList = {
         style: { color: 'green' },
         ready: true,
         executed: true,
-        buttonVariant: "success",
-        buttonIcon: "play"
+        buttonVariant: 'success',
+        buttonIcon: 'play'
     }
 }
 
 // Each code chunk
-function CommandChunk(props) {
-    const [command, setCommand] = useState(props.chunk.command)
+CommandChunk.propTypes = {
+    index: PropTypes.number.isRequired,
+    chunk: PropTypes.shape({
+        name: PropTypes.string,
+        command: PropTypes.string
+    }).isRequired,
+    showRunning: PropTypes.bool,
+    bookSocket: PropTypes.object,
+    runAllAbove: PropTypes.func
+}
+function CommandChunk({ index, chunk, showRunning = false, bookSocket, runAllAbove }) {
+    const [command, setCommand] = useState(chunk.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
     const [ready, setReady] = useState(false)
-    const [buttonVariant, setButtonVariant] = useState("secondary")
+    const [buttonVariant, setButtonVariant] = useState('secondary')
     const [result, setResult] = useState('')
     const spark = useContext(SparkContext)
     const saveTimer = useRef(null)
@@ -292,8 +326,8 @@ function CommandChunk(props) {
 
     // Name change
     useEffect(() => {
-        nameRef.current.innerText = props.chunk.name || 'Unamed'
-    }, [props.chunk.name])
+        nameRef.current.innerText = chunk.name || 'Unamed'
+    }, [chunk.name])
 
     // Command status validation
     // Changes after the chunk was run mark it as changed
@@ -305,8 +339,8 @@ function CommandChunk(props) {
 
     // Command change
     useEffect(() => {
-        setCommand(props.chunk.command)
-    }, [props.chunk.command])
+        setCommand(chunk.command)
+    }, [chunk.command])
 
     // Capture connected status change
     useEffect(() => {
@@ -326,12 +360,19 @@ function CommandChunk(props) {
         if (isReady) {
             setButtonVariant(status.buttonVariant)
         } else {
-            setButtonVariant("secondary")
+            setButtonVariant('secondary')
         }
     }, [spark.status, status])
 
+    useEffect(() => {
+        // TODO something
+        if (showRunning) {
+            setStatus(chunkStatusList.running)
+        }
+    }, [showRunning])
+
     const startNameEdit = () => {
-        nameRef.current.innerText = props.chunk.name || ''
+        nameRef.current.innerText = chunk.name || ''
         nameRef.current.focus()
     }
 
@@ -343,7 +384,7 @@ function CommandChunk(props) {
         if (name === '') {
             nameRef.current.innerText = 'Unamed'
         }
-        props.bookSocket.emit('chunk.name', props.index, name === '' ? undefined : name)
+        bookSocket.emit('chunk.name', index, name === '' ? undefined : name)
     }
 
     const treatName = event => {
@@ -361,11 +402,11 @@ function CommandChunk(props) {
             clearTimeout(saveTimer.current)
         }
         saveTimer.current = setTimeout(() => {
-            props.bookSocket.emit('chunk.update', props.index, value)
+            bookSocket.emit('chunk.update', index, value)
         }, 1000) // Saves after a second without changes
     }
 
-    const run = () => {
+    const doRun = () => {
         if (ready) {
             setResult(null)
             setStatus(chunkStatusList.running)
@@ -377,6 +418,7 @@ function CommandChunk(props) {
             }
 
             const doFinish = (data, isError) => {
+                // TODO something when it's an error
                 setStatus(chunkStatusList.done)
                 spark.socket.off('return.stream', doReturn)
             }
@@ -391,24 +433,26 @@ function CommandChunk(props) {
     }
 
     const copy = () => {
-        const comment = `${'/'.repeat(80)}\n// BLOCK ${props.index}${props.chunk.name ? ' - ' + props.chunk.name : ''}\n${'/'.repeat(80)}\n\n`
+        const comment = `${'/'.repeat(80)}\n// BLOCK ${index}${chunk.name ? ' - ' + chunk.name : ''}\n${'/'.repeat(80)}\n\n`
         const copyText = `${comment}${command}`
         doCopy(copyText)
     }
 
     const remove = () => {
         console.log('Teste')
-        props.bookSocket.emit('chunk.remove', props.index)
+        bookSocket.emit('chunk.remove', index)
     }
+
+    const runAllAboveMe = () => runAllAbove(index)
 
     return (
         <div>
-            <ChunkAddButton at={props.index} bookSocket={props.bookSocket} />
-            <div className={`ml-3 mr-3`}>
+            <ChunkAddButton at={index} bookSocket={bookSocket} />
+            <div className='ml-3 mr-3'>
                 <Card className={`command-block ${status.name} shadow`}>
                     <Card.Header className="d-flex align-items-start">
                         <span onClick={startNameEdit} className="pointer">
-                            [Chunk {props.index}]
+                            [Chunk {index}]
                             <span
                                 ref={nameRef}
                                 contentEditable
@@ -417,21 +461,21 @@ function CommandChunk(props) {
                                 onBlur={editName}
                                 onKeyDown={treatName}
                                 style={{
-                                    color: props.chunk.name ? 'gray' : 'rgba(128, 128, 128, 0.4)'
+                                    color: chunk.name ? 'gray' : 'rgba(128, 128, 128, 0.4)'
                                 }}
                             >
                             </span>
                         </span>
                         <span className="flex-grow-1"></span>
                         <span>
-                            <ChunkOptions runAllAbove={props.runAllAbove} copy={copy} remove={remove} />
+                            <ChunkOptions runAllAbove={runAllAboveMe} copy={copy} remove={remove} />
                         </span>
                     </Card.Header>
-                    <ChunkEditor index={props.index} command={command} codeChange={codeChange} run={run} runAllAbove={props.runAllAbove} />
+                    <ChunkEditor index={index} command={command} codeChange={codeChange} run={doRun} runAllAbove={runAllAboveMe} />
                     <Card.Footer className="d-flex align-items-end">
                         <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                         <span className="flex-grow-1"></span>
-                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={run} style={{ verticalAlign: "middle" }}>
+                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={doRun} style={{ verticalAlign: 'middle' }}>
                             <FontAwesomeIcon icon={status.buttonIcon} />
                         </Button>
                     </Card.Footer>
@@ -463,7 +507,11 @@ const resultGrammar = {
     error: moo.error
 }
 
-function CommandResult(props) {
+CommandResult.propTypes = {
+    result: PropTypes.string.isRequired,
+    status: PropTypes.object
+}
+function CommandResult({ result, status }) {
     const [bars, setBars] = useState({})
     const [text, setText] = useState('')
 
@@ -473,7 +521,7 @@ function CommandResult(props) {
         const lexer = moo.compile(resultGrammar)
 
         let extractedText = ''
-        lexer.reset(props.result)
+        lexer.reset(result)
 
         const newBars = { ...bars }
         Array.from(lexer).forEach(token => {
@@ -486,21 +534,21 @@ function CommandResult(props) {
 
         setBars(newBars)
         setText(extractedText)
-    }, [props.result])
+    }, [result])
 
-    useEffect(() => console.log(Object.values(bars)), [bars])
+    // TODO add tables
 
     return (
         <div className="result-card mr-3 ml-3">
             { Object.values(bars).map(bar => (
                 <ProgressBar
                     key={bar.id}
-                    striped={!props.status.executed}
-                    animated={!props.status.executed}
-                    variant={props.status.executed ? 'success' : 'primary'}
+                    striped={!status.executed}
+                    animated={!status.executed}
+                    variant={status.executed ? 'success' : 'primary'}
                     style={{ backgroundColor: 'rgb(231, 201, 146)' }}
                     className="mb-1"
-                    label={`${bar.id}: ${bar.numbers}`} now={props.status.executed ? 100 : bar.progress}
+                    label={`${bar.id}: ${bar.numbers}`} now={status.executed ? 100 : bar.progress}
                 />
             )) }
             { text }
@@ -511,9 +559,14 @@ function CommandResult(props) {
 ///////////////////////////////////////////////////////////////////////////////
 // Button to add new chunk at a given position
 ///////////////////////////////////////////////////////////////////////////////
-function ChunkAddButton(props) {
+
+ChunkAddButton.propTypes = {
+    at: PropTypes.number.isRequired,
+    bookSocket: PropTypes.object.isRequired
+}
+function ChunkAddButton({ at, bookSocket}) {
     const add = () => {
-        props.bookSocket.emit('chunk.new', props.at)
+        bookSocket.emit('chunk.new', at)
     }
 
     return (
@@ -526,10 +579,9 @@ function ChunkAddButton(props) {
 ///////////////////////////////////////////////////////////////////////////////
 // Book Editor
 ///////////////////////////////////////////////////////////////////////////////
-export function BookEditor(props) {
+
+export function BookEditor() {
     const { bookId } = useParams()
-    const [loading, setLoading] = useState(true)
-    const [book, setBook] = useState(null)
     const [spark, setSpark] = useState({
         status: connectionStatusList.disconnected,
         socket: null,
@@ -551,6 +603,9 @@ export function BookEditor(props) {
             setSpark({ ...spark, status: connectionStatusList.running })
         }
     })
+    const [loading, setLoading] = useState(true)
+    const [book, setBook] = useState(null)
+    const [runningAllUntil, setrunningAllUntil] = useState(null)
     const bookSocketRef = useRef(null)
     const history = useHistory()
 
@@ -578,6 +633,9 @@ export function BookEditor(props) {
     }
 
     const runAllAbove = index => {
+        console.log(spark.status)
+        console.log(`Banana => ${index}`)
+        setrunningAllUntil(index - 1)
         // TODO something
     }
 
@@ -592,6 +650,7 @@ export function BookEditor(props) {
                         index={index}
                         bookSocket={bookSocketRef.current}
                         runAllAbove={runAllAbove}
+                        runing={runningAllUntil != null && index <= runningAllUntil}
                     />
                 ))}
                 <ChunkAddButton bookSocket={bookSocketRef.current} />
