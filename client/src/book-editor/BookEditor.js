@@ -40,35 +40,6 @@ function doCopy(text) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Connection Context
-///////////////////////////////////////////////////////////////////////////////
-
-const connectionStatusList = {
-    disconnected: {
-        class: 'disconnected',
-        showControls: true,
-        ready: false
-    },
-    connecting: {
-        class: 'connecting',
-        showControls: false,
-        ready: false
-    },
-    connected: {
-        class: 'connected',
-        showControls: false,
-        ready: true
-    },
-    running: {
-        class: 'running',
-        showControls: false,
-        ready: false
-    },
-}
-
-const SparkContext = React.createContext(null)
-
-///////////////////////////////////////////////////////////////////////////////
 // Connection widget
 ///////////////////////////////////////////////////////////////////////////////
 ConnectionControl.propTypes = {
@@ -162,11 +133,12 @@ function EditorNavbar({ book, socket, copyAll }) {
 // Chunk options
 ///////////////////////////////////////////////////////////////////////////////
 ChunkOptions.propTypes = {
+    index: PropTypes.number,
     copy: PropTypes.func,
     runAllAbove: PropTypes.func,
     remove: PropTypes.func,
 }
-function ChunkOptions({ copy, runAllAbove, remove}) {
+function ChunkOptions({ index, copy, runAllAbove, remove}) {
     const spark = useContext(SparkContext)
 
     return (
@@ -179,10 +151,12 @@ function ChunkOptions({ copy, runAllAbove, remove}) {
                     <FontAwesomeIcon icon="clone" className="mr-2"/>
                     Copy
                 </Dropdown.Item>
-                <Dropdown.Item as="button" onClick={runAllAbove} disabled={!spark.status.ready}>
-                    <FontAwesomeIcon icon="play" className="mr-2"/>
-                    Run all above
-                </Dropdown.Item>
+                { index > 0 ? (
+                    <Dropdown.Item as="button" onClick={runAllAbove} disabled={!spark.status.ready}>
+                        <FontAwesomeIcon icon="play" className="mr-2"/>
+                        Run all above
+                    </Dropdown.Item>
+                ) : null }
                 <Dropdown.Divider />
                 <Dropdown.Item onClick={remove}>
                     <FontAwesomeIcon icon="trash" className="mr-2" style={{ color: 'red' }}/>
@@ -303,7 +277,7 @@ const chunkStatusList = {
         style: { color: 'green' },
         ready: true,
         executed: true,
-        buttonVariant: 'success',
+        buttonVariant: 'primary',
         buttonIcon: 'play'
     }
 }
@@ -312,13 +286,13 @@ const chunkStatusList = {
 CommandChunk.propTypes = {
     index: PropTypes.number,
     chunk: PropTypes.shape({
+        _id: PropTypes.string,
         name: PropTypes.string,
         command: PropTypes.string
     }),
-    showRunning: PropTypes.bool,
-    bookSocket: PropTypes.object
+    bookSocket: PropTypes.object,
 }
-function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
+function CommandChunk({ index, chunk, bookSocket}) {
     const [command, setCommand] = useState(chunk.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
     const [ready, setReady] = useState(false)
@@ -368,12 +342,21 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
         }
     }, [spark.status, status])
 
+    // Verify if this schunk is in the running range of a run all above command
     useEffect(() => {
-        // TODO something
-        if (showRunning) {
+        console.log(spark.commandsToRun, chunk._id)
+        if (spark.commandsToRun && spark.commandsToRun.includes(chunk._id)) {
+            setResult(null)
             setStatus(chunkStatusList.running)
         }
-    }, [showRunning])
+    }, [spark.commandsToRun])
+
+    // Listens for external run command
+    useEffect(() => {
+        if (spark.forceRun === chunk._id) {
+            run()
+        }
+    }, [spark.forceRun])
 
     const startNameEdit = () => {
         nameRef.current.innerText = chunk.name || ''
@@ -411,7 +394,7 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
     }
 
     const run = () => {
-        if (ready) {
+        if (spark.runningNow === null) {
             setResult(null)
             setStatus(chunkStatusList.running)
 
@@ -421,7 +404,7 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
                 setResult(tmpResult)
             }
 
-            const doFinish = (data, isError) => {
+            const doFinish = () => {
                 // TODO something when it's an error
                 setStatus(chunkStatusList.done)
                 spark.socket.off('return.stream', doReturn)
@@ -431,13 +414,13 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
             spark.socket.once('return', data => doFinish(data, false))
             spark.socket.once('return.error', data => doFinish(data, true))
 
-            spark.run(command)
+            spark.run(index, command)
             setStatus(chunkStatusList.running)
         }
     }
 
     const runAllAboveMe = () => {
-        // TODO something
+        spark.runAllAbove(index)
     }
 
     const copy = () => {
@@ -445,7 +428,6 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
     }
 
     const remove = () => {
-        console.log('Teste')
         bookSocket.emit('chunk.remove', index)
     }
 
@@ -471,8 +453,9 @@ function CommandChunk({ index, chunk, showRunning = false, bookSocket }) {
                             </span>
                         </span>
                         <span className="flex-grow-1"></span>
+                        {/* TODO Add up and down buttons for chunk reordering */}
                         <span>
-                            <ChunkOptions runAllAbove={runAllAboveMe} copy={copy} remove={remove} />
+                            <ChunkOptions index={index} runAllAbove={runAllAboveMe} copy={copy} remove={remove} />
                         </span>
                     </Card.Header>
                     <ChunkEditor index={index} command={command} codeChange={codeChange} run={run} runAllAbove={runAllAboveMe} />
@@ -518,6 +501,8 @@ CommandResult.propTypes = {
 function CommandResult({ result, status }) {
     const [bars, setBars] = useState({})
     const [text, setText] = useState('')
+
+    // TODO bars looks like running on disconnect
 
     // Tokenizing the result
     // Looking for progress bars and tables
@@ -581,38 +566,128 @@ function ChunkAddButton({ at, bookSocket}) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Spark connection handling
+///////////////////////////////////////////////////////////////////////////////
+
+const connectionStatusList = {
+    disconnected: {
+        class: 'disconnected',
+        showControls: true,
+        ready: false
+    },
+    connecting: {
+        class: 'connecting',
+        showControls: false,
+        ready: false
+    },
+    connected: {
+        class: 'connected',
+        showControls: false,
+        ready: true
+    },
+    running: {
+        class: 'running',
+        showControls: false,
+        ready: false
+    },
+}
+
+// Handles the connection, disconnection and running of chunks
+function useSparkConnection(commands) {
+    const [connectionStatus, setConnectionStatus] = useState(connectionStatusList.disconnected)
+    const [runningNow, setRunningNow] = useState(null)
+    const [forceRun, setForceRun] = useState(null)
+    const [commandsToRun, setCommandsToRun] = useState([])
+    const sparkSocketRef = useRef(null)
+
+    // Disconnects when leaving the component
+    useEffect(() => {
+        return () => {
+            console.log('Banana => Desconectou na saida')
+            if (sparkSocketRef.current) {
+                sparkSocketRef.current.disconnect()
+            }
+        }
+    }, [])
+
+    const connect = (executors, cores, memory) => {
+        sparkSocketRef.current = io(`/spark?executors=${executors}&cores=${cores}&memory=${memory}`)
+        setConnectionStatus(connectionStatusList.connecting)
+
+        sparkSocketRef.current.on('ready', () => {
+            setConnectionStatus(connectionStatusList.connected)
+        })
+    }
+
+    const disconnect = () => {
+        if (sparkSocketRef.current) {
+            sparkSocketRef.current.disconnect()
+        }
+        setRunningNow(null)
+        setCommandsToRun([])
+        setForceRun(null)
+        sparkSocketRef.current = null
+        setConnectionStatus(connectionStatusList.disconnected)
+    }
+
+    const run = (index, command) => {
+        if (sparkSocketRef.current) {
+            sparkSocketRef.current.once('return', () => {
+                if (commandsToRun.length > 0) {
+                // Run until part
+                    console.log('Banana => Next chunk...')
+                    setRunningNow(null)
+                    setForceRun(commandsToRun.shift())
+                    setCommandsToRun(commandsToRun)
+                } else {
+                // Normal run
+                    console.log('Banana => Ended run')
+                    setRunningNow(null)
+                    setConnectionStatus(connectionStatusList.connected)
+                }
+            })
+            sparkSocketRef.current.emit('run', command)
+            setRunningNow(index)
+            setConnectionStatus(connectionStatusList.running)
+        }
+    }
+
+    // TODO control scroll on run all
+
+    const runAllAbove = index => {
+        const runList = commands.slice(0, index).map(chunk => chunk._id)
+        setForceRun(runList.shift())
+        setCommandsToRun(runList)
+    }
+
+    return {
+        socket: sparkSocketRef.current,
+        status: connectionStatus,
+        runningNow,
+        commandsToRun,
+        forceRun,
+        connect,
+        disconnect,
+        run,
+        runAllAbove
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Book Editor
 ///////////////////////////////////////////////////////////////////////////////
+const SparkContext = React.createContext(null)
 
 export function BookEditor() {
     const { bookId } = useParams()
-    const [spark, setSpark] = useState({
-        status: connectionStatusList.disconnected,
-        socket: null,
-        connect: (executors, cores, memory) => {
-            spark.socket = io(`/spark?executors=${executors}&cores=${cores}&memory=${memory}`)
-            setSpark({ status: connectionStatusList.connecting })
-
-            spark.socket.on('ready', () => {
-                setSpark({ ...spark, status: connectionStatusList.connected })
-            })
-        },
-        disconnect: () => {
-            spark.socket.disconnect()
-            setSpark({ ...spark, status: connectionStatusList.disconnected })
-        },
-        run: command => {
-            spark.socket.once('return', () => setSpark({ ...spark, status: connectionStatusList.connected }))
-            spark.socket.emit('run', command)
-            setSpark({ ...spark, status: connectionStatusList.running })
-        }
-    })
     const [loading, setLoading] = useState(true)
     const [book, setBook] = useState(null)
-    const [runningAllUntil, setrunningAllUntil] = useState(null)
     const bookSocketRef = useRef(null)
     const history = useHistory()
+    const sparkConnection = useSparkConnection(book ? book.commands : null)
 
+    // Connects to the book on valid ID
+    // Also controls the exit commands
     useEffect(() => {
         console.debug('Connecting to book socket')
         bookSocketRef.current = io(`/book?id=${bookId}`)
@@ -632,6 +707,7 @@ export function BookEditor() {
         }
     }, [bookId, history])
 
+    // Copies all the chunks to the clipboard
     const copyAll = () => {
         const text = book.commands
             .map((chunk, index) => chunkCopytext(index, chunk))
@@ -639,15 +715,8 @@ export function BookEditor() {
         doCopy(text)
     }
 
-    const runAllAbove = index => {
-        console.log(spark.status)
-        console.log(`Banana => ${index}`)
-        setrunningAllUntil(index - 1)
-        // TODO something
-    }
-
     return (
-        <SparkContext.Provider value={spark}>
+        <SparkContext.Provider value={sparkConnection}>
             <LoadingHome loading={loading}>
                 <EditorNavbar book={book} copyAll={copyAll}/>
                 {((book && book.commands) || []).map((chunk, index) => (
@@ -656,7 +725,6 @@ export function BookEditor() {
                         key={chunk._id}
                         index={index}
                         bookSocket={bookSocketRef.current}
-                        runing={runningAllUntil != null && index <= runningAllUntil}
                     />
                 ))}
                 <ChunkAddButton bookSocket={bookSocketRef.current} />
