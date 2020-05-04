@@ -431,12 +431,26 @@ function CommandChunk({ index, chunk, bookSocket}) {
         bookSocket.emit('chunk.remove', index)
     }
 
+    // TODO follow the up and down with the scroll
+
+    const moveUp = () => {
+        bookSocket.emit('chunk.move', index, index - 1)
+    }
+
+    const moveDown = () => {
+        bookSocket.emit('chunk.move', index, index + 1)
+    }
+
     return (
         <div>
             <ChunkAddButton at={index} bookSocket={bookSocket} />
             <div className='ml-3 mr-3'>
                 <Card className={`command-block ${status.name} shadow`}>
                     <Card.Header className="d-flex align-items-start">
+                        <div className="d-flex flex-column mr-2">
+                            <FontAwesomeIcon icon="chevron-up"  size="xs" className="pointer" onClick={moveUp} />
+                            <FontAwesomeIcon icon="chevron-down" size="xs" className="pointer" onClick={moveDown} />
+                        </div>
                         <span onClick={startNameEdit} className="pointer">
                             [Chunk {index}]
                             <span

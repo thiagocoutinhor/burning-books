@@ -92,15 +92,17 @@ module.exports = socket => {
         })
 
         socket.on('chunk.move', (source, destination) => {
-            const comSource = book.commands[source]
-            const comDestination = book.commands[destination]
-            book.commands[source] = comDestination
-            book.commands[destination] = comSource
-            book.markModified('commands')
-            book.save().then(book => {
-                socket.emit('book', book)
-                socket.broadcast.to(bookId).emit('book', book)
-            })
+            if (source >= 0 && destination >= 0 && source < book.commands.length && destination < book.commands.length) {
+                const comSource = book.commands[source]
+                const comDestination = book.commands[destination]
+                book.commands[source] = comDestination
+                book.commands[destination] = comSource
+                book.markModified('commands')
+                book.save().then(book => {
+                    socket.emit('book', book)
+                    socket.broadcast.to(bookId).emit('book', book)
+                })
+            }
         })
 
         socket.on('spark.config', (executors, cores, memory) => {
