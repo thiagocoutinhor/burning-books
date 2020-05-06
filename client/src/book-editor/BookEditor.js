@@ -55,18 +55,31 @@ function ConnectionControl(props) {
         spark.connect(executors.current.value, cores.current.value, memory.current.value)
     }
 
+    // TODO load and save the values from the book
+
+    const controls = [
+        { name: 'Executors', ref: executors },
+        { name: 'Cores', ref: cores },
+        { name: 'Memory', ref: memory }
+    ]
+
     return (
-        <Form inline {...props} className={`${props.className} p-2 connection-control ${spark.status.class}`}>
-            { spark.status.showControls ? [executors, cores, memory].map((control, index) => (
+        <Form as="div" inline {...props} className={`${props.className} p-2 connection-control ${spark.status.class}`}>
+            { spark.status.showControls ? controls.map((control, index) => (
                 <InputGroup size="sm" className="mr-2" key={index}>
                     <InputGroup.Prepend>
-                        <InputGroup.Text>Executors</InputGroup.Text>
+                        <InputGroup.Text>{control.name}</InputGroup.Text>
                     </InputGroup.Prepend>
-                    <Form.Control ref={control} type="number" defaultValue="2" className="text-center" min="1" style={{ width: '4em' }}></Form.Control>
+                    <Form.Control ref={control.ref} type="number" defaultValue="2" className="text-center" min="1" style={{ width: '4em' }}></Form.Control>
                 </InputGroup>
             )).concat((
                 <Button size="sm" className="mr-2" onClick={connect} key="connectButton">Connect</Button>
             )) : null }
+            { spark.runningNow != null ? (
+                <div className="mr-2">
+                    Running Chunk { spark.runningNow }
+                </div>
+            ) : null }
             <Dropdown drop="left">
                 <Dropdown.Toggle as={SimpleDropdown} disabled={spark.status !== connectionStatusList.connected}>
                     <div className="connection-icon">
@@ -393,30 +406,34 @@ function CommandChunk({ index, chunk, bookSocket}) {
         }, 1000) // Saves after a second without changes
     }
 
-    const run = () => {
-        if (spark.runningNow === null) {
-            setResult(null)
-            setStatus(chunkStatusList.running)
-
-            let tmpResult = ''
-            const doReturn = data => {
-                tmpResult += data
-                setResult(tmpResult)
-            }
-
-            const doFinish = () => {
-                // TODO something when it's an error
-                setStatus(chunkStatusList.done)
-                spark.socket.off('return.stream', doReturn)
-            }
-
-            spark.socket.on('return.stream', doReturn)
-            spark.socket.once('return', data => doFinish(data, false))
-            spark.socket.once('return.error', data => doFinish(data, true))
-
-            spark.run(index, command)
-            setStatus(chunkStatusList.running)
+    const doRun = () => {
+        if (ready) {
+            run()
         }
+    }
+
+    const run = () => {
+        setResult(null)
+        setStatus(chunkStatusList.running)
+
+        let tmpResult = ''
+        const doReturn = data => {
+            tmpResult += data
+            setResult(tmpResult)
+        }
+
+        const doFinish = () => {
+            // TODO something when it's an error
+            setStatus(chunkStatusList.done)
+            spark.socket.off('return.stream', doReturn)
+        }
+
+        spark.socket.on('return.stream', doReturn)
+        spark.socket.once('return', data => doFinish(data, false))
+        spark.socket.once('return.error', data => doFinish(data, true))
+
+        spark.run(index, command)
+        setStatus(chunkStatusList.running)
     }
 
     const runAllAboveMe = () => {
@@ -467,16 +484,15 @@ function CommandChunk({ index, chunk, bookSocket}) {
                             </span>
                         </span>
                         <span className="flex-grow-1"></span>
-                        {/* TODO Add up and down buttons for chunk reordering */}
                         <span>
                             <ChunkOptions index={index} runAllAbove={runAllAboveMe} copy={copy} remove={remove} />
                         </span>
                     </Card.Header>
-                    <ChunkEditor index={index} command={command} codeChange={codeChange} run={run} runAllAbove={runAllAboveMe} />
+                    <ChunkEditor index={index} command={command} codeChange={codeChange} run={doRun} runAllAbove={runAllAboveMe} />
                     <Card.Footer className="d-flex align-items-end">
                         <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                         <span className="flex-grow-1"></span>
-                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={run} style={{ verticalAlign: 'middle' }}>
+                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={doRun} style={{ verticalAlign: 'middle' }}>
                             <FontAwesomeIcon icon={status.buttonIcon} />
                         </Button>
                     </Card.Footer>
@@ -496,7 +512,8 @@ const resultGrammar = {
         match: /\[Stage \d+:?=*>?\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
         value: text => {
             const numbers = /\(\d+\s?\+\s?\d+\)\s?\/\s?\d+/.exec(text)[0]
-            const actual = numbers.split('+')[0].replace('(', '').trim()
+            // const actual = numbers.split('+')[0].replace('(', '').trim()
+            const actual = eval(numbers.split('/')[0])
             const total = numbers.split('/')[1].trim()
             return {
                 id: /Stage \d+/.exec(text)[0],
@@ -517,6 +534,7 @@ function CommandResult({ result, status }) {
     const [text, setText] = useState('')
 
     // TODO bars looks like running on disconnect
+    // TODO Text not visible when the bar is too small
 
     // Tokenizing the result
     // Looking for progress bars and tables
@@ -650,7 +668,6 @@ function useSparkConnection(commands) {
                 if (commandsToRun.length > 0) {
                 // Run until part
                     console.log('Banana => Next chunk...')
-                    setRunningNow(null)
                     setForceRun(commandsToRun.shift())
                     setCommandsToRun(commandsToRun)
                 } else {
@@ -665,8 +682,6 @@ function useSparkConnection(commands) {
             setConnectionStatus(connectionStatusList.running)
         }
     }
-
-    // TODO control scroll on run all
 
     const runAllAbove = index => {
         const runList = commands.slice(0, index).map(chunk => chunk._id)
