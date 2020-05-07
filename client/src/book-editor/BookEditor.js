@@ -158,7 +158,9 @@ function ChunkOptions({ index, copy, runAllAbove, remove}) {
     return (
         <Dropdown drop="left">
             <Dropdown.Toggle as={SimpleDropdown}>
-                <FontAwesomeIcon icon="ellipsis-v" />
+                <div className="text-right p-2">
+                    <FontAwesomeIcon icon="ellipsis-v" />
+                </div>
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 <Dropdown.Item onClick={copy}>
