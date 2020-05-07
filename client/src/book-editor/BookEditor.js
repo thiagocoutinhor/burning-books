@@ -494,7 +494,7 @@ function CommandChunk({ index, chunk, bookSocket}) {
                         <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                         <span className="flex-grow-1"></span>
                         <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={doRun}>
-                            <FontAwesomeIcon icon={status.buttonIcon}/>
+                            <FontAwesomeIcon icon={status.buttonIcon}  className={index === spark.runningNow ? 'hourglass-rotate' : ''}/>
                         </Button>
                     </Card.Footer>
                 </Card>

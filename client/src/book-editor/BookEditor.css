@@ -5,8 +5,7 @@ body {
 }
 
 .rotate {
-    animation: rotate 1s linear;
-    animation-iteration-count: infinite;
+    animation: rotate 1s linear infinite;
 }
 
 @keyframes rotate {
@@ -72,8 +71,16 @@ body {
     tab-size: 2;
 }
 
-.command-block .hourglas-rotate {
-    color: red
+.command-block .hourglass-rotate {
+    animation: hourglass 3s infinite linear;
+}
+
+@keyframes hourglass {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(180deg); }
+    50% { transform: rotate(180deg); }
+    75% { transform: rotate(360deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .result-card {
