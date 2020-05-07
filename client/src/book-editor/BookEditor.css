@@ -4,6 +4,16 @@ body {
     overflow-x: hidden;
 }
 
+.rotate {
+    animation: rotate 1s linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(1deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .connection-control {
     background-color: #343a40;
     border-radius: 5px;
@@ -60,6 +70,10 @@ body {
     font-size: 80%;
     white-space: pre;
     tab-size: 2;
+}
+
+.command-block .hourglas-rotate {
+    color: red
 }
 
 .result-card {

@@ -77,6 +77,7 @@ function ConnectionControl(props) {
             )) : null }
             { spark.runningNow != null ? (
                 <div className="mr-2">
+                    <FontAwesomeIcon icon="spinner" className="mr-2 text-primary rotate" />
                     Running Chunk { spark.runningNow }
                 </div>
             ) : null }
@@ -492,8 +493,8 @@ function CommandChunk({ index, chunk, bookSocket}) {
                     <Card.Footer className="d-flex align-items-end">
                         <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                         <span className="flex-grow-1"></span>
-                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={doRun} style={{ verticalAlign: 'middle' }}>
-                            <FontAwesomeIcon icon={status.buttonIcon} />
+                        <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={doRun}>
+                            <FontAwesomeIcon icon={status.buttonIcon}/>
                         </Button>
                     </Card.Footer>
                 </Card>
@@ -625,9 +626,10 @@ const connectionStatusList = {
 }
 
 // Handles the connection, disconnection and running of chunks
-function useSparkConnection(commands) {
+function useSparkConnection(chunks) {
     const [connectionStatus, setConnectionStatus] = useState(connectionStatusList.disconnected)
     const [runningNow, setRunningNow] = useState(null)
+    const [runningId, setRunningId] = useState(null)
     const [forceRun, setForceRun] = useState(null)
     const [commandsToRun, setCommandsToRun] = useState([])
     const sparkSocketRef = useRef(null)
@@ -641,6 +643,15 @@ function useSparkConnection(commands) {
             }
         }
     }, [])
+
+    useEffect(() => {
+        if (chunks) {
+            const index = chunks.findIndex(chunk => chunk._id === runningId)
+            setRunningNow(index === -1 ? null : index)
+        } else {
+            setRunningNow(null)
+        }
+    }, [chunks, runningId])
 
     const connect = (executors, cores, memory) => {
         sparkSocketRef.current = io(`/spark?executors=${executors}&cores=${cores}&memory=${memory}`)
@@ -673,18 +684,18 @@ function useSparkConnection(commands) {
                 } else {
                 // Normal run
                     console.log('Banana => Ended run')
-                    setRunningNow(null)
+                    setRunningId(null)
                     setConnectionStatus(connectionStatusList.connected)
                 }
             })
             sparkSocketRef.current.emit('run', command)
-            setRunningNow(index)
+            setRunningId(chunks[index]._id)
             setConnectionStatus(connectionStatusList.running)
         }
     }
 
     const runAllAbove = index => {
-        const runList = commands.slice(0, index).map(chunk => chunk._id)
+        const runList = chunks.slice(0, index).map(chunk => chunk._id)
         setForceRun(runList.shift())
         setCommandsToRun(runList)
     }
