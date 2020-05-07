@@ -7,6 +7,13 @@ module.exports = socket => {
     const user = socket.handshake.session.user
     const bookId = socket.handshake.query.id
 
+    if (!user) {
+        console.warn(`[BOOK SOCKET] No user identified ${bookId}`)
+        socket.emit('exit')
+        socket.disconnect()
+        return
+    }
+
     new Promise((resolve, reject) => {
         if (books[bookId]) {
             books[bookId].count++
@@ -30,7 +37,7 @@ module.exports = socket => {
             return
         }
 
-        if (!temAcesso(book)) {
+        if (!haveAccess(book)) {
             console.warn(`[BOOK SOCKET - ${user.login}] Unauthorized book access attempt ${bookId}`)
             socket.emit('exit')
             socket.disconnect()
@@ -130,7 +137,7 @@ module.exports = socket => {
         socket.disconnect()
     })
 
-    function temAcesso(book) {
+    function haveAccess(book) {
         return book.owner.toLowerCase() === user.login.toLowerCase() ||
             book.sharedWith.map(usr => usr.toLowerCase()).includes(user.login.toLowerCase())
     }
