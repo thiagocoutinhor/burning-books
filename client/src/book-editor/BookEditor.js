@@ -104,12 +104,12 @@ function ConnectionControl({ config, socket }) {
                 </div>
             ) : null }
             <Dropdown drop="left">
-                <Dropdown.Toggle as={SimpleDropdown} disabled={spark.status !== connectionStatusList.connected}>
+                <Dropdown.Toggle as={SimpleDropdown}>
                     <div className="connection-icon">
                         <FontAwesomeIcon icon="wifi" />
                     </div>
                 </Dropdown.Toggle>
-                { spark.status === connectionStatusList.connected ? (
+                { spark.status.canDisconnect ? (
                     <Dropdown.Menu>
                         <Dropdown.Item onClick={spark.disconnect}>
                             <FontAwesomeIcon icon="power-off" className="mr-2" />
@@ -589,8 +589,8 @@ CommandResult.propTypes = {
 function CommandResult({ result, status }) {
     const [bars, setBars] = useState({})
     const [text, setText] = useState('')
+    const [running, setRunning] = useState(true)
 
-    // TODO bars looks like running on disconnect
     // TODO Text not visible when the bar is too small
 
     // Tokenizing the result
@@ -614,6 +614,12 @@ function CommandResult({ result, status }) {
         setText(extractedText)
     }, [result])
 
+    useEffect(() => {
+        if (status.executed) {
+            setRunning(false)
+        }
+    }, [status])
+
     // TODO add tables
 
     return (
@@ -621,12 +627,12 @@ function CommandResult({ result, status }) {
             { Object.values(bars).map(bar => (
                 <ProgressBar
                     key={bar.id}
-                    striped={!status.executed}
-                    animated={!status.executed}
-                    variant={status.executed ? 'success' : 'primary'}
+                    striped={running}
+                    animated={running}
+                    variant={running ? 'primary' : 'success'}
                     style={{ backgroundColor: 'rgb(231, 201, 146)' }}
                     className="mb-1"
-                    label={`${bar.id}: ${bar.numbers}`} now={status.executed ? 100 : bar.progress}
+                    label={`${bar.id}: ${bar.numbers}`} now={running ? bar.progress : 100}
                 />
             )) }
             { text }
@@ -662,22 +668,26 @@ const connectionStatusList = {
     disconnected: {
         class: 'disconnected',
         showControls: true,
-        ready: false
+        ready: false,
+        canDisconnect: false
     },
     connecting: {
         class: 'connecting',
         showControls: false,
-        ready: false
+        ready: false,
+        canDisconnect: false
     },
     connected: {
         class: 'connected',
         showControls: false,
-        ready: true
+        ready: true,
+        canDisconnect: true
     },
     running: {
         class: 'running',
         showControls: false,
-        ready: false
+        ready: false,
+        canDisconnect: true
     },
 }
 
