@@ -43,19 +43,34 @@ function doCopy(text) {
 // Connection widget
 ///////////////////////////////////////////////////////////////////////////////
 ConnectionControl.propTypes = {
-    className: PropTypes.string
+    config: PropTypes.exact({
+        executors: PropTypes.number,
+        cores: PropTypes.number,
+        memory: PropTypes.number,
+    }),
+    socket: PropTypes.object
 }
-function ConnectionControl(props) {
+function ConnectionControl({ config, socket }) {
     const spark = useContext(SparkContext)
     const executors = useRef()
     const cores = useRef()
     const memory = useRef()
 
+    useEffect(() => {
+        if (config) {
+            executors.current.value = config.executors
+            cores.current.value = config.cores
+            memory.current.value = config.memory
+        }
+    }, [config])
+
     const connect = () => {
         spark.connect(executors.current.value, cores.current.value, memory.current.value)
     }
 
-    // TODO load and save the values from the book
+    const changeConfig = () => {
+        socket.emit('spark.config', executors.current.value, cores.current.value, memory.current.value)
+    }
 
     const controls = [
         { name: 'Executors', ref: executors },
@@ -64,13 +79,13 @@ function ConnectionControl(props) {
     ]
 
     return (
-        <Form as="div" inline {...props} className={`${props.className} p-2 connection-control ${spark.status.class}`}>
+        <Form as="div" inline className={`p-2 connection-control ${spark.status.class}`}>
             { spark.status.showControls ? controls.map((control, index) => (
                 <InputGroup size="sm" className="mr-2" key={index}>
                     <InputGroup.Prepend>
                         <InputGroup.Text>{control.name}</InputGroup.Text>
                     </InputGroup.Prepend>
-                    <Form.Control ref={control.ref} type="number" defaultValue="2" className="text-center" min="1" style={{ width: '4em' }}></Form.Control>
+                    <Form.Control ref={control.ref} onChange={changeConfig} type="number" defaultValue="2" className="text-center" min="1" style={{ width: '4em' }}></Form.Control>
                 </InputGroup>
             )).concat((
                 <Button size="sm" className="mr-2" onClick={connect} key="connectButton">Connect</Button>
@@ -106,12 +121,17 @@ function ConnectionControl(props) {
 EditorNavbar.propTypes = {
     book: PropTypes.shape({
         _id: PropTypes.string,
-        name: PropTypes.string
+        name: PropTypes.string,
+        sparkConfig: PropTypes.exact({
+            executors: PropTypes.number,
+            cores: PropTypes.number,
+            memory: PropTypes.number,
+        })
     }),
-    socket: PropTypes.object,
-    copyAll: PropTypes.func
+    copyAll: PropTypes.func,
+    socket: PropTypes.object
 }
-function EditorNavbar({ book, socket, copyAll }) {
+function EditorNavbar({ book, copyAll, socket }) {
     return (
         <Navbar variant="dark" className="sticky-top d-flex shadow">
             <Navbar.Brand>
@@ -123,7 +143,9 @@ function EditorNavbar({ book, socket, copyAll }) {
                 </span>
             </Navbar.Brand>
             <div className="flex-grow-1"/>
-            <ConnectionControl socket={socket} className="mr-2"/>
+            <div className="mr-2">
+                <ConnectionControl config={book.sparkConfig} socket={socket}/>
+            </div>
             <Dropdown drop="left">
                 <Dropdown.Toggle as={SimpleDropdown}>
                     <FontAwesomeIcon icon="ellipsis-v"/>
@@ -360,7 +382,6 @@ function CommandChunk({ index, chunk, bookSocket}) {
 
     // Verify if this schunk is in the running range of a run all above command
     useEffect(() => {
-        console.log(spark.commandsToRun, chunk._id)
         if (spark.commandsToRun && spark.commandsToRun.includes(chunk._id)) {
             setResult(null)
             setStatus(chunkStatusList.running)
@@ -639,7 +660,6 @@ function useSparkConnection(chunks) {
     // Disconnects when leaving the component
     useEffect(() => {
         return () => {
-            console.log('Banana => Desconectou na saida')
             if (sparkSocketRef.current) {
                 sparkSocketRef.current.disconnect()
             }
@@ -680,12 +700,10 @@ function useSparkConnection(chunks) {
             sparkSocketRef.current.once('return', () => {
                 if (commandsToRun.length > 0) {
                 // Run until part
-                    console.log('Banana => Next chunk...')
                     setForceRun(commandsToRun.shift())
                     setCommandsToRun(commandsToRun)
                 } else {
                 // Normal run
-                    console.log('Banana => Ended run')
                     setRunningId(null)
                     setConnectionStatus(connectionStatusList.connected)
                 }
@@ -760,7 +778,7 @@ export function BookEditor() {
     return (
         <SparkContext.Provider value={sparkConnection}>
             <LoadingHome loading={loading}>
-                <EditorNavbar book={book} copyAll={copyAll}/>
+                <EditorNavbar book={book} copyAll={copyAll} socket={bookSocketRef.current} />
                 {((book && book.commands) || []).map((chunk, index) => (
                     <CommandChunk
                         chunk={chunk}
