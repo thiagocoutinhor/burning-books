@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { useParams, useHistory, Link } from 'react-router-dom'
-import { Navbar, Dropdown, Card, Button, Form, InputGroup, ProgressBar } from 'react-bootstrap'
+import { Navbar, Dropdown, Card, Button, Form, InputGroup, ProgressBar, Table } from 'react-bootstrap'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import io from 'socket.io-client'
 import { LoadingHome } from '../app/App'
@@ -565,6 +565,17 @@ function CommandChunk({ index, chunk, bookSocket}) {
 ///////////////////////////////////////////////////////////////////////////////
 const resultGrammar = {
     // Extracts the progress bar
+
+    tableLine: { match: /\+[-+]+\+\n?/, lineBreaks: true },
+    tableRow: {
+        match: /^\|.*\|$\n?/,
+        value: texto => {
+            const columns = texto.split('|')
+            return columns.slice(1, columns.length - 1)
+                .map(coluna => coluna.trim())
+        },
+        lineBreaks: true
+    },
     progress: {
         match: /\[Stage \d+:?=*>?\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
         value: text => {
@@ -579,6 +590,8 @@ const resultGrammar = {
             }
         }
     },
+    anything: { match: /.+/, lineBreaks: true },
+    newLine: { match: /\n/, lineBreaks: true },
     error: moo.error
 }
 
@@ -590,6 +603,7 @@ function CommandResult({ result, status }) {
     const [bars, setBars] = useState({})
     const [text, setText] = useState('')
     const [running, setRunning] = useState(true)
+    const [tables, setTables] = useState([])
 
     // TODO Text not visible when the bar is too small
 
@@ -601,16 +615,34 @@ function CommandResult({ result, status }) {
         let extractedText = ''
         lexer.reset(result)
 
+        let table = null
+        const newTables = []
         const newBars = { ...bars }
         Array.from(lexer).forEach(token => {
             if (token.type === 'progress') {
                 newBars[token.value.id] = token.value
+            } else if (token.type === 'tableLine') {
+                if (!table) {
+                    table = { head: [] }
+                    newTables.push(table)
+                } else if (table.head && !table.body) {
+                    table.body = []
+                } else {
+                    table = null
+                }
+            } else if (token.type === 'tableRow') {
+                if (table && table.body) {
+                    table.body.push(token.value)
+                } else if (table && table.head) {
+                    table.head.push(token.value)
+                }
             } else {
                 extractedText += token.text
             }
         })
 
         setBars(newBars)
+        setTables(newTables)
         setText(extractedText)
     }, [result])
 
@@ -620,7 +652,13 @@ function CommandResult({ result, status }) {
         }
     }, [status])
 
-    // TODO add tables
+    const makeRows = (rows) => {
+        return rows.map((row, index) => (
+            <tr key={index}>
+                {row.map((column, index) => <td key={index}>{column}</td>)}
+            </tr>
+        ))
+    }
 
     return (
         <div className="result-card mr-3 ml-3">
@@ -634,6 +672,16 @@ function CommandResult({ result, status }) {
                     className="mb-1"
                     label={`${bar.id}: ${bar.numbers}`} now={running ? bar.progress : 100}
                 />
+            )) }
+            { tables.map((table, index) => (
+                <Table key={index} striped size="sm" borderless>
+                    <thead>
+                        {makeRows(table.head)}
+                    </thead>
+                    <tbody>
+                        {makeRows(table.body)}
+                    </tbody>
+                </Table>
             )) }
             { text }
         </div>
