@@ -13,36 +13,6 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-.book-name:focus {
-    color: black;
-    background-color: white;
-}
-
-.connection-control {
-    background-color: #343a40;
-    border-radius: 5px;
-}
-
-.connection-control.disconnected .connection-icon {
-    color: rgba(255, 0, 0, 0.8)
-}
-
-.connection-control.connecting .connection-icon {
-    animation: connecting 2s;
-    animation-iteration-count: infinite;
-}
-
-.connection-control.connected .connection-icon,
-.connection-control.running .connection-icon {
-    color: rgba(0, 255, 0, 0.8);
-}
-
-@keyframes connecting {
-    0% { color: rgba(255, 0, 0, 0.8) }
-    50% { color: rgba(255, 255, 0, 0.8) }
-    100% { color: rgba(255, 0, 0, 0.8) }
-}
-
 .chunk-add-button {
     text-align: center;
     background-color: rgba(0, 0, 0, 0.25);
