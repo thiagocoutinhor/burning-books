@@ -27,9 +27,15 @@ function ConnectionControl({ config, socket }) {
 
     useEffect(() => {
         if (config) {
-            executors.current.value = config.executors
-            cores.current.value = config.cores
-            memory.current.value = config.memory
+            if (executors.current) {
+                executors.current.value = config.executors
+            }
+            if (cores.current) {
+                cores.current.value = config.cores
+            }
+            if (memory.current) {
+                memory.current.value = config.memory
+            }
         }
     }, [config])
 
