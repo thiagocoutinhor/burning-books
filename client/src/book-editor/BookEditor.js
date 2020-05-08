@@ -564,8 +564,7 @@ function CommandChunk({ index, chunk, bookSocket}) {
 // Chunk result
 ///////////////////////////////////////////////////////////////////////////////
 const resultGrammar = {
-    // Extracts the progress bar
-
+    // Extracts the tables
     tableLine: { match: /\+[-+]+\+\n?/, lineBreaks: true },
     tableRow: {
         match: /^\|.*\|$\n?/,
@@ -576,6 +575,7 @@ const resultGrammar = {
         },
         lineBreaks: true
     },
+    // Extracts the progress bar
     progress: {
         match: /\[Stage \d+:?=*>?\s*\(\d+\s\+\s\d+\)\s?\/\s?\d+\]/,
         value: text => {
