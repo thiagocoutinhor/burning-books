@@ -38,6 +38,13 @@ function doCopy(text) {
     }
 }
 
+function editablePrevent(event) {
+    const shouldIgnore = event.key === 'Enter'
+        || (event.ctrlKey && ['B', 'b', 'I', 'i', 'u', 'U'].includes(event.key))
+    if (shouldIgnore) {
+        event.preventDefault()
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Connection widget
@@ -115,6 +122,41 @@ function ConnectionControl({ config, socket }) {
     )
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Book Bane
+////////////////////////////////////////////////////////////////////////////////
+BookName.propTypes = {
+    socket: PropTypes.object,
+    name: PropTypes.string
+}
+function BookName({ socket, name }) {
+    const nameRef = useRef()
+    const oldName = useRef(name)
+
+    useEffect(() => {
+        nameRef.current.innerText = name
+    }, [name])
+
+    const start = () => {
+        oldName.current = nameRef.current.innerText
+    }
+
+    const changeName = () => {
+        const name = nameRef.current.innerText.trim()
+        if (name != '') {
+            oldName.current = name
+            socket.emit('book.name', name)
+        } else {
+            nameRef.current.innerText = oldName.current
+        }
+    }
+
+    return (
+        <span ref={nameRef} onKeyDown={editablePrevent} onFocus={start} onBlur={changeName} className="pointer pr-1 pl-1 book-name" contentEditable spellCheck="false">
+        </span>
+    )
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Navbar
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,15 +174,14 @@ EditorNavbar.propTypes = {
     socket: PropTypes.object
 }
 function EditorNavbar({ book, copyAll, socket }) {
+
     return (
         <Navbar variant="dark" className="sticky-top d-flex shadow">
             <Navbar.Brand>
-                <Link to="/">
+                <Link to="/" className="mr-1">
                     <FontAwesomeIcon icon="chevron-left"/>
                 </Link>
-                <span className="ml-1">
-                    { book.name }
-                </span>
+                <BookName name={book.name} socket={socket} />
             </Navbar.Brand>
             <div className="flex-grow-1"/>
             <div className="mr-2">
@@ -237,7 +278,7 @@ function ChunkEditor({ index, command, codeChange, run, runAllAbove }) {
                 {
                     name: 'run',
                     bindKey: {
-                        win: 'Ctrl-Enter',
+                        win: 'Control-Enter',
                         mac: 'Command-Enter',
                     },
                     exec: run
@@ -411,14 +452,6 @@ function CommandChunk({ index, chunk, bookSocket}) {
         bookSocket.emit('chunk.name', index, name === '' ? undefined : name)
     }
 
-    const treatName = event => {
-        const shouldIgnore = event.key === 'Enter'
-            || (event.ctrlKey && ['B', 'b', 'I', 'i', 'u', 'U'].includes(event.key))
-        if (shouldIgnore) {
-            event.preventDefault()
-        }
-    }
-
     // Changes made during user edition
     const codeChange = value => {
         setCommand(value)
@@ -500,7 +533,7 @@ function CommandChunk({ index, chunk, bookSocket}) {
                                 spellCheck={false}
                                 className="chunk-name ml-1 pr-1 pl-1"
                                 onBlur={editName}
-                                onKeyDown={treatName}
+                                onKeyDown={editablePrevent}
                                 style={{
                                     color: chunk.name ? 'gray' : 'rgba(128, 128, 128, 0.4)'
                                 }}

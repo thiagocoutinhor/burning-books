@@ -13,6 +13,11 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+.book-name:focus {
+    color: black;
+    background-color: white;
+}
+
 .connection-control {
     background-color: #343a40;
     border-radius: 5px;
