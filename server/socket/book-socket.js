@@ -86,7 +86,7 @@ module.exports = socket => {
 
             console.debug(`[BOOK SOCKET - ${user.login}] Saving book ${book._id}`)
             book.save().then(() => {
-                socket.broadcast.to(bookId).emit('book', index, command)
+                socket.broadcast.to(bookId).emit('book', book)
             })
         })
 
