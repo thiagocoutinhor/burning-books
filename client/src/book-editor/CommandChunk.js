@@ -64,9 +64,23 @@ ChunkEditor.propTypes = {
     command: PropTypes.string,
     codeChange: PropTypes.func,
     run: PropTypes.func,
-    runAllAbove: PropTypes.func
+    ready: PropTypes.bool
 }
-function ChunkEditor({ index, command, codeChange, run, runAllAbove }) {
+function ChunkEditor({ index, command, codeChange, run, ready }) {
+    const readyRef = useRef(ready)
+    const runRef = useRef(run)
+
+    useEffect(() => {
+        readyRef.current = ready
+        runRef.current = run
+    }, [ready])
+
+    const doRun = () => {
+        if (readyRef.current) {
+            runRef.current()
+        }
+    }
+
     return (
         <Card.Body as={AceEditor}
             name={`Chunk-${index}`}
@@ -79,7 +93,6 @@ function ChunkEditor({ index, command, codeChange, run, runAllAbove }) {
                 minLines: 5,
                 showPrintMargin: false,
                 enableBasicAutocompletion: true,
-                // showLineNumbers: false,
                 useSoftTabs: true,
                 tabSize: 2
             }}
@@ -90,15 +103,7 @@ function ChunkEditor({ index, command, codeChange, run, runAllAbove }) {
                         win: 'Control-Enter',
                         mac: 'Command-Enter',
                     },
-                    exec: run
-                },
-                {
-                    name: 'run-all',
-                    bindKey: {
-                        win: 'Control-Shift-Enter',
-                        mac: 'Command-shift-Enter'
-                    },
-                    exec: runAllAbove
+                    exec: doRun
                 }
             ]}
             style={{
@@ -221,14 +226,14 @@ export function CommandChunk({ index, chunk, bookSocket}) {
 
     // Checks the chunk readiness and the overall readiness
     useEffect(() => {
-        const isReady = spark.status.ready && status.ready
+        const isReady = spark.status.ready && status.ready && spark.runningNow == null
         setReady(isReady)
         if (isReady) {
             setButtonVariant(status.buttonVariant)
         } else {
             setButtonVariant('secondary')
         }
-    }, [spark.status, status])
+    }, [spark.status, status, spark.runningNow])
 
     // Verify if this schunk is in the running range of a run all above command
     useEffect(() => {
@@ -271,8 +276,6 @@ export function CommandChunk({ index, chunk, bookSocket}) {
             bookSocket.emit('chunk.update', index, value)
         }, 1000) // Saves after a second without changes
     }
-
-    // TODO not working when the editor sends it
     const doRun = () => {
         if (ready) {
             run()
@@ -315,8 +318,6 @@ export function CommandChunk({ index, chunk, bookSocket}) {
         bookSocket.emit('chunk.remove', index)
     }
 
-    // TODO follow the up and down with the scroll
-
     const moveUp = () => {
         bookSocket.emit('chunk.move', index, index - 1)
     }
@@ -355,7 +356,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
                             <ChunkOptions index={index} runAllAbove={runAllAboveMe} copy={copy} remove={remove} />
                         </span>
                     </Card.Header>
-                    <ChunkEditor index={index} command={command} codeChange={codeChange} run={doRun} runAllAbove={runAllAboveMe} />
+                    <ChunkEditor index={index} command={command} ready={ready} codeChange={codeChange} run={doRun} runAllAbove={runAllAboveMe} />
                     <Card.Footer className="d-flex align-items-end">
                         <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
                         <span className="flex-grow-1"></span>
