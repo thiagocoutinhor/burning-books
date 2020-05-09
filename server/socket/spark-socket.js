@@ -4,6 +4,14 @@ const passwordUtils = require('../crypt/password-utils')
 
 module.exports = socket => {
     const user = socket.handshake.session.user
+
+    if (!user) {
+        console.warn('[SPARK SOCKET] No user found')
+        socket.emit('disconnected')
+        socket.disconnect()
+        return
+    }
+
     user.password = passwordUtils.uncrush(user.password)
 
     const config = socket.handshake.query
