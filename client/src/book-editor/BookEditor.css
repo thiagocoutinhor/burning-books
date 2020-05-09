@@ -57,22 +57,3 @@ body {
     75% { transform: rotate(360deg); }
     100% { transform: rotate(360deg); }
 }
-
-.result-card {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 80%;
-    background-color: antiquewhite;
-    padding: 10px;
-    white-space: pre;
-    overflow-x: auto;
-    max-height: calc(100vh - 65px);
-}
-
-.result-card .progress-bar {
-    text-align: left!important;
-    padding-left: 3px;
-}
-
-.result-card .table thead {
-    font-weight: bold;
-}
