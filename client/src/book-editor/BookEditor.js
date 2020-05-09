@@ -99,7 +99,7 @@ function ChunkEditor({ index, command, codeChange, run, runAllAbove }) {
                     name: 'run-all',
                     bindKey: {
                         win: 'Control-Shift-Enter',
-                        mac: 'Command-shift-enter'
+                        mac: 'Command-shift-Enter'
                     },
                     exec: runAllAbove
                 }
@@ -275,6 +275,7 @@ function CommandChunk({ index, chunk, bookSocket}) {
         }, 1000) // Saves after a second without changes
     }
 
+    // TODO not working when the editor sends it
     const doRun = () => {
         if (ready) {
             run()
@@ -377,15 +378,14 @@ function CommandChunk({ index, chunk, bookSocket}) {
 ///////////////////////////////////////////////////////////////////////////////
 const resultGrammar = {
     // Extracts the tables
-    tableLine: { match: /\+[-+]+\+\n?/, lineBreaks: true },
+    tableLine: /\+[-+]+\+/,
     tableRow: {
-        match: /^\|.*\|$\n?/,
+        match: /\|.*\|/,
         value: texto => {
             const columns = texto.split('|')
             return columns.slice(1, columns.length - 1)
                 .map(coluna => coluna.trim())
-        },
-        lineBreaks: true
+        }
     },
     // Extracts the progress bar
     progress: {
@@ -402,8 +402,8 @@ const resultGrammar = {
             }
         }
     },
-    anything: { match: /.+/, lineBreaks: true },
-    newLine: { match: /\n/, lineBreaks: true },
+    anything: /.+/,
+    newLine: { match: /[\n\r]/, lineBreaks: true },
     error: moo.error
 }
 
@@ -465,11 +465,15 @@ function CommandResult({ result, status }) {
     }, [status])
 
     const makeRows = (rows) => {
-        return rows.map((row, index) => (
-            <tr key={index}>
-                {row.map((column, index) => <td key={index}>{column}</td>)}
-            </tr>
-        ))
+        if (rows) {
+            return rows.map((row, index) => (
+                <tr key={index}>
+                    {row.map((column, index) => <td key={index}>{column}</td>)}
+                </tr>
+            ))
+        } else {
+            return null
+        }
     }
 
     return (
