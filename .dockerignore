@@ -1,0 +1,6 @@
+.git/
+.env
+.eslintrc.yml
+client/.eslintrc.yml
+docker-compose.yml
+dockerfile
