@@ -13,6 +13,8 @@ const sockets = require('./server/router-sockets')
 const expressSession = require('express-session')
 const MongoStore = require('connect-mongo')(expressSession)
 const mongoose = require('mongoose')
+const fs = require('fs')
+const join = require('path').join
 
 const port = process.env.PORT ? process.env.PORT : 9085
 
@@ -48,10 +50,15 @@ app.use('/api', require('./server/router-api'))
 
 // Web serve
 if (process.env.NODE_ENV === 'production') {
-    app.get('/', (req, res) => res.redirect('index.html'))
-    app.get('*', express.static(`${__dirname}/../client/build`, {
-        index: false
-    }))
+    console.info('Production mode')
+    app.get('/*', function (req, res) {
+        const file = join(__dirname, 'build', req.url)
+        if (fs.existsSync(file)) {
+            res.sendFile(file)
+        } else {
+            res.sendFile(join(__dirname, 'build', 'index.html'))
+        }
+    })
 }
 
 sockets(http, session)
