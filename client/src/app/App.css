@@ -1,0 +1,22 @@
+body {
+  background-color: darkslategray
+}
+
+a {
+  color: inherit!important;
+  cursor: pointer;
+}
+
+a:hover {
+  text-decoration: inherit!important;
+}
+
+.navbar {
+  font-weight: bold;
+  background-color: rgb(88, 131, 131);
+  color: white;
+}
+
+.pointer {
+  cursor: pointer;
+}

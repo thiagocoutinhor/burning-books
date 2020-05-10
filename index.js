@@ -1,22 +1,20 @@
-require('dotenv').config() // Carrega as configurações de ambiente
-require('./log') // Substitui as funções base de console por outras mais robustas
+require('dotenv').config() // Loads development configurations
+require('./log') // Overrides log functions
 
-// Trata as promessas não tratadas com um print
+// Default promise error handler
 process.on('unhandledRejection', error => {
-    console.error(error);
+    console.error(error)
 })
 
 const express = require('express')
 const app = express()
 const http = require('http').Server(app)
-const io = require('socket.io')(http)
-const sparkSocket = require('./api/socket/spark-socket')
-const listSocket = require('./api/socket/list-socket')
-const bookSocket = require('./api/socket/book-socket')
+const sockets = require('./server/router-sockets')
 const expressSession = require('express-session')
-const ioSession = require('express-socket.io-session')
 const MongoStore = require('connect-mongo')(expressSession)
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
+const fs = require('fs')
+const join = require('path').join
 
 const port = process.env.PORT ? process.env.PORT : 9085
 
@@ -26,7 +24,7 @@ mongoose.connect(process.env.MONGO, {
     useCreateIndex: true,
     dbName: 'sparkbook'
 }).then(() => {
-    console.info('Conectado ao mongo')
+    console.info('Connected to MongoDB')
 })
 
 const session = expressSession({
@@ -35,7 +33,7 @@ const session = expressSession({
     secret: 'sparkbook',
     cookie: {
         sameSite: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000 // Trinta dias de conexão
+        maxAge: 30 * 24 * 60 * 60 * 1000
     },
     store: new MongoStore({
         mongooseConnection: mongoose.connection,
@@ -46,34 +44,24 @@ const session = expressSession({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(session)
-app.use((req, res, next) => {
-    req.io = io
-    next()
-})
 
-app.use('/', require('./web/router-web'))
+// API routes
+app.use('/api', require('./server/router-api'))
 
-io.use(ioSession(session))
-io.on('connect', socket => {
-    // Controle de acesso
-    if (!socket.handshake || !socket.handshake.session || !socket.handshake.session.usuario) {
-        console.warn('Login sem usuário detectado. Enviando comando de reload.')
-        socket.emit('reload')
-        socket.disconnect()
-    }
-})
+// Web serve
+if (process.env.NODE_ENV === 'production') {
+    console.info('Production mode')
+    app.get('/*', function (req, res) {
+        const file = join(__dirname, 'build', req.url)
+        if (fs.existsSync(file)) {
+            res.sendFile(file)
+        } else {
+            res.sendFile(join(__dirname, 'build', 'index.html'))
+        }
+    })
+}
 
-io.of('/spark')
-    .use(ioSession(session))
-    .on('connect', socket => sparkSocket(socket))
-
-io.of('/list')
-    .use(ioSession(session))
-    .on('connect', socket => listSocket(socket))
-
-io.of('/book')
-    .use(ioSession(session))
-    .on('connect', socket => bookSocket(socket))
+sockets(http, session)
 
 http.listen(port, () => {
     console.info(`Listening on port ${port}`)

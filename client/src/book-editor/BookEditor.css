@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto+Mono&display=swap');
+
+body {
+    overflow-x: hidden;
+}
+
+.rotate {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(1deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.chunk-add-button {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 0.3em;
+    font-size: 85%;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chunk-add-button:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+}

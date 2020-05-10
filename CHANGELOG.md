@@ -1,3 +1,17 @@
+v0.2-alpha
+===============================================================================
+
+### Quality of Life
+- Added Ace editor with scala code highlights and many other improvements
+- Hability to add new chunk between two chunks
+- Chunk with status lets you see when it is run or changed since last run
+- Show wich chunk is running now
+- Reorder and add chunks during a run
+- Translated everything to english
+
+### Internal
+- Added React to the mix, making the code simpler and the app more responsive
+
 v0.1.3-alpha
 ===============================================================================
 

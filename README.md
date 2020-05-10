@@ -65,3 +65,9 @@ for your identity file during the login.
 | SPARK_QUEUE       |                           | Default queue of all new spark-shell sessions |
 | SPARK_LIBRARIES   |                           | Libraries in SPARK_HOST to be used            |
 | LOGIN_TYPE        | PASSWORD                  | Type of login, between PASSWORD and SSH       |
+
+## Editor
+
+We are using [Ace](https://ace.c9.io/) as the code editor. It is the Cloud 9 editor and comes pre packaged with Scala, so it was an obvious choice.
+
+For a list of the default keyboard shortcuts visit [here](https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts).

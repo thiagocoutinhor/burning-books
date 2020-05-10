@@ -7,14 +7,11 @@
     "url": "git@github.com:thiagocoutinhor/burning-books.git"
   },
   "scripts": {
-    "production": "docker-compose -f docker-compose-production build && docker-compose -f docker-compose-production up -d",
-    "prestart": "docker-compose up -d",
-    "start": "nodemon",
-    "stop": "docker-compose stop"
+    "start": "concurrently --kill-others -n server,client -c green,blue \"nodemon\" \"npm start --prefix client\""
   },
   "nodemonConfig": {
     "ignore": [
-      "web/scripts/*"
+      "client/*"
     ]
   },
   "keywords": [
@@ -24,22 +21,22 @@
   "author": "Thiago Coutinho do Rego",
   "license": "ISC",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.12.1",
-    "bootstrap": "^4.4.1",
     "chalk": "^3.0.0",
     "connect-mongo": "^3.2.0",
-    "d3": "^5.15.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.7-alpha.1",
-    "express-session": "^1.17.0",
+    "express-fileupload": "^1.1.7-alpha.3",
+    "express-session": "^1.17.1",
     "express-socket.io-session": "^1.3.5",
-    "jquery": "^3.4.1",
     "moment": "^2.24.0",
-    "mongoose": "^5.9.2",
+    "mongoose": "^5.9.10",
     "moo": "^0.5.1",
-    "popper.js": "^1.16.1",
     "socket.io": "^2.3.0",
     "ssh2-promise": "^0.1.6"
+  },
+  "devDependencies": {
+    "concurrently": "^5.1.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-react": "^7.19.0"
   }
 }
