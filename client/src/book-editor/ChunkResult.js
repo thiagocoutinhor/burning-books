@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { CSSTransition } from 'react-transition-group'
 import PropTypes from 'prop-types'
 import { ProgressBar, Table } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -51,6 +52,7 @@ export function ChunkResult({ result, status, removeResult }) {
     const [running, setRunning] = useState(true)
     const [tables, setTables] = useState([])
     const [runAt, setRunAt] = useState()
+    const [copyFeedback, setCopyFeedback] = useState(false)
 
     useEffect(() => {
         setRunAt(moment().format('HH:mm:ss.SSS'))
@@ -68,7 +70,7 @@ export function ChunkResult({ result, status, removeResult }) {
 
         let table = null
         const newTables = []
-        const newBars = { ...bars }
+        const newBars = {}
         Array.from(lexer).forEach(token => {
             if (token.type === 'progress') {
                 newBars[token.value.id] = token.value
@@ -115,6 +117,17 @@ export function ChunkResult({ result, status, removeResult }) {
         }
     }
 
+    const copyResult = () => {
+        const tablesString = tables.map(({head, body}) => {
+            const headRows = head.map(row => row.join('\t')).join('\n')
+            const bodyRows = body.map(row => row.join('\t')).join('\n')
+            return `${headRows}\n${bodyRows}`
+        }).join('\n\n')
+        const result = `${tablesString.length > 0 ? tablesString + '\n\n' : ''}${text}`
+        doCopy(result)
+        setCopyFeedback(true)
+    }
+
     return (
         <div className="result-card mr-3 ml-3">
             <div className="d-flex mb-1">
@@ -122,6 +135,16 @@ export function ChunkResult({ result, status, removeResult }) {
                 <span className="flex-grow-1" />
                 { running ? null : (
                     <span>
+                        <CSSTransition
+                            in={copyFeedback}
+                            timeout={500}
+                            unmountOnExit
+                            classNames="copy-feedback"
+                            onEntered={() => setTimeout(() => setCopyFeedback(false), 2000)}
+                        >
+                            <span>Content copied...</span>
+                        </CSSTransition>
+                        <FontAwesomeIcon icon="clone" className="mr-2 pointer" onClick={copyResult}/>
                         <FontAwesomeIcon icon="times" className="pointer" onClick={removeResult} />
                     </span>
                 )}

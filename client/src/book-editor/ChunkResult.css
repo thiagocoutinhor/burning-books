@@ -6,6 +6,7 @@
     white-space: pre;
     overflow-x: auto;
     max-height: calc(100vh - 150px);
+    min-height: 50px;
 }
 
 .result-card .progress-bar {
@@ -15,4 +16,13 @@
 
 .result-card .table thead {
     font-weight: bold;
+}
+
+.result-card .copy-feedback-exit {
+    opacity: 1;
+}
+
+.result-card .copy-feedback-exit-active {
+    opacity: 0;
+    transition: opacity 500ms linear;
 }

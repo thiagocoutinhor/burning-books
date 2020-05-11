@@ -4,6 +4,7 @@ v0.2.1-alpha
 ### Quality of Life
 - Display the execution start time in the result card
 - Hability to remove the result of a chunk
+- Hability to copy the chunk result
 
 ### Internal
 - Added easy to use local deploy outside docker
