@@ -47,6 +47,21 @@ services:
             MONGO_INITDB_ROOT_USERNAME: burning
             MONGO_INITDB_ROOT_PASSWORD: book
 ```
+### From github repository
+
+If you are felling adventurous and want a local running application:
+
+    1. Clone the repository from github
+    1. Set your enviroment variables on the `production.env` file
+    1. Run `npm run build` to create the scafolding for the application (it only needs
+    to be run once)
+    1. Run `npm start` to start
+
+When the need to update rises, update the application with a git pull and start from step 2.
+
+If you want to debug or develop, you can skip all the steps after cloning the project, install
+dependencies with `npm i` in the root directory and client directory and run the application in
+development mode with `npm run dev`
 
 ## Connecting with identity files
 
@@ -59,7 +74,7 @@ for your identity file during the login.
 | Variable          | Default                   | Meaning                                       |
 |-------------------|---------------------------|-----------------------------------------------|
 | LOG_LEVEL         | INFO                      | Level of the log messages                     |
-| SPARK_HOST        | localhost                 | SSH host with spark-shell                     |
+| SPARK_HOST        | localhost                 | SSH host with spark-shell installed           |
 | MONGO             | mongodb://localhost:27017 | Mongodb connection string                     |
 | USER_BLACKLIST    |                           | Users to be denied access                     |
 | SPARK_QUEUE       |                           | Default queue of all new spark-shell sessions |

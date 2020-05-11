@@ -7,9 +7,16 @@
     "url": "git@github.com:thiagocoutinhor/burning-books.git"
   },
   "scripts": {
-    "start": "concurrently --kill-others -n server,client -c green,blue \"nodemon\" \"npm start --prefix client\""
+    "build:server": "npm i --production",
+    "build:client": "cd client && npm i --production && npm run build",
+    "build": "npm run build:server && npm run build:client",
+    "dev": "concurrently --kill-others -n server,client -c green,blue \"nodemon\" \"npm start --prefix client\"",
+    "start": "node index.js"
   },
   "nodemonConfig": {
+    "env": {
+      "NODE_ENV": "development"
+    },
     "ignore": [
       "client/*"
     ]
@@ -37,6 +44,7 @@
   "devDependencies": {
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
-    "eslint-plugin-react": "^7.19.0"
+    "eslint-plugin-react": "^7.19.0",
+    "nodemon": "^2.0.3"
   }
 }
