@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { ProgressBar, Table } from 'react-bootstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import moo from 'moo'
 import moment from 'moment'
 import './ChunkResult.css'
+import { doCopy } from './helper'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Chunk result
@@ -40,9 +42,10 @@ const resultGrammar = {
 
 ChunkResult.propTypes = {
     result: PropTypes.string,
-    status: PropTypes.object
+    status: PropTypes.object,
+    removeResult: PropTypes.func
 }
-export function ChunkResult({ result, status }) {
+export function ChunkResult({ result, status, removeResult }) {
     const [bars, setBars] = useState({})
     const [text, setText] = useState('')
     const [running, setRunning] = useState(true)
@@ -117,6 +120,11 @@ export function ChunkResult({ result, status }) {
             <div className="d-flex mb-1">
                 <span>{runAt}</span>
                 <span className="flex-grow-1" />
+                { running ? null : (
+                    <span>
+                        <FontAwesomeIcon icon="times" className="pointer" onClick={removeResult} />
+                    </span>
+                )}
             </div>
             { Object.values(bars).reverse().map(bar => (
                 <ProgressBar

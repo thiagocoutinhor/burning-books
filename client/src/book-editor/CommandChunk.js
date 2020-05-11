@@ -326,6 +326,10 @@ export function CommandChunk({ index, chunk, bookSocket}) {
         bookSocket.emit('chunk.move', index, index + 1)
     }
 
+    const removeResult = () => {
+        setResult(null)
+    }
+
     return (
         <div>
             <ChunkAddButton at={index} bookSocket={bookSocket} />
@@ -365,7 +369,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
                         </Button>
                     </Card.Footer>
                 </Card>
-                { result ? <ChunkResult result={result} status={status}/> : null }
+                { result ? <ChunkResult result={result} status={status} removeResult={removeResult}/> : null }
             </div>
         </div>
     )
