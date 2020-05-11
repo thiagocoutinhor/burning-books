@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 ////////////////////////////////////////////////////////////////////////////////
 export const SimpleDropdown = React.forwardRef(function SimpleDropdown({children, onClick}, ref) {
     return (
-        <span ref={ref} onClick={onClick} style={{ cursor: 'pointer' }}>
+        <span ref={ref} onClick={onClick} className="pointer">
             { children }
         </span>
     )
