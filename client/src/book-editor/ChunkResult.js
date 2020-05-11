@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { ProgressBar, Table } from 'react-bootstrap'
 import moo from 'moo'
+import moment from 'moment'
 import './ChunkResult.css'
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,8 +47,13 @@ export function ChunkResult({ result, status }) {
     const [text, setText] = useState('')
     const [running, setRunning] = useState(true)
     const [tables, setTables] = useState([])
+    const [runAt, setRunAt] = useState()
 
-    // TODO Text not visible when the bar is too small
+    useEffect(() => {
+        setRunAt(moment().format('HH:mm:ss.SSS'))
+    }, [])
+
+    // TODO Text not visible when the progress bar is too small
 
     // Tokenizing the result
     // Looking for progress bars and tables
@@ -108,6 +114,10 @@ export function ChunkResult({ result, status }) {
 
     return (
         <div className="result-card mr-3 ml-3">
+            <div className="d-flex mb-1">
+                <span>{runAt}</span>
+                <span className="flex-grow-1" />
+            </div>
             { Object.values(bars).reverse().map(bar => (
                 <ProgressBar
                     key={bar.id}
