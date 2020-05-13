@@ -1,6 +1,9 @@
 v0.2.1-alpha
 ===============================================================================
 
+### Bug Fixes
+- Fixes Control+Enter running the last edition made on the chunk
+
 ### Quality of Life
 - Display the execution start time in the result card
 - Hability to remove the result of a chunk

@@ -74,7 +74,7 @@ function ChunkEditor({ index, command, codeChange, run, ready }) {
     useEffect(() => {
         readyRef.current = ready
         runRef.current = run
-    }, [ready])
+    }, [ready, command])
 
     const doRun = () => {
         if (readyRef.current) {
