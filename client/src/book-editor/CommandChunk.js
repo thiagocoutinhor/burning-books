@@ -191,7 +191,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
     const [status, setStatus] = useState(chunkStatusList.waiting)
     const [ready, setReady] = useState(false)
     const [buttonVariant, setButtonVariant] = useState('secondary')
-    const [result, setResult] = useState('')
+    const [result, setResult] = useState(null)
     const [lastResult, setLastResult] = useState(null)
     const spark = useContext(SparkContext)
     const saveTimer = useRef(null)
@@ -379,7 +379,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
                     </Card.Footer>
                 </Card>
                 <CSSTransition
-                    in={result}
+                    in={result != null}
                     timeout={500}
                     unmountOnExit
                     classNames="result-animate"
