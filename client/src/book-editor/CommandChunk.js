@@ -192,6 +192,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
     const [ready, setReady] = useState(false)
     const [buttonVariant, setButtonVariant] = useState('secondary')
     const [result, setResult] = useState('')
+    const [lastResult, setLastResult] = useState(null)
     const spark = useContext(SparkContext)
     const saveTimer = useRef(null)
     const nameRef = useRef(null)
@@ -251,6 +252,12 @@ export function CommandChunk({ index, chunk, bookSocket}) {
         }
     }, [spark.forceRun])
 
+    useEffect(() => {
+        if (result) {
+            setLastResult(result)
+        }
+    }, [result])
+
     const startNameEdit = () => {
         nameRef.current.innerText = chunk.name || ''
         nameRef.current.focus()
@@ -277,6 +284,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
             bookSocket.emit('chunk.update', index, value)
         }, 1000) // Saves after a second without changes
     }
+
     const doRun = () => {
         if (ready) {
             run()
@@ -372,11 +380,11 @@ export function CommandChunk({ index, chunk, bookSocket}) {
                 </Card>
                 <CSSTransition
                     in={result}
-                    timeout={300}
+                    timeout={500}
                     unmountOnExit
                     classNames="result-animate"
                 >
-                    <ChunkResult result={result} status={status} removeResult={removeResult}/>
+                    <ChunkResult result={lastResult} status={status} removeResult={removeResult}/>
                 </CSSTransition>
             </div>
         </div>
