@@ -29,3 +29,28 @@
     75% { transform: rotate(360deg); }
     100% { transform: rotate(360deg); }
 }
+
+.result-animate-enter {
+    position: relative;
+    z-index: -2;
+    transform: translateY(-100%);
+}
+
+.result-animate-enter-active {
+    position: relative;
+    z-index: -2;
+    transform: translateY(0%);
+    transition: all linear 300ms;
+}
+
+.result-animate-exit {
+    position: relative;
+    z-index: -2;
+}
+
+.result-animate-exit-active {
+    position: relative;
+    z-index: -2;
+    transform: translateY(-100%);
+    transition: all linear 300ms;
+}

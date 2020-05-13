@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
-import PropTypes from 'prop-types'
+import { TransitionGroup, CSSTransition } from 'react-transition-group'
 import { useParams, useHistory } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import io from 'socket.io-client'
-import { LoadingHome } from '../app/App'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import './BookEditor.css'
+import { LoadingHome } from '../app/App'
 import { doCopy, chunkCopytext } from './helper'
 import { EditorNavbar } from './BookEditorNavbar'
-import './BookEditor.css'
 import { CommandChunk } from './CommandChunk'
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,14 +196,22 @@ export function BookEditor() {
         <SparkContext.Provider value={sparkConnection}>
             <LoadingHome loading={loading}>
                 <EditorNavbar book={book} copyAll={copyAll} socket={bookSocketRef.current} />
-                {((book && book.commands) || []).map((chunk, index) => (
-                    <CommandChunk
-                        chunk={chunk}
-                        key={chunk._id}
-                        index={index}
-                        bookSocket={bookSocketRef.current}
-                    />
-                ))}
+                <TransitionGroup>
+                    {((book && book.commands) || []).map((chunk, index) => (
+                        <CSSTransition
+                            key={chunk._id}
+                            classNames="chunk-animate"
+                            timeout={500}
+                            unmountOnExit
+                        >
+                            <CommandChunk
+                                chunk={chunk}
+                                index={index}
+                                bookSocket={bookSocketRef.current}
+                            />
+                        </CSSTransition>
+                    ))}
+                </TransitionGroup>
                 <ChunkAddButton bookSocket={bookSocketRef.current} />
             </LoadingHome>
         </SparkContext.Provider>

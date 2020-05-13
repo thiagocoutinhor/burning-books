@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from 'react'
+import { CSSTransition } from 'react-transition-group'
 import PropTypes from 'prop-types'
 import { Dropdown, Card, Button } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -30,7 +31,7 @@ function ChunkOptions({ index, copy, runAllAbove, remove}) {
     return (
         <Dropdown drop="left">
             <Dropdown.Toggle as={SimpleDropdown}>
-                <div className="text-right p-2">
+                <div className="text-right pr-2 pl-2">
                     <FontAwesomeIcon icon="ellipsis-v" />
                 </div>
             </Dropdown.Toggle>
@@ -369,7 +370,14 @@ export function CommandChunk({ index, chunk, bookSocket}) {
                         </Button>
                     </Card.Footer>
                 </Card>
-                { result ? <ChunkResult result={result} status={status} removeResult={removeResult}/> : null }
+                <CSSTransition
+                    in={result}
+                    timeout={300}
+                    unmountOnExit
+                    classNames="result-animate"
+                >
+                    <ChunkResult result={result} status={status} removeResult={removeResult}/>
+                </CSSTransition>
             </div>
         </div>
     )

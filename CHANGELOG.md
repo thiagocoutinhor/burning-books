@@ -5,6 +5,7 @@ v0.2.1-alpha
 - Display the execution start time in the result card
 - Hability to remove the result of a chunk
 - Hability to copy the chunk result
+- Added a bunch of animations to help UX
 
 ### Internal
 - Added easy to use local deploy outside docker

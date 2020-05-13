@@ -1,6 +1,41 @@
+.navbar {
+    height: 65px;
+}
+
 .book-name:focus {
     color: black;
     background-color: white;
+}
+
+.connection-animate-enter {
+    opacity: 0;
+    max-width: 0;
+}
+
+.connection-animate-enter-active {
+    opacity: 1;
+    max-width: 500px;
+    transition: all 400ms linear;
+}
+
+.connection-animate-enter-done {
+    max-width: initial;
+}
+
+.connection-animate-exit {
+    opacity: 1;
+    max-width: 500px;
+}
+
+.connection-animate-exit-active {
+    opacity: 0;
+    max-width: 0;
+    transition: all 400ms linear;
+}
+
+.connection-animate-exit-done {
+    opacity: 0;
+    max-width: 0;
 }
 
 .connection-control {

@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useEffect } from 'react'
+import React, { useContext, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { Navbar, Dropdown, Button, Form, InputGroup } from 'react-bootstrap'
@@ -7,6 +7,7 @@ import { SparkContext } from './BookEditor'
 import { editablePrevent } from './helper'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import './BookEditorNavbar.css'
+import { CSSTransition } from 'react-transition-group'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Connection widget
@@ -21,6 +22,7 @@ ConnectionControl.propTypes = {
 }
 function ConnectionControl({ config, socket }) {
     const spark = useContext(SparkContext)
+    const [lastRun, setLastRun] = useState(null)
     const executors = useRef()
     const cores = useRef()
     const memory = useRef()
@@ -39,6 +41,12 @@ function ConnectionControl({ config, socket }) {
         }
     }, [config])
 
+    useEffect(() => {
+        if (spark.runningNow != null) {
+            setLastRun(spark.runningNow)
+        }
+    }, [spark.runningNow])
+
     const connect = () => {
         spark.connect(executors.current.value, cores.current.value, memory.current.value)
     }
@@ -54,23 +62,36 @@ function ConnectionControl({ config, socket }) {
     ]
 
     return (
-        <Form as="div" inline className={`p-2 connection-control ${spark.status.class}`}>
-            { spark.status.showControls ? controls.map((control, index) => (
-                <InputGroup size="sm" className="mr-2" key={index}>
-                    <InputGroup.Prepend>
-                        <InputGroup.Text>{control.name}</InputGroup.Text>
-                    </InputGroup.Prepend>
-                    <Form.Control ref={control.ref} onChange={changeConfig} type="number" defaultValue="2" className="text-center" min="1" style={{ width: '4em' }}></Form.Control>
-                </InputGroup>
-            )).concat((
-                <Button size="sm" className="mr-2" onClick={connect} key="connectButton">Connect</Button>
-            )) : null }
-            { spark.runningNow != null ? (
-                <div className="mr-2">
+        <div className={`d-flex align-items-center p-2 connection-control ${spark.status.class}`}>
+            <CSSTransition
+                classNames="connection-animate"
+                in={spark.status.showControls}
+                timeout={400}
+            >
+                <Form as="div" inline className="flex-nowrap" style={{ overflow: 'hidden' }}>
+                    { controls.map((control, index) => (
+                        <InputGroup size="sm" className="mr-2 flex-nowrap" key={index}>
+                            <InputGroup.Prepend>
+                                <InputGroup.Text>{control.name}</InputGroup.Text>
+                            </InputGroup.Prepend>
+                            <Form.Control ref={control.ref} onChange={changeConfig} type="number" defaultValue="2" className="text-center" min="1" style={{ width: '4em' }}></Form.Control>
+                        </InputGroup>
+                    )).concat((
+                        <Button size="sm" className="mr-2" onClick={connect} key="connectButton">Connect</Button>
+                    )) }
+                </Form>
+            </CSSTransition>
+            <CSSTransition
+                classNames="connection-animate"
+                in={spark.runningNow != null}
+                unmountOnExit
+                timeout={400}
+            >
+                <div className="mr-2 text-nowrap" style={{ overflow: 'hidden' }}>
                     <FontAwesomeIcon icon="spinner" className="mr-2 text-primary rotate" />
-                    Running Chunk { spark.runningNow }
+                    Running Chunk { lastRun  }
                 </div>
-            ) : null }
+            </CSSTransition>
             <Dropdown drop="left">
                 <Dropdown.Toggle as={SimpleDropdown}>
                     <div className="connection-icon">
@@ -86,7 +107,7 @@ function ConnectionControl({ config, socket }) {
                     </Dropdown.Menu>
                 ) : null }
             </Dropdown>
-        </Form>
+        </div>
     )
 }
 
