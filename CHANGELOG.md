@@ -3,6 +3,7 @@ v0.2.1-alpha
 
 ### Bug Fixes
 - Fixes Control+Enter running the last edition made on the chunk
+- Fixes the leftover blank lines after a table
 
 ### Quality of Life
 - Display the execution start time in the result card

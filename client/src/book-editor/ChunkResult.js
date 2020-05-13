@@ -13,14 +13,18 @@ import { doCopy } from './helper'
 ///////////////////////////////////////////////////////////////////////////////
 const resultGrammar = {
     // Extracts the tables
-    tableLine: /\+[-+]+\+/,
+    tableLine: {
+        match: /\+[-+]+\+[\n\r]{0,2}/,
+        lineBreaks: true
+    },
     tableRow: {
-        match: /\|.*\|/,
+        match: /\|.*\|[\n\r]{0,2}/,
         value: texto => {
             const columns = texto.split('|')
             return columns.slice(1, columns.length - 1)
                 .map(coluna => coluna.trim())
-        }
+        },
+        lineBreaks: true
     },
     // Extracts the progress bar
     progress: {
@@ -72,6 +76,7 @@ export function ChunkResult({ result, status, removeResult }) {
         const newTables = []
         const newBars = {}
         Array.from(lexer).forEach(token => {
+            console.log(token)
             if (token.type === 'progress') {
                 newBars[token.value.id] = token.value
             } else if (token.type === 'tableLine') {
