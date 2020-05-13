@@ -136,7 +136,7 @@ export function ChunkResult({ result, status, removeResult }) {
     return (
         <div className="result-card mr-3 ml-3">
             <div className="d-flex mb-1">
-                <span>{runAt}</span>
+                <span style={{ color: 'gray', fontSize: '80%' }}>{runAt}</span>
                 <span className="flex-grow-1" />
                 { running ? null : (
                     <span>
