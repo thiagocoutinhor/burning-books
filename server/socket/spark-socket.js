@@ -16,8 +16,12 @@ module.exports = socket => {
     console.info(`[SPARK SOCKET - ${user.login}] Starting a new session`)
     socket.shell = new SparkShell(user.login, user.password, config)
 
-    // Open the shell and pass the readiness
+    // Passes all the input of the console ahead
     const consoleStream = new Stream()
+    consoleStream.on('disconnect', () => socket.disconnect)
+    consoleStream.on('data', data => socket.emit('console', data.toString()))
+
+    // Open the shell and pass the readiness
     socket.shell.openShell(consoleStream).then(() => {
         socket.emit('ready')
     }).catch(error => {
@@ -26,9 +30,6 @@ module.exports = socket => {
         socket.disconnect()
     })
 
-    // Passes all the input of the console ahead
-    consoleStream.on('disconnect', () => socket.disconnect)
-    consoleStream.on('data', data => socket.emit('console', data.toString()))
 
     // Execute a run command
     let isRunning = false

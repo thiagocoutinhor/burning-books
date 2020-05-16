@@ -51,7 +51,7 @@ SparkSession.prototype.connect = function() {
 }
 
 // Mocks the shell opening
-SparkSession.prototype.openShell = function() {
+SparkSession.prototype.openShell = function(consoleStream) {
     if (!this.shell) {
         console.log(`[SPARK MOCK - ${this.__user}] Opening spark shell`)
         this.shell = new Promise(resolve => {
@@ -59,6 +59,9 @@ SparkSession.prototype.openShell = function() {
                 console.log(`[SPARK MOCK - ${this.__user}] Shell running`)
                 const stream = new PassThrough()
                 stream.close = () => {}
+                if (consoleStream) {
+                    stream.pipe(consoleStream)
+                }
 
                 // Creates the command
                 var command = ''

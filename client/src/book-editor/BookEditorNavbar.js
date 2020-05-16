@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { Navbar, Dropdown } from 'react-bootstrap'
@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { editablePrevent } from './helper'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import { SparkConnectionControl } from './SparkConnectionControl'
+import { ConsoleModal } from './ConsoleModal'
 import './BookEditorNavbar.css'
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,6 +61,15 @@ EditorNavbar.propTypes = {
     socket: PropTypes.object
 }
 export function EditorNavbar({ book, copyAll, socket }) {
+    const [showConsole, setShowConsole] = useState(false)
+
+    const openConsole = () => {
+        setShowConsole(true)
+    }
+
+    const closeConsole = () => {
+        setShowConsole(false)
+    }
 
     return (
         <Navbar variant="dark" className="sticky-top d-flex shadow">
@@ -75,7 +85,9 @@ export function EditorNavbar({ book, copyAll, socket }) {
             </div>
             <Dropdown drop="left">
                 <Dropdown.Toggle as={SimpleDropdown}>
-                    <FontAwesomeIcon icon="ellipsis-v"/>
+                    <div className="pl-2">
+                        <FontAwesomeIcon icon="ellipsis-v"/>
+                    </div>
                 </Dropdown.Toggle>
                 <Dropdown.Menu >
                     <Dropdown.Item onClick={copyAll}>
@@ -86,8 +98,13 @@ export function EditorNavbar({ book, copyAll, socket }) {
                         <FontAwesomeIcon icon="file-download" className="mr-2" />
                         Download
                     </Dropdown.Item>
+                    <Dropdown.Item onClick={openConsole}>
+                        <FontAwesomeIcon icon="terminal" className="mr-2" />
+                        Console
+                    </Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
+            <ConsoleModal show={showConsole} close={closeConsole} />
         </Navbar>
     )
 }
