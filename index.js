@@ -5,6 +5,7 @@ require('./log') // Overrides log functions
 
 // Default promise error handler
 process.on('unhandledRejection', error => {
+    console.debug('[INDEX] Fallback promise handling')
     console.error(error)
 })
 

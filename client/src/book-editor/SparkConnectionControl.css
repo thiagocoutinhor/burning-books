@@ -1,0 +1,55 @@
+.connection-animate-enter {
+    opacity: 0;
+    max-width: 0;
+}
+
+.connection-animate-enter-active {
+    opacity: 1;
+    max-width: 500px;
+    transition: all 400ms linear;
+}
+
+.connection-animate-enter-done {
+    max-width: initial;
+}
+
+.connection-animate-exit {
+    opacity: 1;
+    max-width: 500px;
+}
+
+.connection-animate-exit-active {
+    opacity: 0;
+    max-width: 0;
+    transition: all 400ms linear;
+}
+
+.connection-animate-exit-done {
+    opacity: 0;
+    max-width: 0;
+}
+
+.connection-control {
+    background-color: #343a40;
+    border-radius: 5px;
+}
+
+.connection-control.disconnected .connection-icon {
+    color: rgba(255, 0, 0, 0.8)
+}
+
+.connection-control.connecting .connection-icon {
+    animation: connecting 2s;
+    animation-iteration-count: infinite;
+}
+
+.connection-control.connected .connection-icon,
+.connection-control.running .connection-icon {
+    color: rgba(0, 255, 0, 0.8);
+}
+
+@keyframes connecting {
+    0% { color: rgba(255, 0, 0, 0.8) }
+    50% { color: rgba(255, 255, 0, 0.8) }
+    100% { color: rgba(255, 0, 0, 0.8) }
+}

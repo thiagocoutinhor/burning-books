@@ -67,7 +67,7 @@ module.exports = socket => {
     })
 
     socket.on('disconnect', () => {
-        console.debug(`[LIST SOCKET - ${user.login}] disconnected`)
+        console.debug(`[LIST SOCKET - ${user.login}] Disconnected`)
     })
 
     ///////////////////////////////////////////////////////////////////////////

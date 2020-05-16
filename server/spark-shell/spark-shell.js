@@ -37,14 +37,18 @@ class SparkSession {
         })
     }
 
-    openShell() {
+    openShell(consoleStream) {
         if (!this.shell) {
             console.info(`[SPARK - ${this.__user}] Opening spark shell`)
             console.debug(`[SPARK - ${this.__user}] Command:\n\t${this.__startCommand}`)
             this.shell = this.ssh.shell()
                 .then(stream => {
+                    if (consoleStream) {
+                        stream.pipe(consoleStream)
+                    }
                     return new Promise((resolve, reject) => {
                         const timeout = setTimeout(() => {
+                            console.warn(`[SPARK - ${this.__user}] Connection timeout`)
                             reject('Connection timeout')
                         }, 5 * 60 * 1000)
 
@@ -109,13 +113,13 @@ class SparkSession {
     }
 
     closeShell() {
-        console.debug(`[SPARK - ${this.__user}] Closing connection`)
         if (this.shell) {
+            console.debug(`[SPARK - ${this.__user}] Closing connection`)
             this.shell.then(stream => {
                 console.info(`[SPARK - ${this.__user}] Shell closed`)
                 stream.end('exit\n')
                 stream.close()
-            })
+            }).catch(() => {})
             this.shell = undefined
         }
     }

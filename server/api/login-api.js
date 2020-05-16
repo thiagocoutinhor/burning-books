@@ -44,11 +44,11 @@ router.post('/', (req, res) => {
         .then(() => {
             console.info(`[LOGIN - ${user.login}] Login successfull`)
             req.session.user = user
-            res.redirect('/') // TODO o que fazer aqui?
+            res.redirect('/')
         })
         .catch(() => {
             console.warn(`[LOGIN - ${user.login}] Login unsuccessfull`)
-            res.redirect('/') // TODO o que fazer aqui??
+            res.redirect('/')
         })
 })
 
@@ -56,7 +56,7 @@ router.delete('/', (req, res) => {
     if (req.session && req.session.user) {
         console.info(`[LOGIN - ${req.session.user.login}] Logoff`)
         req.session.user = undefined
-        res.redirect('/') // TODO o que fazer aqui??
+        res.redirect('/')
     } else {
         console.warn('[LOGIN] Unisgned user trying to logoff')
         res.sendStatus(404)
@@ -68,32 +68,51 @@ function checkLogin(login, password) {
     return sparkShell.connect()
 }
 
-function accessControl(req, res, next) {
-    const limiteChecagem = moment().subtract(2, 'minutes')
+function accessControlMiddleware(req, res, next) {
     const user = req.session.user
 
-    if (!req.session.user) {
-        if (req.url.includes('/login')) {
-            next()
-        } else {
-            res.sendStatus(401)
-        }
-    } else if (moment(user.lastCheck).isBefore(limiteChecagem)) {
-        console.info(`[LOGIN - ${user.login}] Verifying login`)
-        req.session.user.lastCheck = moment()
-        checkLogin(user.login, user.password)
-            .then(() => next())
-            .catch(() => {
-                console.warn(`[LOGIN - ${user.login}] Login unsuccessfull`)
-                req.session.user = undefined
-                res.sendStatus(401)
-            })
-    } else {
+    if (req.url.includes('/login')) {
         next()
+    } else if (!req.session.user) {
+        res.sendStatus(401)
+    } else {
+        accessControl(user)
+            .then(hasAccess => {
+                if (hasAccess) {
+                    next()
+                } else {
+                    req.session.user = undefined
+                    res.sendStatus(401)
+                }
+            })
+            .catch(() => {
+                res.sendStatus(500)
+            })
     }
+}
+
+function accessControl(user) {
+    const checkLimit = moment().subtract(2, 'minutes')
+    return new Promise(resolve => {
+        if (!user.lastCheck || (user.lastCheck && moment(user.lastCheck).isBefore(checkLimit))) {
+            console.debug(`[LOGIN - ${user.login}] Verifying login`)
+            user.lastCheck = moment()
+            checkLogin(user.login, user.password)
+                .then(() => {
+                    resolve(true)
+                })
+                .catch(() => {
+                    console.warn(`[LOGIN - ${user.login}] Login unsuccessfull`)
+                    resolve(false)
+                })
+        } else {
+            resolve(true)
+        }
+    })
 }
 
 module.exports = {
     router,
+    accessControlMiddleware,
     accessControl
 }

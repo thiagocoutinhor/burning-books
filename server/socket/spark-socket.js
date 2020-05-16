@@ -4,14 +4,6 @@ const passwordUtils = require('../crypt/password-utils')
 
 module.exports = socket => {
     const user = socket.handshake.session.user
-
-    if (!user) {
-        console.warn('[SPARK SOCKET] No user found')
-        socket.emit('disconnected')
-        socket.disconnect()
-        return
-    }
-
     user.password = passwordUtils.uncrush(user.password)
 
     const config = socket.handshake.query
@@ -24,14 +16,21 @@ module.exports = socket => {
     console.info(`[SPARK SOCKET - ${user.login}] Starting a new session`)
     socket.shell = new SparkShell(user.login, user.password, config)
 
-    socket.shell.openShell().then(() => {
+    // Open the shell and pass the readiness
+    const consoleStream = new Stream()
+    socket.shell.openShell(consoleStream).then(() => {
         socket.emit('ready')
     }).catch(error => {
-        console.error(error)
+        console.warn(`[SPARK SOCKET - ${user.login}] Spark connection failed`)
         socket.emit('connect.error', error)
         socket.disconnect()
     })
 
+    // Passes all the input of the console ahead
+    consoleStream.on('disconnect', () => socket.disconnect)
+    consoleStream.on('data', data => socket.emit('console', data.toString()))
+
+    // Execute a run command
     let isRunning = false
     socket.on('run', command => {
         if (socket.shell && !isRunning) {
@@ -43,6 +42,7 @@ module.exports = socket => {
             })
 
             socket.shell.command(command, stream).then(result => {
+                stream.end()
                 socket.emit('return', result)
             }).catch(erro => {
                 socket.emit('return.error', erro)
@@ -52,6 +52,7 @@ module.exports = socket => {
         }
     })
 
+    // Closes the shell on disconnect
     socket.on('disconnect', () => {
         console.debug(`[SPARK SOCKET- ${user.login}] Closing the session`)
         socket.shell.closeShell()

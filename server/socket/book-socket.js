@@ -7,13 +7,6 @@ module.exports = socket => {
     const user = socket.handshake.session.user
     const bookId = socket.handshake.query.id
 
-    if (!user) {
-        console.warn(`[BOOK SOCKET] No user identified ${bookId}`)
-        socket.emit('exit')
-        socket.disconnect()
-        return
-    }
-
     new Promise((resolve, reject) => {
         if (books[bookId]) {
             books[bookId].count++
