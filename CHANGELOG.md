@@ -12,6 +12,7 @@ v0.2.1-alpha
 - Hability to copy the chunk result
 - Added a bunch of animations to help UX
 - Added a console with all the commands and responses
+- Added run time of each chunk
 
 ### Internal
 - Added easy to use local deploy outside docker

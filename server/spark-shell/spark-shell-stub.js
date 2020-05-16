@@ -19,7 +19,7 @@ const config = {
         // Number of bars and how much they fill after every second
         const stages = [
             { step: 50, progress: 0 }, // full
-            { step: 30, progress: 0 }, // overflow
+            { step: 10, progress: 0 }, // overflow
             { step: 40, progress: 0, incomplete: true } // underflow
         ]
 
