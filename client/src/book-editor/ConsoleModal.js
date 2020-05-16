@@ -13,11 +13,9 @@ export function ConsoleModal({ show, close }) {
     const [text, setText] = useState(null)
 
     useEffect(() => {
-        console.log('Banana iniciou')
         if (spark.socket) {
             let textAgg = ''
             spark.socket.on('console', data => {
-                console.log('Banana >', textAgg)
                 textAgg += data
                 setText(textAgg)
             })
