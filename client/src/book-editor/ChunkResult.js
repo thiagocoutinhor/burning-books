@@ -76,7 +76,6 @@ export function ChunkResult({ result, status, removeResult }) {
         const newTables = []
         const newBars = {}
         Array.from(lexer).forEach(token => {
-            console.log(token)
             if (token.type === 'progress') {
                 newBars[token.value.id] = token.value
             } else if (token.type === 'tableLine') {
