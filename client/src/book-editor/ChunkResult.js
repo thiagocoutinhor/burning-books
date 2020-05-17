@@ -9,7 +9,7 @@ import './ChunkResult.css'
 import { doCopy } from './helper'
 
 ///////////////////////////////////////////////////////////////////////////////
-// Chunk result
+// Result grammar
 ///////////////////////////////////////////////////////////////////////////////
 const resultGrammar = {
     // Extracts the tables
@@ -45,6 +45,26 @@ const resultGrammar = {
     error: moo.error
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Result visibility toggle
+////////////////////////////////////////////////////////////////////////////////
+
+ToggleResult.propTypes = {
+    toggle: PropTypes.func.isRequired,
+    isHidden: PropTypes.bool
+}
+function ToggleResult({ toggle, isHidden = false }) {
+    return (
+        <div className="hide-result" onClick={toggle}>
+            <FontAwesomeIcon icon={isHidden ? 'chevron-down' : 'chevron-up'} size="sm"/>
+        </div>
+    )
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Chunk result
+///////////////////////////////////////////////////////////////////////////////
+
 ChunkResult.propTypes = {
     result: PropTypes.string,
     status: PropTypes.object,
@@ -57,10 +77,15 @@ export function ChunkResult({ result, status, removeResult }) {
     const [tables, setTables] = useState([])
     const [runAt, setRunAt] = useState()
     const [copyFeedback, setCopyFeedback] = useState(false)
+    const [hidden, setHidden] = useState(false)
 
     useEffect(() => {
         setRunAt(moment().format('HH:mm:ss.SSS'))
     }, [])
+
+    const toggle = () => {
+        setHidden(!hidden)
+    }
 
     // TODO Text not visible when the progress bar is too small
 
@@ -134,47 +159,52 @@ export function ChunkResult({ result, status, removeResult }) {
 
     return (
         <div className="result-card mr-3 ml-3">
-            <div className="d-flex mb-1">
-                <span style={{ color: 'gray', fontSize: '80%' }}>{runAt}</span>
-                <span className="flex-grow-1" />
-                { running ? null : (
-                    <span>
-                        <CSSTransition
-                            in={copyFeedback}
-                            timeout={500}
-                            unmountOnExit
-                            classNames="copy-feedback"
-                            onEntered={() => setTimeout(() => setCopyFeedback(false), 2000)}
-                        >
-                            <span>Content copied...</span>
-                        </CSSTransition>
-                        <FontAwesomeIcon icon="clone" className="mr-2 pointer" onClick={copyResult}/>
-                        <FontAwesomeIcon icon="times" className="pointer" onClick={removeResult} />
-                    </span>
-                )}
+            <ToggleResult toggle={toggle} isHidden={hidden}/>
+            <div className={`toggler ${hidden ? 'hide' : ''}`}>
+                <div className="d-flex mb-1">
+                    <span style={{ color: 'gray', fontSize: '80%' }}>{runAt}</span>
+                    <span className="flex-grow-1" />
+                    { running ? null : (
+                        <span>
+                            <CSSTransition
+                                in={copyFeedback}
+                                timeout={500}
+                                unmountOnExit
+                                classNames="copy-feedback"
+                                onEntered={() => setTimeout(() => setCopyFeedback(false), 2000)}
+                            >
+                                <span>Content copied...</span>
+                            </CSSTransition>
+                            <FontAwesomeIcon icon="clone" className="mr-2 pointer" onClick={copyResult}/>
+                            <FontAwesomeIcon icon="times" className="pointer" onClick={removeResult} />
+                        </span>
+                    )}
+                </div>
+                <div className="result-content">
+                    { Object.values(bars).reverse().map(bar => (
+                        <ProgressBar
+                            key={bar.id}
+                            striped={running && bar.progress < 100}
+                            animated={running && bar.progress < 100}
+                            variant={running && bar.progress < 100 ? 'primary' : 'success'}
+                            style={{ backgroundColor: 'rgb(231, 201, 146)' }}
+                            className="mb-1"
+                            label={`${bar.id}: ${bar.numbers}`} now={running ? bar.progress : 100}
+                        />
+                    )) }
+                    { tables.map((table, index) => (
+                        <Table key={index} striped size="sm" borderless>
+                            <thead>
+                                {makeRows(table.head)}
+                            </thead>
+                            <tbody>
+                                {makeRows(table.body)}
+                            </tbody>
+                        </Table>
+                    )) }
+                    { text }
+                </div>
             </div>
-            { Object.values(bars).reverse().map(bar => (
-                <ProgressBar
-                    key={bar.id}
-                    striped={running && bar.progress < 100}
-                    animated={running && bar.progress < 100}
-                    variant={running && bar.progress < 100 ? 'primary' : 'success'}
-                    style={{ backgroundColor: 'rgb(231, 201, 146)' }}
-                    className="mb-1"
-                    label={`${bar.id}: ${bar.numbers}`} now={running ? bar.progress : 100}
-                />
-            )) }
-            { tables.map((table, index) => (
-                <Table key={index} striped size="sm" borderless>
-                    <thead>
-                        {makeRows(table.head)}
-                    </thead>
-                    <tbody>
-                        {makeRows(table.body)}
-                    </tbody>
-                </Table>
-            )) }
-            { text }
         </div>
     )
 }

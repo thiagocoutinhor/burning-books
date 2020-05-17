@@ -1,3 +1,8 @@
+.command-block {
+    z-index: 1000;
+    position: relative;
+}
+
 .command-block .card-header {
     font-family: 'Open Sans', sans-serif;
 }
@@ -32,25 +37,28 @@
 
 .result-animate-enter {
     position: relative;
-    z-index: -2;
+    z-index: -100;
     transform: translateY(-100%);
 }
 
 .result-animate-enter-active {
     position: relative;
-    z-index: -2;
+    z-index: -100;
     transform: translateY(0%);
     transition: all linear 500ms;
 }
 
+.result-animate-enter-done {
+    z-index: -100;
+}
+
 .result-animate-exit {
     position: relative;
-    z-index: -2;
 }
 
 .result-animate-exit-active {
     position: relative;
-    z-index: -2;
+    z-index: -100;
     transform: translateY(-100%);
     transition: all linear 500ms;
 }
