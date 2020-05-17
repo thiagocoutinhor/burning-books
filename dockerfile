@@ -1,12 +1,16 @@
-FROM node:11-alpine
-RUN apk add curl
+FROM node:11-alpine as build
 COPY / /app
-WORKDIR /app
-RUN npm i --production
 WORKDIR /app/client
-RUN npm i --production && npm run build
+RUN npm i --production --no-audit
+RUN npm run build
 WORKDIR /app
 RUN rm client -r
+
+FROM node:11-alpine
+RUN apk add curl
+COPY --from=build /app /app
+WORKDIR /app
+RUN npm i --production --no-audit
 ENV LOG_LEVEL=INFO
 ENV LOGIN_TYPE=PASSWORD
 ENV SPARK_HOST=localhost

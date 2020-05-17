@@ -1,6 +1,7 @@
 .git/
-.env
-.eslintrc.yml
-client/.eslintrc.yml
+*.env
+*.md
+*.yml
 docker-compose.yml
 dockerfile
+LICENSE
