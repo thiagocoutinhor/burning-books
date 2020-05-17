@@ -19,7 +19,7 @@ const config = {
         // Number of bars and how much they fill after every second
         const stages = [
             { step: 50, progress: 0 }, // full
-            { step: 30, progress: 0 }, // overflow
+            { step: 10, progress: 0 }, // overflow
             { step: 40, progress: 0, incomplete: true } // underflow
         ]
 
@@ -51,14 +51,18 @@ SparkSession.prototype.connect = function() {
 }
 
 // Mocks the shell opening
-SparkSession.prototype.openShell = function() {
+SparkSession.prototype.openShell = function(consoleStream) {
     if (!this.shell) {
+        this.__applicationId = 'application_1234_4321'
         console.log(`[SPARK MOCK - ${this.__user}] Opening spark shell`)
         this.shell = new Promise(resolve => {
             setTimeout(() => {
                 console.log(`[SPARK MOCK - ${this.__user}] Shell running`)
                 const stream = new PassThrough()
                 stream.close = () => {}
+                if (consoleStream) {
+                    stream.pipe(consoleStream)
+                }
 
                 // Creates the command
                 var command = ''

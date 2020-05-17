@@ -2,17 +2,56 @@
     font-family: 'Roboto Mono', monospace;
     font-size: 80%;
     background-color: antiquewhite;
-    padding: 10px;
+    padding: 0.5rem;
+}
+
+.result-card .result-content {
     white-space: pre;
     overflow-x: auto;
-    max-height: calc(100vh - 150px);
+    max-height: calc(100vh - 15rem);
+    min-height: 3rem;
 }
 
 .result-card .progress-bar {
     text-align: left!important;
-    padding-left: 3px;
+    padding-left: 0.5rem;
 }
 
 .result-card .table thead {
     font-weight: bold;
+}
+
+.result-card .copy-feedback-exit {
+    opacity: 1;
+}
+
+.result-card .copy-feedback-exit-active {
+    opacity: 0;
+    transition: opacity 500ms linear;
+}
+
+.result-card .hide-result {
+    border-radius: 0.5em;
+    text-align: center;
+    cursor: pointer;
+    color: gray;
+    margin-top: -0.5rem;
+}
+
+.result-card .hide-result:hover {
+    color: black;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.result-card .toggler {
+    transition: all 500ms linear;
+    position: relative;
+    max-height: calc(100vh - 13rem);
+    overflow: hidden;
+}
+
+.result-card .toggler.hide {
+    transition: all 500ms linear;
+    position: relative;
+    max-height: 0;
 }

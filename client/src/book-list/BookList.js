@@ -188,8 +188,13 @@ export function BookList({ logoff }) {
     const history = useHistory()
 
     useEffect(() => {
-        console.debug('Subscribing to the list')
         socket.current = io('/list')
+
+        // Handles logoff signals
+        socket.current.on('logoff', () => {
+            console.warn('Received logoff command')
+            logoff()
+        })
 
         // Handles the book arrival of the book list
         socket.current.on('list', list => {

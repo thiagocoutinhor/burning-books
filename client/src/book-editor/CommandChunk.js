@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from 'react'
+import { CSSTransition } from 'react-transition-group'
 import PropTypes from 'prop-types'
 import { Dropdown, Card, Button } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -8,6 +9,7 @@ import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import { ChunkResult } from './ChunkResult'
 import { editablePrevent, chunkCopytext, doCopy } from './helper'
 import './CommandChunk.css'
+import moment from 'moment'
 
 // Ace editor imports
 import 'ace-builds/src-noconflict/mode-scala'
@@ -30,7 +32,7 @@ function ChunkOptions({ index, copy, runAllAbove, remove}) {
     return (
         <Dropdown drop="left">
             <Dropdown.Toggle as={SimpleDropdown}>
-                <div className="text-right p-2">
+                <div className="text-right pr-2 pl-2">
                     <FontAwesomeIcon icon="ellipsis-v" />
                 </div>
             </Dropdown.Toggle>
@@ -73,7 +75,7 @@ function ChunkEditor({ index, command, codeChange, run, ready }) {
     useEffect(() => {
         readyRef.current = ready
         runRef.current = run
-    }, [ready])
+    }, [ready, command])
 
     const doRun = () => {
         if (readyRef.current) {
@@ -175,6 +177,31 @@ const chunkStatusList = {
     }
 }
 
+// Timer function for tracking run duration
+function useTimer(isRunning) {
+    const [executionTimer, setExecutionTimer] = useState(null)
+    const timerRef = useRef(null)
+
+    useEffect(() => {
+        console.log('Banana> run', isRunning)
+        if (isRunning) {
+            const start = moment()
+            timerRef.current = setInterval(() => {
+                console.log('Banana> Tick', isRunning)
+                const duration = moment.duration(moment().diff(start))
+                const minutes = duration.get('minutes')
+                const seconds = `${duration.get('seconds')}`.padStart(2, '0')
+                setExecutionTimer(`${minutes}:${seconds}`)
+            }, 1000)
+        } else {
+            console.log('Banana> clearing')
+            clearInterval(timerRef.current)
+        }
+    }, [isRunning])
+
+    return executionTimer
+}
+
 // Each code chunk
 CommandChunk.propTypes = {
     index: PropTypes.number,
@@ -189,8 +216,11 @@ export function CommandChunk({ index, chunk, bookSocket}) {
     const [command, setCommand] = useState(chunk.command)
     const [status, setStatus] = useState(chunkStatusList.waiting)
     const [ready, setReady] = useState(false)
+    const [isRunning, setIsRunning] = useState(false)
+    const executionTimer = useTimer(isRunning)
     const [buttonVariant, setButtonVariant] = useState('secondary')
-    const [result, setResult] = useState('')
+    const [result, setResult] = useState(null)
+    const [lastResult, setLastResult] = useState(null)
     const spark = useContext(SparkContext)
     const saveTimer = useRef(null)
     const nameRef = useRef(null)
@@ -250,6 +280,16 @@ export function CommandChunk({ index, chunk, bookSocket}) {
         }
     }, [spark.forceRun])
 
+    useEffect(() => {
+        if (result) {
+            setLastResult(result)
+        }
+    }, [result])
+
+    useEffect(() => {
+        setIsRunning(index === spark.runningNow)
+    }, [index, spark.runningNow])
+
     const startNameEdit = () => {
         nameRef.current.innerText = chunk.name || ''
         nameRef.current.focus()
@@ -276,6 +316,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
             bookSocket.emit('chunk.update', index, value)
         }, 1000) // Saves after a second without changes
     }
+
     const doRun = () => {
         if (ready) {
             run()
@@ -326,6 +367,10 @@ export function CommandChunk({ index, chunk, bookSocket}) {
         bookSocket.emit('chunk.move', index, index + 1)
     }
 
+    const removeResult = () => {
+        setResult(null)
+    }
+
     return (
         <div>
             <ChunkAddButton at={index} bookSocket={bookSocket} />
@@ -358,14 +403,24 @@ export function CommandChunk({ index, chunk, bookSocket}) {
                     </Card.Header>
                     <ChunkEditor index={index} command={command} ready={ready} codeChange={codeChange} run={doRun} runAllAbove={runAllAboveMe} />
                     <Card.Footer className="d-flex align-items-end">
-                        <span className="chunk-status" style={{fontSize: '80%' ,...status.style}}>{status.label}</span>
+                        <span className="chunk-status d-flex flex-column" style={{fontSize: '80%', ...status.style}}>
+                            <span>{executionTimer}</span>
+                            <span>{status.label}</span>
+                        </span>
                         <span className="flex-grow-1"></span>
                         <Button className="run-button" disabled={!ready} variant={buttonVariant} onClick={doRun}>
-                            <FontAwesomeIcon icon={status.buttonIcon}  className={index === spark.runningNow ? 'hourglass-rotate' : ''}/>
+                            <FontAwesomeIcon icon={status.buttonIcon}  className={isRunning ? 'hourglass-rotate' : ''}/>
                         </Button>
                     </Card.Footer>
                 </Card>
-                { result ? <ChunkResult result={result} status={status}/> : null }
+                <CSSTransition
+                    in={result != null}
+                    timeout={500}
+                    unmountOnExit
+                    classNames="result-animate"
+                >
+                    <ChunkResult result={lastResult} status={status} removeResult={removeResult}/>
+                </CSSTransition>
             </div>
         </div>
     )

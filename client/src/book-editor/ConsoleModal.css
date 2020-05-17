@@ -1,0 +1,13 @@
+.console-dialog {
+    width: 90%;
+    max-width: initial!important;
+}
+
+.console {
+    background-color: black;
+    color: white;
+    font-family: monospace;
+    white-space: pre;
+    max-height: 80vh;
+    overflow: scroll;
+}

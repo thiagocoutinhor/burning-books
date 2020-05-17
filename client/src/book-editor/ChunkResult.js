@@ -1,22 +1,30 @@
 import React, { useEffect, useState } from 'react'
+import { CSSTransition } from 'react-transition-group'
 import PropTypes from 'prop-types'
 import { ProgressBar, Table } from 'react-bootstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import moo from 'moo'
+import moment from 'moment'
 import './ChunkResult.css'
+import { doCopy } from './helper'
 
 ///////////////////////////////////////////////////////////////////////////////
-// Chunk result
+// Result grammar
 ///////////////////////////////////////////////////////////////////////////////
 const resultGrammar = {
     // Extracts the tables
-    tableLine: /\+[-+]+\+/,
+    tableLine: {
+        match: /\+[-+]+\+[\n\r]{0,2}/,
+        lineBreaks: true
+    },
     tableRow: {
-        match: /\|.*\|/,
+        match: /\|.*\|[\n\r]{0,2}/,
         value: texto => {
             const columns = texto.split('|')
             return columns.slice(1, columns.length - 1)
                 .map(coluna => coluna.trim())
-        }
+        },
+        lineBreaks: true
     },
     // Extracts the progress bar
     progress: {
@@ -37,17 +45,49 @@ const resultGrammar = {
     error: moo.error
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Result visibility toggle
+////////////////////////////////////////////////////////////////////////////////
+
+ToggleResult.propTypes = {
+    toggle: PropTypes.func.isRequired,
+    isHidden: PropTypes.bool
+}
+function ToggleResult({ toggle, isHidden = false }) {
+    return (
+        <div className="hide-result" onClick={toggle}>
+            <FontAwesomeIcon icon={isHidden ? 'chevron-down' : 'chevron-up'} size="sm"/>
+        </div>
+    )
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Chunk result
+///////////////////////////////////////////////////////////////////////////////
+
 ChunkResult.propTypes = {
     result: PropTypes.string,
-    status: PropTypes.object
+    status: PropTypes.object,
+    removeResult: PropTypes.func
 }
-export function ChunkResult({ result, status }) {
+export function ChunkResult({ result, status, removeResult }) {
     const [bars, setBars] = useState({})
     const [text, setText] = useState('')
     const [running, setRunning] = useState(true)
     const [tables, setTables] = useState([])
+    const [runAt, setRunAt] = useState()
+    const [copyFeedback, setCopyFeedback] = useState(false)
+    const [hidden, setHidden] = useState(false)
 
-    // TODO Text not visible when the bar is too small
+    useEffect(() => {
+        setRunAt(moment().format('HH:mm:ss.SSS'))
+    }, [])
+
+    const toggle = () => {
+        setHidden(!hidden)
+    }
+
+    // TODO Text not visible when the progress bar is too small
 
     // Tokenizing the result
     // Looking for progress bars and tables
@@ -59,7 +99,7 @@ export function ChunkResult({ result, status }) {
 
         let table = null
         const newTables = []
-        const newBars = { ...bars }
+        const newBars = {}
         Array.from(lexer).forEach(token => {
             if (token.type === 'progress') {
                 newBars[token.value.id] = token.value
@@ -106,30 +146,65 @@ export function ChunkResult({ result, status }) {
         }
     }
 
+    const copyResult = () => {
+        const tablesString = tables.map(({head, body}) => {
+            const headRows = head.map(row => row.join('\t')).join('\n')
+            const bodyRows = body.map(row => row.join('\t')).join('\n')
+            return `${headRows}\n${bodyRows}`
+        }).join('\n\n')
+        const result = `${tablesString.length > 0 ? tablesString + '\n\n' : ''}${text}`
+        doCopy(result)
+        setCopyFeedback(true)
+    }
+
     return (
         <div className="result-card mr-3 ml-3">
-            { Object.values(bars).reverse().map(bar => (
-                <ProgressBar
-                    key={bar.id}
-                    striped={running && bar.progress < 100}
-                    animated={running && bar.progress < 100}
-                    variant={running && bar.progress < 100 ? 'primary' : 'success'}
-                    style={{ backgroundColor: 'rgb(231, 201, 146)' }}
-                    className="mb-1"
-                    label={`${bar.id}: ${bar.numbers}`} now={running ? bar.progress : 100}
-                />
-            )) }
-            { tables.map((table, index) => (
-                <Table key={index} striped size="sm" borderless>
-                    <thead>
-                        {makeRows(table.head)}
-                    </thead>
-                    <tbody>
-                        {makeRows(table.body)}
-                    </tbody>
-                </Table>
-            )) }
-            { text }
+            <ToggleResult toggle={toggle} isHidden={hidden}/>
+            <div className={`toggler ${hidden ? 'hide' : ''}`}>
+                <div className="d-flex mb-1">
+                    <span style={{ color: 'gray', fontSize: '80%' }}>{runAt}</span>
+                    <span className="flex-grow-1" />
+                    { running ? null : (
+                        <span>
+                            <CSSTransition
+                                in={copyFeedback}
+                                timeout={500}
+                                unmountOnExit
+                                classNames="copy-feedback"
+                                onEntered={() => setTimeout(() => setCopyFeedback(false), 2000)}
+                            >
+                                <span>Content copied...</span>
+                            </CSSTransition>
+                            <FontAwesomeIcon icon="clone" className="mr-2 pointer" onClick={copyResult}/>
+                            <FontAwesomeIcon icon="times" className="pointer" onClick={removeResult} />
+                        </span>
+                    )}
+                </div>
+                <div className="result-content">
+                    { Object.values(bars).reverse().map(bar => (
+                        <ProgressBar
+                            key={bar.id}
+                            striped={running && bar.progress < 100}
+                            animated={running && bar.progress < 100}
+                            variant={running && bar.progress < 100 ? 'primary' : 'success'}
+                            style={{ backgroundColor: 'rgb(231, 201, 146)' }}
+                            className="mb-1"
+                            label={`${bar.id}: ${bar.numbers}`} now={running ? bar.progress : 100}
+                        />
+                    )) }
+                    { tables.map((table, index) => (
+                        <Table key={index} striped size="sm" borderless>
+                            <thead>
+                                {makeRows(table.head)}
+                            </thead>
+                            <tbody>
+                                {makeRows(table.body)}
+                            </tbody>
+                        </Table>
+                    )) }
+                    { text }
+                </div>
+            </div>
         </div>
     )
 }

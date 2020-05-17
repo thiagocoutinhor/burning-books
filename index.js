@@ -1,8 +1,11 @@
-require('dotenv').config() // Loads development configurations
+require('dotenv').config({
+    path: `./${process.env.NODE_ENV ? process.env.NODE_ENV : 'production'}.env`
+}) // Loads enviroment variables
 require('./log') // Overrides log functions
 
 // Default promise error handler
 process.on('unhandledRejection', error => {
+    console.debug('[INDEX] Fallback promise handling')
     console.error(error)
 })
 
@@ -52,9 +55,10 @@ app.use('/api', require('./server/router-api'))
 if (process.env.NODE_ENV === 'production') {
     console.info('Production mode')
     app.get('/*', function (req, res) {
-        const file = join(__dirname, 'build', req.url)
-        if (fs.existsSync(file)) {
-            res.sendFile(file)
+        const fileName = join(__dirname, 'build', req.url)
+        const file = fs.statSync(fileName)
+        if (fs.existsSync(fileName) && file.isFile()) {
+            res.sendFile(fileName)
         } else {
             res.sendFile(join(__dirname, 'build', 'index.html'))
         }

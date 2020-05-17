@@ -1,3 +1,25 @@
+v0.2.1-alpha
+===============================================================================
+
+### Bug Fixes
+- Fixes Control+Enter running the last edition made on the chunk
+- Fixes the leftover blank lines after a table
+- Gives a graphical way of knowing that the connection was refused
+
+### Quality of Life
+- Display the execution start time in the result card
+- Hability to remove the result of a chunk
+- Hability to copy the chunk result
+- Added a bunch of animations to help UX
+- Added a console with all the commands and responses
+- Added run time of each chunk
+- Hability to hide and show the result card
+- Recover the Application ID after connecting to Spark shell
+
+### Internal
+- Added easy to use local deploy outside docker
+- Better handling of access check
+
 v0.2-alpha
 ===============================================================================
 

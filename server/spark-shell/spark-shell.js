@@ -13,6 +13,7 @@ class SparkSession {
 
         this.__startCommand = `spark-shell ${queue} ${executors} ${cores} ${memory} ${libraries}`
         this.__user = user
+        this.__applicationId = null
 
         const parameters = {
             host: process.env.SPARK_HOST,
@@ -29,6 +30,10 @@ class SparkSession {
         this.ssh = new Ssh(parameters)
     }
 
+    getApplicationId() {
+        return this.__applicationId
+    }
+
     connect() {
         console.debug(`[SPARK - ${this.__user}] Starting connection`)
         this.ssh.on('close', () => console.debug(`[SPARK - ${this.__user}] Disconnected`))
@@ -37,18 +42,28 @@ class SparkSession {
         })
     }
 
-    openShell() {
+    openShell(consoleStream) {
         if (!this.shell) {
             console.info(`[SPARK - ${this.__user}] Opening spark shell`)
             console.debug(`[SPARK - ${this.__user}] Command:\n\t${this.__startCommand}`)
             this.shell = this.ssh.shell()
                 .then(stream => {
+                    if (consoleStream) {
+                        stream.pipe(consoleStream)
+                    }
                     return new Promise((resolve, reject) => {
                         const timeout = setTimeout(() => {
+                            console.warn(`[SPARK - ${this.__user}] Connection timeout`)
                             reject('Connection timeout')
                         }, 5 * 60 * 1000)
 
+                        let agg = ''
                         const watcher = data => {
+                            agg += data
+                            const idFinder = /application_\d+_\d+/.exec(agg)
+                            if (idFinder) {
+                                this.__applicationId = idFinder[0]
+                            }
                             if (data.includes('scala>')) {
                                 clearTimeout(timeout)
 
@@ -109,13 +124,13 @@ class SparkSession {
     }
 
     closeShell() {
-        console.debug(`[SPARK - ${this.__user}] Closing connection`)
         if (this.shell) {
+            console.debug(`[SPARK - ${this.__user}] Closing connection`)
             this.shell.then(stream => {
                 console.info(`[SPARK - ${this.__user}] Shell closed`)
                 stream.end('exit\n')
                 stream.close()
-            })
+            }).catch(() => {})
             this.shell = undefined
         }
     }

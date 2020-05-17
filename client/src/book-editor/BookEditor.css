@@ -13,6 +13,30 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+.chunk-animate-enter {
+    max-height: 0px;
+}
+
+.chunk-animate-enter-active {
+    overflow: hidden;
+    max-height: 17rem;
+    transition: all 500ms linear;
+}
+
+.chunk-animate-enter-done {
+    max-height: initial;
+}
+
+.chunk-animate-exit {
+    max-height: calc(100vh - 65px);
+}
+
+.chunk-animate-exit-active {
+    overflow: hidden;
+    max-height: 0;
+    transition: all 500ms linear;
+}
+
 .chunk-add-button {
     text-align: center;
     background-color: rgba(0, 0, 0, 0.25);
