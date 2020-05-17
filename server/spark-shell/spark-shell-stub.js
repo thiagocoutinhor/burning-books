@@ -53,6 +53,7 @@ SparkSession.prototype.connect = function() {
 // Mocks the shell opening
 SparkSession.prototype.openShell = function(consoleStream) {
     if (!this.shell) {
+        this.__applicationId = 'application_1234_4321'
         console.log(`[SPARK MOCK - ${this.__user}] Opening spark shell`)
         this.shell = new Promise(resolve => {
             setTimeout(() => {

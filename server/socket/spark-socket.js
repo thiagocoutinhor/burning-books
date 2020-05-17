@@ -24,6 +24,7 @@ module.exports = socket => {
     // Open the shell and pass the readiness
     socket.shell.openShell(consoleStream).then(() => {
         socket.emit('ready')
+        socket.emit('spark.id', socket.shell.getApplicationId())
     }).catch(error => {
         console.warn(`[SPARK SOCKET - ${user.login}] Spark connection failed`)
         socket.emit('connect.error', error)

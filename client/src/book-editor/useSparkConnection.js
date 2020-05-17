@@ -55,6 +55,7 @@ export function useSparkConnection(chunks) {
     const [runningId, setRunningId] = useState(null)
     const [forceRun, setForceRun] = useState(null)
     const [commandsToRun, setCommandsToRun] = useState([])
+    const [applicationId, setApplicationId] = useState(null)
     const sparkSocketRef = useRef(null)
 
     // Disconnects when leaving the component
@@ -81,6 +82,10 @@ export function useSparkConnection(chunks) {
 
         sparkSocketRef.current.on('ready', () => {
             setConnectionStatus(connectionStatusList.connected)
+        })
+
+        sparkSocketRef.current.on('spark.id', id => {
+            setApplicationId(id)
         })
 
         sparkSocketRef.current.on('connect.error', () => {
@@ -127,6 +132,7 @@ export function useSparkConnection(chunks) {
     return {
         socket: sparkSocketRef.current,
         status: connectionStatus,
+        applicationId,
         runningNow,
         commandsToRun,
         forceRun,

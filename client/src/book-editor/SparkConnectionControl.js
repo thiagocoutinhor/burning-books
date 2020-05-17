@@ -5,6 +5,7 @@ import { CSSTransition } from 'react-transition-group'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SimpleDropdown } from '../components/simple-dropdown/SimpleDropdown'
 import { SparkContext } from './BookEditor'
+import { doCopy } from './helper'
 import './SparkConnectionControl.css'
 
 function errorTooltip(props) {
@@ -24,8 +25,12 @@ function disconnectHandler(children, spark) {
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                     <Dropdown.Item onClick={spark.disconnect}>
-                        <FontAwesomeIcon icon="power-off" className="mr-2" />
+                        <FontAwesomeIcon icon="power-off" className="mr-2" style={{ color: 'red' }} />
                         Disconnect
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => doCopy(spark.applicationId)}>
+                        <FontAwesomeIcon icon="clone" className="mr-2" />
+                        { spark.applicationId }
                     </Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>

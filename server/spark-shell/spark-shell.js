@@ -13,6 +13,7 @@ class SparkSession {
 
         this.__startCommand = `spark-shell ${queue} ${executors} ${cores} ${memory} ${libraries}`
         this.__user = user
+        this.__applicationId = null
 
         const parameters = {
             host: process.env.SPARK_HOST,
@@ -27,6 +28,10 @@ class SparkSession {
         }
 
         this.ssh = new Ssh(parameters)
+    }
+
+    getApplicationId() {
+        return this.__applicationId
     }
 
     connect() {
@@ -52,7 +57,13 @@ class SparkSession {
                             reject('Connection timeout')
                         }, 5 * 60 * 1000)
 
+                        let agg = ''
                         const watcher = data => {
+                            agg += data
+                            const idFinder = /application_\d+_\d+/.exec(agg)
+                            if (idFinder) {
+                                this.__applicationId = idFinder[0]
+                            }
                             if (data.includes('scala>')) {
                                 clearTimeout(timeout)
 

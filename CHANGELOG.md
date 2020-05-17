@@ -14,6 +14,7 @@ v0.2.1-alpha
 - Added a console with all the commands and responses
 - Added run time of each chunk
 - Hability to hide and show the result card
+- Recover the Application ID after connecting to Spark shell
 
 ### Internal
 - Added easy to use local deploy outside docker
