@@ -118,7 +118,7 @@ class SparkSession {
                 setTimeout(() => {
                     stream.on('data', watcher)
                     stream.write('\x04')
-                }, 300)
+                }, 600)
             })
         })
     }
