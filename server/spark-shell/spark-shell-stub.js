@@ -34,6 +34,7 @@ const config = {
                     finalizado++
                     clearInterval(timer)
                     if (finalizado == stages.length) {
+                        comando += "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nTeste"
                         stream.emit('data', comando)
                         stream.emit('data', 'scala>')
                         stream.running = false
