@@ -374,7 +374,7 @@ export function CommandChunk({ index, chunk, bookSocket}) {
     return (
         <div>
             <ChunkAddButton at={index} bookSocket={bookSocket} />
-            <div className='ml-3 mr-3'>
+            <div className='ml-3 mr-3' style={{overflowX: 'hidden'}}>
                 <Card className={`command-block ${status.name} shadow`}>
                     <Card.Header className="d-flex align-items-start">
                         <div className="d-flex flex-column mr-2">
