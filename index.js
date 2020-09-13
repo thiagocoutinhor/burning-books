@@ -56,8 +56,7 @@ if (process.env.NODE_ENV === 'production') {
     console.info('Production mode')
     app.get('/*', function (req, res) {
         const fileName = join(__dirname, 'build', req.url)
-        const file = fs.statSync(fileName)
-        if (fs.existsSync(fileName) && file.isFile()) {
+        if (fs.existsSync(fileName) && fs.statSync(fileName).isFile()) {
             res.sendFile(fileName)
         } else {
             res.sendFile(join(__dirname, 'build', 'index.html'))

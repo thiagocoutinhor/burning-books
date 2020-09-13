@@ -1,3 +1,11 @@
+v0.2.2
+===============================================================================
+
+### Bug Fixes
+- Corrects reloading error
+- Corrects result card hiding bug
+- Resolves issue with "|" character on tables
+
 v0.2.1.1
 ===============================================================================
 
