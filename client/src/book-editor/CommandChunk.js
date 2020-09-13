@@ -183,18 +183,15 @@ function useTimer(isRunning) {
     const timerRef = useRef(null)
 
     useEffect(() => {
-        console.log('Banana> run', isRunning)
         if (isRunning) {
             const start = moment()
             timerRef.current = setInterval(() => {
-                console.log('Banana> Tick', isRunning)
                 const duration = moment.duration(moment().diff(start))
                 const minutes = duration.get('minutes')
                 const seconds = `${duration.get('seconds')}`.padStart(2, '0')
                 setExecutionTimer(`${minutes}:${seconds}`)
             }, 1000)
         } else {
-            console.log('Banana> clearing')
             clearInterval(timerRef.current)
         }
     }, [isRunning])
