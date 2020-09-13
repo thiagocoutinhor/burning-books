@@ -11,6 +11,7 @@ import { doCopy } from './helper'
 ///////////////////////////////////////////////////////////////////////////////
 // Result grammar
 ///////////////////////////////////////////////////////////////////////////////
+
 const resultGrammar = {
     // Extracts the tables
     tableLine: {
@@ -19,11 +20,6 @@ const resultGrammar = {
     },
     tableRow: {
         match: /\|.*\|[\n\r]{0,2}/,
-        value: texto => {
-            const columns = texto.split('|')
-            return columns.slice(1, columns.length - 1)
-                .map(coluna => coluna.trim())
-        },
         lineBreaks: true
     },
     // Extracts the progress bar
@@ -105,7 +101,7 @@ export function ChunkResult({ result, status, removeResult }) {
                 newBars[token.value.id] = token.value
             } else if (token.type === 'tableLine') {
                 if (!table) {
-                    table = { head: [] }
+                    table = { head: [], sizes: [] }
                     newTables.push(table)
                 } else if (table.head && !table.body) {
                     table.body = []
@@ -114,9 +110,20 @@ export function ChunkResult({ result, status, removeResult }) {
                 }
             } else if (token.type === 'tableRow') {
                 if (table && table.body) {
-                    table.body.push(token.value)
+                    let row = token.value
+                    const values = table.sizes.map(length => {
+                        const value = row.substring(1, length)
+                        row = row.substring(length)
+                        return value.trim()
+                    })
+                    table.body.push(values)
                 } else if (table && table.head) {
-                    table.head.push(token.value)
+                    const columns = token.value.split('|')
+                    columns.pop()
+                    columns.shift()
+
+                    table.sizes = columns.map(column => column.length+1)
+                    table.head.push(columns.map(column => column.trim()))
                 }
             } else {
                 extractedText += token.text
